@@ -1,5 +1,5 @@
 import { db, auth } from './firebase.js';
-import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
+import { doc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
 /**
  * 健康データを保存する関数

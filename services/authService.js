@@ -1,5 +1,5 @@
 import { auth } from './firebase.js';
-import { signInAnonymously, onAuthStateChanged } from 'firebase/auth';
+import { signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
 /**
  * 匿名ログインを実行する関数

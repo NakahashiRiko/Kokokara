@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+    <html lang="ja">
+
+    <!--headタグ内にはブラウザ内の設定を記述。-->
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="stylesheet" href="mealApp.css"> <!--CSSファイルを読み込む。これでHTMLとCSSを連携させる。-->
+        <title>食事記録アプリ</title><!--食事記録アプリのタイトルを設定-->
+    </head>
+
+    <!--bodyタグ内には実際にブラウザに表示される内容を記述。-->
+    <body>
+        <!--アプリのタイトル。-->
+        <div id="title-box">
+            <!--食事アプリの画面左上に表示されるテキスト-->
+            <p id="app_title">食事記録アプリ</p> 
+        </div>
+
+        <div id="subtitle">
+            <!--食事記録の日付を表示する。-->
+            <!--「食事記録アプリ」テキストの下に表示されるテキスト。ここではホーム画面で選択された日付が表示されるようにする。-->
+            <p id="date">日付</p>
+
+            <!--「不足している栄養素」テキストの下に表示されるテキスト。該当日の食事回数を表示する。-->
+            <!--その日の朝食・昼食・夕食の献立(breakfast-menu, lunch-menu, dinner-menuから持ってくる)が記入されていれば食事をしたとみなしカウントしここに表示。-->
+            <p id="meal_count">本日の食事回数: ◯回</p>
+
+            <!--食事アプリの画面右上に表示されるテキスト。不足している栄養素とその期間をここで一覧で表示する。-->
+            <p id="lack_nutrients">不足している栄養素: ◯(△日連続！), ★(◽️日連続！)</p>
+        </div> 
+
+        <!---朝食の記録のグループ-->
+        <div id="breakfast-box">
+            <!--画面右側に表示されるテキスト。-->
+            <p id="breakfast-title">朝食</p>
+
+            <!--食事の目標開始時刻の記録。設定して確定したらそれ以降は触れないようにする。ここではとりあえず固定(開いた時にこの値が最初に表示されてる)にしておいた。-->
+            <!--disabledをつけるとこの入力フィールドは触れなくなる。-->
+            目標時刻: <input id="breakfast_goal_time" type="time" value="08:00" disabled>
+            時刻: <input id="breakfast_really_time" type="time"> <!--実際の食事の開始時刻の記録。ボタンを押すと時刻を選択できる。-->
+
+            <!--食事の献立の記録。-->
+            <p>献立:
+                <input id="breakfast_menu" type="text"> <!--食事の献立の記録。テキストを入力できるようにする。-->
+            </p>
+        
+            <!--食事の栄養素の記録。炭水化物、タンパク質、ビタミン、脂質、無機質(ミネラル)の5大栄養素をボタン(チェックボックス)で選択してもらう。-->
+            <p>栄養素: 
+                <input type="checkbox" id = "carbo_breakfast" value="炭水化物"> 炭水化物
+                <input type="checkbox" id = "protein_breakfast" value="タンパク質"> タンパク質
+                <input type="checkbox" id = "fat_breakfast" value="脂質"> 脂質
+                <input type="checkbox" id = "vitamin_breakfast" value="ビタミン"> ビタミン
+                <input type="checkbox" id = "mineral_breakfast" value="無機質(ミネラル)"> 無機質(ミネラル)
+            </p>
+        </div>
+
+        <!---昼食の記録のグループ-->
+        <div id="lunch-box">
+            <!--画面右側の「朝食」の下に表示されるテキスト。昼食の記録をする。-->
+            <p id="lunch-title">昼食</p>
+
+            目標時刻: <input id="lunch_goal_time" type="time" value="12:00" disabled>
+            時刻: <input id="lunch_really_time" type="time"> <!--実際の食事の開始時刻の記録。ボタンを押すと時刻を選択できる。-->
+        
+            <!--食事の献立の記録。-->
+            <p>献立: 
+                <input id="lunch_menu" type = "text"> <!--食事の献立の記録。テキストを入力できるようにする。-->
+            </p>
+        
+            <!--食事の栄養素の記録。炭水化物、タンパク質、ビタミン、脂質、無機質(ミネラル)の5大栄養素をボタン(チェックボックス)で選択してもらう。-->
+            <p>栄養素: 
+                <input type="checkbox" id="carbo_lunch" value="炭水化物"> 炭水化物
+                <input type="checkbox" id="protein_lunch" value="タンパク質"> タンパク質
+                <input type="checkbox" id="fat_lunch" value="脂質"> 脂質
+                <input type="checkbox" id="vitamin_lunch" value="ビタミン"> ビタミン
+                <input type="checkbox" id="mineral_lunch" value="無機質(ミネラル)"> 無機質(ミネラル)
+            </p>
+        </div>
+        
+        <!---夕食の記録のグループ-->
+        <div id="dinner-box">
+            <!--画面右側の「昼食」に表示されるテキスト。-->
+            <p id="dinner-title">夕食</p>
+
+            目標時刻: <input id="dinner_goal_time" type = "time" value = "19:00" disabled>
+            時刻: <input id="dinner_really_time" type = "time"> <!--実際の食事の開始時刻の記録。ボタンを押すと時刻を選択できる。-->
+        
+            <!--食事の献立の記録。-->
+            <p>献立: 
+                <input id="dinner_menu" type = "text"> <!--食事の献立の記録。テキストを入力できるようにする。-->
+            </p>
+        
+            <!--食事の栄養素の記録。炭水化物、タンパク質、ビタミン、脂質、無機質(ミネラル)の5大栄養素をボタン(チェックボックス)で選択してもらう。-->
+            <p>栄養素: 
+                <input type="checkbox" id="carbo_dinner" value="炭水化物"> 炭水化物
+                <input type="checkbox" id="protein_dinner" value="タンパク質"> タンパク質
+                <input type="checkbox" id="fat_dinner" value="脂質"> 脂質
+                <input type="checkbox" id="vitamin_dinner" value="ビタミン"> ビタミン
+                <input type="checkbox" id="mineral_dinner" value="無機質(ミネラル)"> 無機質(ミネラル)
+            </p>
+        </div>
+
+        <!--その他の食事(間食など)の記録。これは食事回数には含めない。--->
+        <div id="other_meals-box">
+            <p id="other_meals-title">その他の食事: 
+                <input id="other_meals_input" type="text">
+            </p>
+        </div>
+
+        <div id="next_goal_time-box">
+            <!--翌日の目標食事開始時刻の入力。-->
+            <p id="next_goal_time_text">翌日の目標食事開始時刻</p>
+            <!--次の日の朝食・昼食・夕食それぞれの目標時刻を入力する。次の日の目標時刻のところ(実際の食事開始時刻の横に表示するやつ)にこの値を代入する。-->
+            朝食: <input id="breakfast_next_goal_time" type="time">
+            昼食: <input id="lunch_next_goal_time" type="time">
+            夕食: <input id="dinner_next_goal_time" type="time">
+        </div>
+
+        <!--確定ボタン。画面右下に表示させるようにする。その日の入力が完了したらこれを押すようにしてもらう。-->
+        <p>
+            <button id="finish_today_btn">1日の記録を終了して確定する</button>
+        </p>
+    </body>
+</html>

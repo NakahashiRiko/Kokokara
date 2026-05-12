@@ -1,0 +1,110 @@
+/* ブラウザが最初から持っている外側の余白を消す。横側の余白がなくなる。*/
+body{
+    margin: 0;
+    padding: 0;
+}
+
+/*画面上部のタイトルのデザイン*/
+#title-box{
+    margin: 0;/*タイトルの上下の余白を消す。この枠の外側の余白を消す。*/
+    background-color: #f5f5a7;/*背景色の指定*/
+    height: 80px;/*高さの指定*/
+    padding-left: 100px;/*タイトルの左側の余白を100pxに自分で設定。marginと違いこの枠の内側に余白ができる*/
+}
+
+/*画面上部のタイトルテキストのデザイン*/
+#app_title{
+    margin: 0px;/*タイトルの左側の余白を0pxに自分で設定。*/
+    font-size: 40px;/*文字サイズの指定*/
+    line-height: 80px;
+}
+
+#subtitle{
+    display: flex;/*フレックスボックスの指定。テキストが横並びで表示されるようになる。*/
+    gap: 100px;/*テキスト(要素)間の余白を自分で設定。*/
+    font-size: 20px;/*文字サイズの指定*/
+    align-items: center;
+    padding: 0px 40px;/*上下の余白を0px(なし)、左右の余白を40px。*/
+}
+
+/*朝食の記録欄のデザイン*/
+#breakfast-box{
+    padding: 10px 40px;/*上下の余白を10px、左右の余白を40px*/
+    margin-bottom: 20px;/*下の余白を20pxに自分で設定。*/
+    border-radius: 30px;/*ボックスの角を丸くする。*/
+    background-color: #f7a3d5;/*背景色の指定*/
+}
+/*「朝食」テキストのデザイン。*/
+#breakfast-title{
+    margin: 0;/*タイトルの上下の余白を消す。*/
+    font-size: 30px;/*文字サイズの指定*/
+    margin-left: -20px;/*タイトルの左側の余白を-20px。これを入れるとタイトルが左側に少し移動する。*/
+}
+
+/*朝食の献立の入力欄の拡大。*/
+#breakfast_menu{
+    width: 70%;
+}
+
+/*昼食の記録欄のデザイン*/
+#lunch-box{
+    padding: 10px 40px;/*上下の余白を10px、左右の余白を40px*/
+    margin-bottom: 20px;/*下の余白を20pxに自分で設定。*/
+    border-radius: 30px;/*ボックスの角を丸くする。*/
+    background-color: #ebf486;/*背景色の指定*/
+}
+/*「昼食」テキストのデザイン。*/
+#lunch-title{
+    margin: 0;/*タイトルの上下の余白を消す。余白が小さくなる。*/
+    font-size: 30px;/*文字サイズの指定*/
+    margin-left: -20px;/*タイトルの左側の余白を-20px。これを入れるとタイトルが左側に少し移動する。*/
+}
+
+/*昼食の献立の入力欄の拡大。*/
+#lunch_menu{
+    width: 70%;
+}
+
+/*夕食の記録欄のデザイン*/
+#dinner-box{
+    padding: 10px 40px;/*上下の余白を10px、左右の余白を40px。*/
+    margin-bottom: 20px;/*下の余白を20pxに自分で設定。*/
+    border-radius: 30px;/*ボックスの角を丸くする。*/
+    background-color: #f7cea3;/*背景色の指定*/
+}
+/*「夕食」テキストのデザイン。*/
+#dinner-title{
+    margin: 0;/*タイトルの上下の余白を消す。*/
+    font-size: 30px;/*文字サイズの指定*/
+    margin-left: -20px;/*タイトルの左側の余白を-20px。これを入れるとタイトルが左側に少し移動する。*/
+}
+/*夕食の献立の入力欄の拡大。*/
+#dinner_menu{
+    width: 70%;
+}
+
+/*その他の食事の入力欄の拡大。*/
+#other_meals_input{
+    margin-top: 20px;/*上の余白を20px。これを入れると次の内容との間に余白ができる。*/
+    margin-bottom: 20px;/*下の余白を20px。これを入れると次の内容との間に余白ができる。*/
+    width: 70%;
+}
+
+/*「その他の食事」テキストのデザイン。*/
+#other_meals-title{
+    font-size: 20px;/*文字サイズの指定*/
+}
+
+/*翌日の目標食事開始時刻の入力欄のデザイン*/
+#next_goal_time-box{
+    padding: 10px 40px;/*上下の余白を10px、左右の余白を40px。*/
+    margin-bottom: 20px;/*下の余白を20pxに自分で設定。*/
+    border-radius: 30px;/*ボックスの角を丸くする。*/
+    background-color: #c1f0f6;/*背景色の指定*/
+}
+
+#next_goal_time_text{
+    margin: 10px 0;/*タイトルの上下の余白を消す。*/
+    margin-left: -20px;/*タイトルの左側の余白を-20px。これを入れるとタイトルが左側に少し移動する。*/
+    font-size: 20px;/*文字サイズの指定*/
+}

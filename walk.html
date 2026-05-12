@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+
+<meta charset="UTF-8">
+
+<title>歩数</title>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+
+body{
+    margin:0;
+    background:#efefef;
+    font-family:sans-serif;
+}
+
+header{
+    height:90px;
+    background:#f58f8f;
+    display:flex;
+    align-items:center;
+    padding:0 30px;
+    font-size:50px;
+    font-weight:bold;
+}
+
+.back{
+    color:gray;
+    font-size:60px;
+    margin-right:15px;
+}
+
+.main{
+    display:flex;
+    background:white;
+    min-height:calc(100vh - 90px);
+}
+
+.left,.right{
+    padding:40px;
+    box-sizing:border-box;
+}
+
+.left{
+    width:45%;
+}
+
+.right{
+    width:55%;
+    display:flex;
+    justify-content:center;
+    align-items:flex-start;
+}
+
+.date{
+    font-size:42px;
+    text-align:center;
+    margin-bottom:50px;
+}
+
+.row{
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    font-size:35px;
+    margin-top:30px;
+}
+
+.label{
+    width:260px;
+    text-align:right;
+    padding-right:20px;
+    box-sizing:border-box;
+}
+
+.value{
+    width:220px;
+    text-align:left;
+}
+
+.avg-box{
+    margin-top:30px;
+    text-align:center;
+    font-size:35px;
+    line-height:1.5;
+    margin-left:-92px;
+}
+
+.avg-date{
+    margin-bottom:10px;
+}
+
+input{
+    width:90px;
+    height:45px;
+    font-size:28px;
+    text-align:center;
+}
+
+.comment,.graph-box{
+    background:#dcdcdc;
+    box-sizing:border-box;
+}
+
+.comment{
+    margin-top:80px;
+    padding:25px;
+    font-size:30px;
+    line-height:1.6;
+    margin-top:auto;
+    min-height:200px;
+    text-align:center;
+    white-space:pre-line;
+    overflow-wrap:break-word;
+}
+
+.graph-box{
+    width:100%;
+    height:700px;
+    padding:20px;
+    margin-top:-5px;
+}
+
+canvas{
+    width:100% !important;
+    height:100% !important;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<header>
+<div class="back">＜</div>
+歩数
+</header>
+
+<div class="main">
+
+<div class="left">
+
+<div class="date" id="selectedDate"></div>
+
+<div class="row">
+
+<div class="label">目　　　標：</div>
+
+<div class="value">
+<input type="number" id="targetInput" value="5000">歩
+</div>
+
+</div>
+
+<div class="row">
+
+<div class="label">今日の歩数：</div>
+
+<div class="value" id="todayStep"></div>
+
+</div>
+
+<div class="avg-box">
+
+<div class="avg-date" id="avgLabel"></div>
+
+<div id="avgText"></div>
+
+</div>
+
+<div class="comment" id="comment"></div>
+
+</div>
+
+<div class="right">
+
+<div class="graph-box">
+<canvas id="chart"></canvas>
+</div>
+
+</div>
+
+</div>
+
+<script>
+
+const selectedDay = 12;
+
+const stepData = {};
+
+for(let i = 1;i <= 31;i++){
+    stepData[i] = Math.floor(Math.random() * 8000);
+}
+
+document.getElementById("selectedDate").innerText
+= "2026/05/" + String(selectedDay).padStart(2,"0");
+
+const todayStep = stepData[selectedDay];
+
+document.getElementById("todayStep").innerText
+= todayStep + "歩";
+
+/* グラフ */
+
+let labels = [];
+let data = [];
+
+for(let i = 6;i >= 0;i--){
+
+    let day = selectedDay - i;
+
+    if(day <= 0) continue;
+
+    labels.push(day + "日");
+    data.push(stepData[day]);
+}
+
+/* 先週平均 */
+
+let startDay = selectedDay - 9;
+let endDay = selectedDay - 3;
+
+let sum = 0;
+let count = 0;
+
+for(let day = startDay;day <= endDay;day++){
+    sum += stepData[day];
+    count++;
+}
+
+document.getElementById("avgLabel").innerText
+= "2026/05/" + String(startDay).padStart(2,"0")
++ "~2026/05/" + String(endDay).padStart(2,"0");
+
+document.getElementById("avgText").innerText
+= "の平均歩数：" + Math.floor(sum / count) + "歩";
+
+/* グラフ */
+
+new Chart(document.getElementById("chart"),{
+
+    type:"bar",
+
+    data:{
+        labels:labels,
+        datasets:[{
+            data:data
+        }]
+    },
+
+    options:{
+        responsive:true,
+        maintainAspectRatio:false,
+        plugins:{
+            legend:{ display:false }
+        },
+        scales:{
+            y:{ beginAtZero:true }
+        }
+    }
+
+});
+
+function updatePage(){
+
+    let target = Number(document.getElementById("targetInput").value);
+
+    let diff = todayStep - target;
+
+    document.getElementById("comment").innerText
+    = diff >= 0 ?
+
+    "今日の歩数は" + todayStep + "歩です。\n" +
+    "目標と" + diff + "歩の差があります。\n" +
+    "おめでとうございます！\nこれからも続けましょう！"
+
+    :
+
+    "今日の歩数は" + todayStep + "歩です。\n" +
+    "目標と" + Math.abs(diff) + "歩の差があります。\n" +
+    "もっと頑張りましょう！";
+
+}
+
+document.getElementById("targetInput")
+.addEventListener("input",updatePage);
+
+updatePage();
+
+</script>
+
+</body>
+</html>

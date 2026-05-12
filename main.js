@@ -1,22 +1,27 @@
 // main.js
 import { loginAnonymously } from './services/authService.js';
+import { saveDailyData } from './services/healthService.js'; // ★追加
 
 async function initApp() {
-    console.log("システム初期化中...");
-    
     try {
-        // アプリ起動時に自動で匿名ログインを実行
         const user = await loginAnonymously();
-        
         if (user) {
-            console.log("🔥 Firebase接続成功！");
-            console.log("ユーザーUID:", user.uid);
-            // ここまで来れば、データの保存機能（saveDailyData）などが使える状態です
+            console.log("🔥 Firebase接続成功！ UID:", user.uid);
+
+            // ★書き込みテスト（疎通確認）を追加
+            console.log("テストデータを送信中...");
+            await saveDailyData("2026-05-12", {
+                breakfastMenu: "テスト用のトースト",
+                breakfastTime: "08:30",
+                sleepHour: 7,
+                sleepMinute: 15,
+                walkSteps: 8000
+            });
+            console.log("✅ Firestoreへの書き込みに成功しました！");
         }
     } catch (error) {
-        console.error("❌ 初期化エラー:", error);
+        console.error("❌ エラーが発生しました:", error);
     }
 }
 
-// アプリの起動
 initApp();

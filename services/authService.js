@@ -1,23 +1,40 @@
-import { auth } from './firebase.js';
-import { signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+// services/authService.js
+
+// 🌟 重要：ブラウザから直接読み込むため、URL形式(CDN)でインポートします
+import { auth } from './firebase.js'; 
+import { 
+    signInAnonymously, 
+    onAuthStateChanged 
+} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
 /**
  * 匿名ログインを実行する関数
+ * フロントエンドの main.js から呼び出されます
  */
-export const loginAnonymously = async () => {
-  try {
-    const userCredential = await signInAnonymously(auth);
-    return userCredential.user; // ログインしたユーザー情報を返す
-  } catch (error) {
-    console.error("匿名ログインに失敗しました:", error);
-    throw error;
-  }
-};
+export async function loginAnonymously() {
+    try {
+        const result = await signInAnonymously(auth);
+        const user = result.user;
+        // ログイン成功時に、どのユーザーとしてログインしたかコンソールに表示
+        console.log("匿名ログイン成功:", user.uid);
+        return user;
+    } catch (error) {
+        console.error("匿名ログイン失敗:", error.code, error.message);
+        throw error;
+    }
+}
 
 /**
- * ログイン状態を監視する関数
- * (フロント側で「今誰がログイン中か」を知るために使います)
+ * ログイン状態を監視する関数（必要に応じて使用）
  */
-export const observeAuthState = (callback) => {
-  return onAuthStateChanged(auth, callback);
-};
+export function watchAuthState(callback) {
+    onAuthStateChanged(auth, (user) => {
+        if (user) {
+            // ログイン中
+            callback(user);
+        } else {
+            // ログアウト状態
+            callback(null);
+        }
+    });
+}

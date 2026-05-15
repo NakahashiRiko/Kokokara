@@ -1,168 +1,195 @@
+/* 3. 画面全体仕様 */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
 body {
-  margin: 0;
-  background: #111;
-  font-family: "Hiragino Kaku Gothic ProN", "Meiryo", sans-serif;
+    font-family: "Helvetica Neue", Arial, "Hiragino Kaku Gothic ProN", "Hiragino Sans", Meiryo, sans-serif;
+    background-color: #f0f0f0; /* 全体背景は少しグレー、アプリ枠が白 */
+    display: flex;
+    justify-content: center;
+    padding: 20px;
 }
 
 .app {
-  width: 1100px;
-  margin: 30px auto;
-  background: #fff;
-  padding: 30px;
-  box-sizing: border-box;
+    width: 1110px;
+    background-color: #fff;
+    min-height: 800px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    display: flex;
+    flex-direction: column;
 }
 
-/* 上部 */
+/* 6. 上部エリア */
 .top {
-  display: flex;
-  align-items: center;
-  gap: 30px;
+    display: flex;
+    align-items: center;
+    padding: 40px 60px; /* 上下の余白を20px→40pxに拡大 */
+    border-bottom: 2px solid #eee;
 }
 
 .title {
-  font-size: 48px;
-  font-weight: bold;
+    font-size: 55px; /* タイトルの文字サイズを24px→42pxに拡大 */
+    font-weight: 900;
+    margin-right: 80px;
+    color: #333;
+    letter-spacing: 4px; /* 少し文字間を広げて高級感を出しました */
 }
 
-.memo {
-  flex: 1;
+.memo-area {
+    flex-grow: 1;
 }
 
-.memo input {
-  width: 100%;
-  height: 70px;
-  font-size: 32px;
-  padding: 10px 20px;
-  border: 1px solid #333;
+.memo-input {
+    width: 100%;
+    height: 80px; /* メモ欄の高さを指定 */
+    padding: 0 20px;
+    font-size: 60px; /* 入力文字も少し大きく */
+    border: 2px solid #ddd;
+    border-radius: 10px;
+    background-color: #fafafa;
+    transition: border-color 0.3s;
 }
 
-/* メイン */
+.memo-input:focus {
+    outline: none;
+    border-color: #ccc;
+    background-color: #fff;
+}
+
+/* 4. メイン構成 */
 .main {
-  display: flex;
-  margin-top: 30px;
-  gap: 40px;
+    display: flex;
+    flex-grow: 1;
+    padding: 30px;
 }
 
-/* 左 */
+/* 7. 左側エリア（カレンダー） */
 .left {
-  width: 300px;
+    width: 400px;
+    margin-right: 40px;
 }
 
-.date {
-  font-size: 28px;
-  text-align: center;
-  border: 2px solid #000;
-  padding: 8px 0;
-  margin-bottom: 20px;
-  position: relative;
+.date-nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
 }
 
-.date::before,
-.date::after {
-  content: "";
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 0;
-  height: 0;
-  border-top: 15px solid transparent;
-  border-bottom: 15px solid transparent;
+.nav-btn {
+    background: none;
+    border: 1px solid #ccc;
+    padding: 5px 10px;
+    cursor: pointer;
+    border-radius: 3px;
 }
 
-.date::before {
-  left: -20px;
-  border-right: 20px solid #ccc;
+.current-date {
+    font-size: 18px;
 }
 
-.date::after {
-  right: -20px;
-  border-left: 20px solid #ccc;
-}
-
-/* カレンダー */
 .calendar {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 22px;
-  text-align: center;
+    width: 100%;
+    border-collapse: collapse;
 }
 
-.calendar th,
-.calendar td {
-  border: 2px solid #000;
-  height: 45px;
+.calendar th, .calendar td {
+    border: 1px solid #eee;
+    text-align: center;
+    padding: 15px 5px;
+}
+
+.calendar th {
+    background-color: #f9f9f9;
 }
 
 .today {
-  background: #7fe3e3;
+    background-color: #e3f2fd; /* 水色強調 */
+    font-weight: bold;
+    color: #1976d2;
 }
 
-/* 右 */
+.other-month {
+    color: #ccc;
+}
+
+/* 8. 右側エリア（カードレイアウト） */
 .right {
-  flex: 1;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 30px;
+    flex-grow: 1;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr 1fr;
+    gap: 20px;
 }
 
+/* 共通カード仕様 */
 .card {
-  border-radius: 25px;
-  padding: 25px;
-  font-weight: bold;
-  box-shadow: 0 5px 0 rgba(0, 0, 0, 0.2);
+    border-radius: 15px;
+    padding: 20px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    display: flex;
+    flex-direction: column;
+    cursor: pointer;
+    transition: transform 0.2s;
 }
 
-/* 色 */
-.yellow { background: #ffe66b; color: #333; }
-.blue   { background: #7496ff; color: #fff; }
-.red    { background: #ff7070; color: #fff; }
-.green  { background: #7dff6b; color: #333; }
+.card:hover {
+    transform: translateY(-2px);
+}
 
 .card-title {
-  font-size: 28px;
-  margin-bottom: 20px;
+    font-size: 18px;
+    margin-bottom: 15px;
+    border-bottom: 1px solid rgba(255,255,255,0.3);
+    padding-bottom: 5px;
 }
 
-.meal {
-  display: flex;
-  justify-content: space-around;
-  font-size: 36px;
+.card-content {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    font-size: 20px;
+    font-weight: bold;
 }
 
-.big-text {
-  font-size: 48px;
-  text-align: center;
-  margin-top: 40px;
-}
+/* 各カード配色 */
+.meal { background-color: #fff9c4; color: #856404; }       /* 黄色 */
+.sleep { background-color: #bbdefb; color: #0d47a1; }      /* 青色 */
+.steps { background-color: #ffcdd2; color: #b71c1c; }      /* 赤色 */
+.condition { background-color: #c8e6c9; color: #1b5e20; }  /* 緑色 */
 
-/* 顔 */
-.face {
-  width: 140px;
-  height: 140px;
-  background: #fff;
-  border-radius: 50%;
-  border: 2px solid #000;
-  margin: 30px auto 0;
-  position: relative;
+/* 8.5 体調アイコン（div構成） */
+.face-icon {
+    width: 80px;
+    height: 80px;
+    border: 3px solid #1b5e20;
+    border-radius: 50%;
+    position: relative;
 }
 
 .eye {
-  width: 25px;
-  height: 6px;
-  background: #000;
-  position: absolute;
-  top: 45px;
+    width: 10px;
+    height: 10px;
+    background-color: #1b5e20;
+    border-radius: 50%;
+    position: absolute;
+    top: 25px;
 }
 
-.eye.left { left: 30px; }
-.eye.right { right: 30px; }
+.eye-left { left: 20px; }
+.eye-right { right: 20px; }
 
 .mouth {
-  width: 30px;
-  height: 6px;
-  background: #000;
-  position: absolute;
-  bottom: 40px;
-  left: 50%;
-  transform: translateX(-50%);
+    width: 40px;
+    height: 20px;
+    border-bottom: 3px solid #1b5e20;
+    border-radius: 0 0 20px 20px;
+    position: absolute;
+    bottom: 15px;
+    left: 20px;
 }

@@ -101,20 +101,6 @@ input{
     font-size: 20px;/*文字サイズの指定*/
 }
 
-/*翌日の目標食事開始時刻の入力欄のデザイン*/
-#next_goal_time-box{
-    padding: 10px 40px;/*上下の余白を10px、左右の余白を40px。*/
-    margin-bottom: 20px;/*下の余白を20pxに自分で設定。*/
-    border-radius: 30px;/*ボックスの角を丸くする。*/
-    background-color: #c1f0f6;/*背景色の指定*/
-}
-
-#next_goal_time_text{
-    margin: 10px 0;/*タイトルの上下の余白を消す。*/
-    margin-left: -20px;/*タイトルの左側の余白を-20px。これを入れるとタイトルが左側に少し移動する。*/
-    font-size: 20px;/*文字サイズの指定*/
-}
-
 /*「記録を保存」ボタンのデザイン*/
 #finish_today_btn{
     font-family: "Hiragino Sans", sans-serif;/*フォントをゴシック体に指定。*/

@@ -2,6 +2,12 @@
 body{
     margin: 0;
     padding: 0;
+    font-family: "Hiragino Sans", sans-serif;/*フォントをゴシック体に指定。*/
+}
+
+/*inputタグ全てを選択*/
+input{
+    font-family: "Hiragino Sans", sans-serif;/*フォントをゴシック体に指定。*/
 }
 
 /*画面上部のタイトルのデザイン*/
@@ -107,4 +113,9 @@ body{
     margin: 10px 0;/*タイトルの上下の余白を消す。*/
     margin-left: -20px;/*タイトルの左側の余白を-20px。これを入れるとタイトルが左側に少し移動する。*/
     font-size: 20px;/*文字サイズの指定*/
+}
+
+/*「記録を保存」ボタンのデザイン*/
+#finish_today_btn{
+    font-family: "Hiragino Sans", sans-serif;/*フォントをゴシック体に指定。*/
 }

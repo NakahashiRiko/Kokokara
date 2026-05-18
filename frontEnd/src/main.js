@@ -19,9 +19,9 @@ function updateCardContents(data) {
     if (mealCardContent) {
         if (data) {
             // データが存在する場合（朝・昼・晩の入力状況を見て表示を切り替える例）
-            const breakfastStatus = data.breakfastMenu ? "済" : "未";
-            const lunchStatus = data.lunchMenu ? "済" : "未";
-            const dinnerStatus = data.dinnerMenu ? "済" : "未";
+            const breakfastStatus = data.breakfast.menu ? "済" : "未";
+            const lunchStatus = data.lunch.menu ? "済" : "未";
+            const dinnerStatus = data.dinner.menu ? "済" : "未";
             
             mealCardContent.innerHTML = `
                 <p>朝：${breakfastStatus}</p>
@@ -41,9 +41,9 @@ function updateCardContents(data) {
     // 2. 睡眠カードの書き換え
     const sleepValue = document.querySelector('.card.sleep .value');
     if (sleepValue) {
-        if (data && (data.sleepHour !== undefined || data.sleepMinute !== undefined)) {
-            const hour = data.sleepHour || 0;
-            const minute = data.sleepMinute || 0;
+        if (data && (data.sleep.hour !== undefined || data.sleep.minute !== undefined)) {
+            const hour = data.sleep.hour || 0;
+            const minute = data.sleep.minute || 0;
             sleepValue.textContent = `${hour}時間${minute}分`;
         } else {
             sleepValue.textContent = "00時間00分"; // データが無い日
@@ -53,9 +53,9 @@ function updateCardContents(data) {
     // 3. 歩数カードの書き換え
     const stepsValue = document.querySelector('.card.steps .value');
     if (stepsValue) {
-        if (data && data.walkSteps !== undefined) {
+        if (data && data.walk !== undefined) {
             // カンマ区切りの文字列にして表示（例: 8,500歩）
-            stepsValue.textContent = `${Number(data.walkSteps).toLocaleString()}歩`;
+            stepsValue.textContent = `${Number(data.walk).toLocaleString()}歩`;
         } else {
             stepsValue.textContent = "0歩"; // データが無い日
         }
@@ -106,6 +106,9 @@ async function updateDateDisplay() {
     console.log(`📅 ${dateStr} のデータを取得します...`);
     try {
         const firebaseData = await getDailyData(dateStr);
+
+        updateCardContents(firebaseData);//取得したデータをカードに反映させる関数を呼び出す
+
         if (firebaseData) {
             console.log("選択された日のデータ:", firebaseData);
             // 💡 ここに、取得したデータを画面のカード（食事・歩数など）に

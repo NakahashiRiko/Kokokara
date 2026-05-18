@@ -1,6 +1,74 @@
 // main.js
 import { loginAnonymously } from './services/authService.js';
-import { saveDailyData } from './services/healthService.js'; // ★追加
+import { saveDailyData, getDailyData } from './services/healthService.js'; // ★追加
+
+// アプリ全体で「今何日を選択しているか」を記憶する変数（初期値：2026年5月15日）
+// 💡 JavaScriptの月は 0 から始まるので、4 = 5月 です
+let currentDate = new Date(2026, 4, 15); 
+
+// 曜日を日本語に変換するための配列
+const weekDays = ["日", "月", "火", "水", "木", "金", "土"];
+
+/**
+ * 画面の日付表示を更新し、その日のデータを読み込む関数
+ */
+async function updateDateDisplay() {
+    const year = currentDate.getFullYear();
+    const month = String(currentDate.getMonth() + 1).padStart(2, '0');
+    const date = String(currentDate.getDate()).padStart(2, '0');
+    const day = weekDays[currentDate.getDay()];
+
+    // HTML上の <h2 class="current-date"> を書き換える
+    // 💡 フロントの方が作ったHTMLにはidがないため、クラス名で探します
+    const dateDisplay = document.querySelector('.current-date');
+    if (dateDisplay) {
+        dateDisplay.textContent = `${year}/${month}/${date}（${day}）`;
+    }
+
+    // 🌟 バックエンドの超重要処理：
+    // 日付が切り替わったら、その日のデータをFirestoreから自動取得する
+    const dateStr = `${year}-${month}-${date}`;
+    console.log(`📅 ${dateStr} のデータを取得します...`);
+    try {
+        const firebaseData = await getDailyData(dateStr);
+        if (firebaseData) {
+            console.log("選択された日のデータ:", firebaseData);
+            // 💡 ここに、取得したデータを画面のカード（食事・歩数など）に
+            // 反映させる処理（フロントへの引き渡し）を今後追記していきます！
+        }
+    } catch (error) {
+        console.error("データ自動取得エラー:", error);
+    }
+}
+
+/**
+ * カレンダーの左右ボタンにクリックイベントを設定する関数
+ */
+function setupCalendarNavigation() {
+    // フロントの方が作った「◀︎」「▶︎」ボタンは class="nav-btn" が2つ並んでいる状態です
+    const navButtons = document.querySelectorAll('.nav-btn');
+    
+    if (navButtons.length >= 2) {
+        const prevBtn = navButtons[0]; // 1つ目のボタン（◀︎）
+        const nextBtn = navButtons[1]; // 2つ目のボタン（▶︎）
+
+        // 「◀︎」ボタンが押されたら1日戻す
+        prevBtn.addEventListener('click', () => {
+            currentDate.setDate(currentDate.getDate() - 1);
+            updateDateDisplay();
+        });
+
+        // 「▶︎」ボタンが押されたら1日進める
+        nextBtn.addEventListener('click', () => {
+            currentDate.setDate(currentDate.getDate() + 1);
+            updateDateDisplay();
+        });
+        
+        console.log("✅ カレンダーボタンの連動が完了しました");
+    } else {
+        console.warn("⚠ カレンダーのボタン（.nav-btn）が見つかりません");
+    }
+}
 
 function setupCardNavigation() {
     // 1. 各カードの要素（ボタン代わり）をHTMLから探す
@@ -39,7 +107,11 @@ async function initApp() {
         if (user) {
             console.log("🔥 Firebase接続成功！ UID:", user.uid);
 
-            setupCardNavigation();
+            setupCalendarNavigation();//カレンダー
+
+            await updateDateDisplay();//日付表示とデータ自動取得
+
+            setupCardNavigation();//画面遷移
 
             // ★書き込みテスト（疎通確認）を追加
             console.log("テストデータを送信中...");

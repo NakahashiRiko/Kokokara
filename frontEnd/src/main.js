@@ -39,6 +39,8 @@ async function initApp() {
         if (user) {
             console.log("🔥 Firebase接続成功！ UID:", user.uid);
 
+            setupCardNavigation();
+
             // ★書き込みテスト（疎通確認）を追加
             console.log("テストデータを送信中...");
             await saveDailyData("2026-05-12", {

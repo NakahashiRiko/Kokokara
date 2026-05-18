@@ -236,10 +236,14 @@ async function initApp() {
                 // 睡眠データ（階層構造）
                 sleep: {
                     hour: 7,
-                    minute: 15
+                    minute: 15,
+                    waketime: "07:00",
+                    sleeptime: "23:45"//自動計算で出す就寝時間
                 },
                 // 歩数データ
-                walk: 8000
+                walk: 8000,
+                // 目標歩数
+                walkTarget: 5000
             });
             console.log("✅ Firestoreへの書き込みに成功しました！");
         }

@@ -25,6 +25,9 @@ async function updateDateDisplay() {
         dateDisplay.textContent = `${year}/${month}/${date}（${day}）`;
     }
 
+    // 🌟 追記：画面上の青いマス目の位置を更新する
+    updateCalendarHighlight();
+
     // 🌟 バックエンドの超重要処理：
     // 日付が切り替わったら、その日のデータをFirestoreから自動取得する
     const dateStr = `${year}-${month}-${date}`;
@@ -68,7 +71,7 @@ function setupCalendarNavigation() {
     } else {
         console.warn("⚠ カレンダーのボタン（.nav-btn）が見つかりません");
     }
-    
+
     // カレンダー内のすべての「日（tdタグ）」を取得します
     const calendarCells = document.querySelectorAll('.calendar tbody td');
 

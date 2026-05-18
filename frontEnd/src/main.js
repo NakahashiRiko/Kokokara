@@ -17,11 +17,11 @@ function updateCardContents(data) {
     // 1. 食事カードの書き換え
     const mealCardContent = document.querySelector('.card.meal .card-content');
     if (mealCardContent) {
-        if (data) {
-            // データが存在する場合（朝・昼・晩の入力状況を見て表示を切り替える例）
-            const breakfastStatus = data.breakfast.menu ? "済" : "未";
-            const lunchStatus = data.lunch.menu ? "済" : "未";
-            const dinnerStatus = data.dinner.menu ? "済" : "未";
+        // data.meal が存在し、さらに data.meal.breakfast が存在するかを「?.」で安全に確認します
+        if (data && data.meal) {
+            const breakfastStatus = data.meal.breakfast?.menu ? "済" : "未";
+            const lunchStatus = data.meal.lunch?.menu ? "済" : "未";
+            const dinnerStatus = data.meal.dinner?.menu ? "済" : "未";
             
             mealCardContent.innerHTML = `
                 <p>朝：${breakfastStatus}</p>
@@ -29,7 +29,6 @@ function updateCardContents(data) {
                 <p>晩：${dinnerStatus}</p>
             `;
         } else {
-            // データがまだ無い日はすべて「未」にする
             mealCardContent.innerHTML = `
                 <p>朝：未</p>
                 <p>昼：未</p>
@@ -41,12 +40,12 @@ function updateCardContents(data) {
     // 2. 睡眠カードの書き換え
     const sleepValue = document.querySelector('.card.sleep .value');
     if (sleepValue) {
-        if (data && (data.sleep.hour !== undefined || data.sleep.minute !== undefined)) {
-            const hour = data.sleep.hour || 0;
-            const minute = data.sleep.minute || 0;
+        if (data && data.sleep) {
+            const hour = data.sleep.hour ?? 0;
+            const minute = data.sleep.minute ?? 0;
             sleepValue.textContent = `${hour}時間${minute}分`;
         } else {
-            sleepValue.textContent = "00時間00分"; // データが無い日
+            sleepValue.textContent = "00時間00分";
         }
     }
 
@@ -54,10 +53,9 @@ function updateCardContents(data) {
     const stepsValue = document.querySelector('.card.steps .value');
     if (stepsValue) {
         if (data && data.walk !== undefined) {
-            // カンマ区切りの文字列にして表示（例: 8,500歩）
             stepsValue.textContent = `${Number(data.walk).toLocaleString()}歩`;
         } else {
-            stepsValue.textContent = "0歩"; // データが無い日
+            stepsValue.textContent = "0歩";
         }
     }
 }

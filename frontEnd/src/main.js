@@ -220,11 +220,28 @@ async function initApp() {
             // ★書き込みテスト（疎通確認）を追加
             console.log("テストデータを送信中...");
             await saveDailyData("2026-05-12", {
-                breakfastMenu: "テスト用のトースト",
-                breakfastTime: "08:30",
-                sleepHour: 7,
-                sleepMinute: 15,
-                walkSteps: 8000
+                // 食事データ（階層構造）
+                meal: {
+                    breakfast: {
+                        menu: "テスト用のトースト",
+                        time: "08:30"
+                    },
+                    lunch: {
+                        menu: "",
+                        time: ""
+                    },
+                    dinner: {
+                        menu: "",
+                        time: ""
+                    }
+                },
+                // 睡眠データ（階層構造）
+                sleep: {
+                    hour: 7,
+                    minute: 15
+                },
+                // 歩数データ
+                walk: 8000
             });
             console.log("✅ Firestoreへの書き込みに成功しました！");
         }

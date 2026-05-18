@@ -68,6 +68,32 @@ function setupCalendarNavigation() {
     } else {
         console.warn("⚠ カレンダーのボタン（.nav-btn）が見つかりません");
     }
+    
+    // カレンダー内のすべての「日（tdタグ）」を取得します
+    const calendarCells = document.querySelectorAll('.calendar tbody td');
+
+    calendarCells.forEach(cell => {
+        cell.addEventListener('click', () => {
+            // 先月の薄い数字（other-monthクラス）はクリックしても無視する
+            if (cell.classList.contains('other-month')) return;
+
+            // マス目の数字（"16" など）を取得して数値に変換
+            const clickedDay = parseInt(cell.textContent, 10);
+
+            if (!isNaN(clickedDay)) {
+                console.log(`カレンダーの ${clickedDay} 日がクリックされました`);
+                
+                // 「日」だけをクリックされた数字に書き換える
+                currentDate.setDate(clickedDay);
+                
+                // 画面表示を更新し、裏側でFirebaseからデータを自動取得する
+                updateDateDisplay();
+            }
+        });
+        
+        // マウスを乗せた時に「押せる」とわかるように矢印を手のマークに変える
+        cell.style.cursor = 'pointer';
+    });
 }
 
 function setupCardNavigation() {

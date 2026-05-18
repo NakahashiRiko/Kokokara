@@ -19,21 +19,21 @@ export const saveDailyData = async (date, data) => {
   return await setDoc(docRef, {
     meal: {
       breakfast: {
-        menu: data.breakfastMenu || "",
-        time: data.breakfastTime || ""
+        menu: data.breakfast.menu || "",
+        time: data.breakfast.time || ""
       },
       lunch: {
-        menu: data.lunchMenu || "",
-        time: data.lunchTime || ""
+        menu: data.lunch.menu || "",
+        time: data.lunch.time || ""
       },
       dinner: {
-        menu: data.dinnerMenu || "",
-        time: data.dinnerTime || ""
+        menu: data.dinner.menu || "",
+        time: data.dinner.time || ""
       }
     },
     sleep: {
-      hour: Number(data.sleepHour) || 0,
-      minute: Number(data.sleepMinute) || 0
+      hour: Number(data.sleep.hour) || 0,
+      minute: Number(data.sleep.minute) || 0
     },
     walk: Number(data.walkSteps) || 0,
     updatedAt: serverTimestamp() // サーバー時刻を保存

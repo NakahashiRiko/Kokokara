@@ -10,6 +10,25 @@ let currentDate = new Date(2026, 4, 15);
 const weekDays = ["日", "月", "火", "水", "木", "金", "土"];
 
 /**
+ * カレンダーの青いハイライト（todayクラス）を現在の選択日に移動させる関数
+ */
+function updateCalendarHighlight() {
+    // 1. まず、現在カレンダー内のどこかに付いている「today」クラスをすべて消去する
+    const allCells = document.querySelectorAll('.calendar tbody td');
+    allCells.forEach(cell => cell.classList.remove('today'));
+
+    // 2. 現在選択されている「日」（例: 16）の数字を取得
+    const currentDayStr = String(currentDate.getDate());
+
+    // 3. カレンダーのマス目をループして、同じ数字のマス（ただし先月の薄い数字は除く）に「today」を付与する
+    allCells.forEach(cell => {
+        if (!cell.classList.contains('other-month') && cell.textContent === currentDayStr) {
+            cell.classList.add('today'); // 🌟 これで青い背景がここに移動します！
+        }
+    });
+}
+
+/**
  * 画面の日付表示を更新し、その日のデータを読み込む関数
  */
 async function updateDateDisplay() {

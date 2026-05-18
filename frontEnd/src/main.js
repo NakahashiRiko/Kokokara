@@ -10,6 +10,59 @@ let currentDate = new Date(2026, 4, 15);
 const weekDays = ["日", "月", "火", "水", "木", "金", "土"];
 
 /**
+ * Firestoreから取得したデータを画面の各カードに反映させる関数
+ * @param {Object} data - Firestoreから取得した1日分のデータオブジェクト
+ */
+function updateCardContents(data) {
+    // 1. 食事カードの書き換え
+    const mealCardContent = document.querySelector('.card.meal .card-content');
+    if (mealCardContent) {
+        if (data) {
+            // データが存在する場合（朝・昼・晩の入力状況を見て表示を切り替える例）
+            const breakfastStatus = data.breakfastMenu ? "済" : "未";
+            const lunchStatus = data.lunchMenu ? "済" : "未";
+            const dinnerStatus = data.dinnerMenu ? "済" : "未";
+            
+            mealCardContent.innerHTML = `
+                <p>朝：${breakfastStatus}</p>
+                <p>昼：${lunchStatus}</p>
+                <p>晩：${dinnerStatus}</p>
+            `;
+        } else {
+            // データがまだ無い日はすべて「未」にする
+            mealCardContent.innerHTML = `
+                <p>朝：未</p>
+                <p>昼：未</p>
+                <p>晩：未</p>
+            `;
+        }
+    }
+
+    // 2. 睡眠カードの書き換え
+    const sleepValue = document.querySelector('.card.sleep .value');
+    if (sleepValue) {
+        if (data && (data.sleepHour !== undefined || data.sleepMinute !== undefined)) {
+            const hour = data.sleepHour || 0;
+            const minute = data.sleepMinute || 0;
+            sleepValue.textContent = `${hour}時間${minute}分`;
+        } else {
+            sleepValue.textContent = "00時間00分"; // データが無い日
+        }
+    }
+
+    // 3. 歩数カードの書き換え
+    const stepsValue = document.querySelector('.card.steps .value');
+    if (stepsValue) {
+        if (data && data.walkSteps !== undefined) {
+            // カンマ区切りの文字列にして表示（例: 8,500歩）
+            stepsValue.textContent = `${Number(data.walkSteps).toLocaleString()}歩`;
+        } else {
+            stepsValue.textContent = "0歩"; // データが無い日
+        }
+    }
+}
+
+/**
  * カレンダーの青いハイライト（todayクラス）を現在の選択日に移動させる関数
  */
 function updateCalendarHighlight() {

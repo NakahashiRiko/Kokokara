@@ -12,7 +12,7 @@ function setupCardNavigation() {
     if (mealCard) {
         mealCard.addEventListener('click', () => {
             console.log("食事画面へ遷移します");
-            window.location.href = './mealApp.html'; 
+            window.location.href = '../../mealApp.html';
         });
     }
 
@@ -20,7 +20,7 @@ function setupCardNavigation() {
     if (sleepCard) {
         sleepCard.addEventListener('click', () => {
             console.log("睡眠画面へ遷移します");
-            window.location.href = './SleepApp.html'; 
+            window.location.href = '../../SleepApp.html';
         });
     }
 
@@ -28,7 +28,7 @@ function setupCardNavigation() {
     if (stepsCard) {
         stepsCard.addEventListener('click', () => {
             console.log("歩数画面へ遷移します");
-            window.location.href = './walk.html'; 
+            window.location.href = '../../walk.html';
         });
     }
 }

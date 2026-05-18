@@ -15,29 +15,11 @@ export const saveDailyData = async (date, data) => {
   // 保存先のパスを指定：users/{uid}/dailyData/{date}
   const docRef = doc(db, "users", uid, "dailyData", date);
 
-  // Firestoreへ書き込み（Map型構造）
+  //main.js から届いた綺麗な階層データを、そのまま崩さずに丸ごと保存します
   return await setDoc(docRef, {
-    meal: {
-      breakfast: {
-        menu: data.breakfast.menu || "",
-        time: data.breakfast.time || ""
-      },
-      lunch: {
-        menu: data.lunch.menu || "",
-        time: data.lunch.time || ""
-      },
-      dinner: {
-        menu: data.dinner.menu || "",
-        time: data.dinner.time || ""
-      }
-    },
-    sleep: {
-      hour: Number(data.sleep.hour) || 0,
-      minute: Number(data.sleep.minute) || 0
-    },
-    walk: Number(data.walkSteps) || 0,
-    updatedAt: serverTimestamp() // サーバー時刻を保存
-  }, { merge: true }); // 既存データを消さずに更新
+    ...data,
+    updatedAt: serverTimestamp() // サーバー時刻だけを添える
+  }, { merge: true });
 };
 
 export const getDailyData = async (date) => {

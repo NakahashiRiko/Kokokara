@@ -60,6 +60,74 @@ function updateCardContents(data) {
     }
 }
 
+// 月ごとに曜日が合うようにカレンダーを自動生成するロジック
+function renderCalendar() {
+    const calendarBody = document.getElementById('calendar-body');
+    if (!calendarBody) return;
+
+    const year = currentDate.getFullYear();
+    const month = currentDate.getMonth(); // 0 = 1月, 4 = 5月...
+    
+    // 今月の1日が何曜日か (0:日 〜 6:土)、今月の末日が何日かを取得
+    const firstDayOfThisMonth = new Date(year, month, 1).getDay(); 
+    const lastDateOfThisMonth = new Date(year, month + 1, 0).getDate(); 
+    const lastDateOfLastMonth = new Date(year, month, 0).getDate(); 
+
+    let html = '';
+    let dateCount = 1;
+    let nextMonthDateCount = 1;
+
+    for (let i = 0; i < 6; i++) { // 最大6週間分ループ
+        html += '<tr>';
+        for (let j = 0; j < 7; j++) {
+            if (i === 0 && j < firstDayOfThisMonth) {
+                // ① 先月の薄い数字のエリア
+                const lastMonthDate = lastDateOfLastMonth - firstDayOfThisMonth + j + 1;
+                html += `<td class="other-month">${lastMonthDate}</td>`;
+            } else if (dateCount > lastDateOfThisMonth) {
+                // ② 来月の薄い数字のエリア
+                html += `<td class="other-month">${nextMonthDateCount}</td>`;
+                nextMonthDateCount++;
+            } else {
+                // ③ 今月の数字エリア（選択されている日なら「today」クラスを付与）
+                const isSelectedDay = (dateCount === currentDate.getDate());
+                const className = isSelectedDay ? 'class="today"' : '';
+                
+                html += `<td ${className}>${dateCount}</td>`;
+                dateCount++;
+            }
+        }
+        html += '</tr>';
+        if (dateCount > lastDateOfThisMonth && nextMonthDateCount > 1) {
+            break;
+        }
+    }
+
+    // 組み立てたHTMLをインジェクション
+    calendarBody.innerHTML = html;
+
+    // 生まれたての新しいマス目にクリックイベントを設定
+    setupCalendarCellsEvent();
+}
+
+// 【新設】自動生成されたカレンダーのマス目にクリックイベントをつける関数
+function setupCalendarCellsEvent() {
+    const calendarCells = document.querySelectorAll('.calendar tbody td');
+    calendarCells.forEach(cell => {
+        if (cell.classList.contains('other-month')) return; // 先月・来月はクリック無視
+        
+        cell.style.cursor = 'pointer';
+        cell.addEventListener('click', () => {
+            const clickedDay = parseInt(cell.textContent, 10);
+            if (!isNaN(clickedDay)) {
+                console.log(`カレンダーの ${clickedDay} 日がクリックされました`);
+                currentDate.setDate(clickedDay);
+                updateDateDisplay(); // 画面更新＆データ再取得
+            }
+        });
+    });
+}
+
 /**
  * カレンダーの青いハイライト（todayクラス）を現在の選択日に移動させる関数
  */

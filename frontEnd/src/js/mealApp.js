@@ -1,5 +1,5 @@
 // mealApp.js
-import { saveDailyData } from './services/healthService.js';
+import { saveDailyData } from '../services/healthService.js';
 
 // 🌟 URLの末尾（?date=2026-05-19）から選択された日付を自動キャッチ
 const urlParams = new URLSearchParams(window.location.search);

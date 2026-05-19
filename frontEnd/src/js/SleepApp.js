@@ -1,5 +1,5 @@
 // SleepApp.js
-import { saveDailyData } from './services/healthService.js';
+import { saveDailyData } from '../services/healthService.js';
 
 // 🌟 URLから日付を自動キャッチして、画面の左上のテキストを上書き
 const urlParams = new URLSearchParams(window.location.search);

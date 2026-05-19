@@ -1,5 +1,5 @@
 // walk.js
-import { saveDailyData } from './services/healthService.js';
+import { saveDailyData } from '../services/healthService.js';
 
 // 🌟 URLから日付を自動キャッチして、selectedDayの代わりにヘッダーを上書き
 const urlParams = new URLSearchParams(window.location.search);

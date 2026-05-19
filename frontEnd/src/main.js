@@ -1,6 +1,6 @@
 // main.js
-import { loginAnonymously } from './src/services/authService.js';
-import { saveDailyData, getDailyData } from './src/services/healthService.js'; // ★追加
+import { loginAnonymously } from './services/authService.js';
+import { saveDailyData, getDailyData } from './services/healthService.js'; // ★追加
 
 // アプリ全体で「今何日を選択しているか」を記憶する変数
 // JavaScriptの月は 0 から始まる

@@ -3,7 +3,7 @@ import { loginAnonymously } from './services/authService.js';
 import { saveDailyData, getDailyData } from './services/healthService.js'; // ★追加
 
 // アプリ全体で「今何日を選択しているか」を記憶する変数
-// 💡 JavaScriptの月は 0 から始まる
+// JavaScriptの月は 0 から始まる
 let currentDate = new Date(); 
 
 // 曜日を日本語に変換するための配列
@@ -163,10 +163,9 @@ async function updateDateDisplay() {
         dateDisplay.textContent = `${year}/${month}/${date}（${day}）`;
     }
 
-    // 🌟 追記：画面上の青いマス目の位置を更新する
-    updateCalendarHighlight();
+    // 画面上の青いマス目の位置を更新する
+    renderCalendar();
 
-    // 🌟 バックエンドの超重要処理：
     // 日付が切り替わったら、その日のデータをFirestoreから自動取得する
     const dateStr = `${year}-${month}-${date}`;
     console.log(`📅 ${dateStr} のデータを取得します...`);
@@ -286,7 +285,7 @@ async function initApp() {
 
             setupCardNavigation();//画面遷移
 
-            // ★書き込みテスト（疎通確認）を追加
+            // 書き込みテスト（疎通確認）を追加
             console.log("テストデータを送信中...");
             await saveDailyData("2026-05-12", {
                 // 食事データ（階層構造）

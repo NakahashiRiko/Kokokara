@@ -110,7 +110,7 @@ function renderCalendar() {
     setupCalendarCellsEvent();
 }
 
-// 【新設】自動生成されたカレンダーのマス目にクリックイベントをつける関数
+//自動生成されたカレンダーのマス目にクリックイベントをつける関数
 function setupCalendarCellsEvent() {
     const calendarCells = document.querySelectorAll('.calendar tbody td');
     calendarCells.forEach(cell => {
@@ -241,34 +241,37 @@ function setupCalendarNavigation() {
 }
 
 function setupCardNavigation() {
-    // 1. 各カードの要素（ボタン代わり）をHTMLから探す
     const mealCard = document.querySelector('.card.meal');
     const sleepCard = document.querySelector('.card.sleep');
     const stepsCard = document.querySelector('.card.steps');
 
-    // 2. 食事カードがクリックされたら、食事画面（meal.html）へ移動
+    // 「2026-05-19」のような日付形式の文字列を取得する共通関数
+    const getFormattedDate = () => {
+        const year = currentDate.getFullYear();
+        const month = String(currentDate.getMonth() + 1).padStart(2, '0');
+        const date = String(currentDate.getDate()).padStart(2, '0');
+        return `${year}-${month}-${date}`;
+    };
+
     if (mealCard) {
         mealCard.addEventListener('click', () => {
-            console.log("食事画面へ遷移します");
-            window.location.href = '../../mealApp.html';
+            // URLの末尾に ?date=2026-05-19 を付与して遷移
+            window.location.href = `../../mealApp.html?date=${getFormattedDate()}`;
         });
     }
 
-    // 3. 睡眠カードがクリックされたら、睡眠画面（sleep.html）へ移動
     if (sleepCard) {
         sleepCard.addEventListener('click', () => {
-            console.log("睡眠画面へ遷移します");
-            window.location.href = '../../SleepApp.html';
+            window.location.href = `../../SleepApp.html?date=${getFormattedDate()}`;
         });
     }
 
-    // 4. 歩数カードがクリックされたら、歩数画面（steps.html）へ移動
     if (stepsCard) {
         stepsCard.addEventListener('click', () => {
-            console.log("歩数画面へ遷移します");
-            window.location.href = '../../walk.html';
+            window.location.href = `../../walk.html?date=${getFormattedDate()}`;
         });
     }
+    console.log("✅ 日付パラメータ付き画面遷移の設定が完了しました");
 }
 
 async function initApp() {

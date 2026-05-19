@@ -2,9 +2,9 @@
 import { loginAnonymously } from './services/authService.js';
 import { saveDailyData, getDailyData } from './services/healthService.js'; // ★追加
 
-// アプリ全体で「今何日を選択しているか」を記憶する変数（初期値：2026年5月15日）
-// 💡 JavaScriptの月は 0 から始まるので、4 = 5月 です
-let currentDate = new Date(2026, 4, 15); 
+// アプリ全体で「今何日を選択しているか」を記憶する変数
+// 💡 JavaScriptの月は 0 から始まる
+let currentDate = new Date(); 
 
 // 曜日を日本語に変換するための配列
 const weekDays = ["日", "月", "火", "水", "木", "金", "土"];

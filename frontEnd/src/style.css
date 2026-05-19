@@ -1,77 +1,84 @@
-/* 3. 画面全体仕様 */
+/* リセット設定: ブラウザ独自の余白を消してサイズ計算を正確にします */
 * {
     margin: 0;
     padding: 0;
-    box-sizing: border-box;
+    box-sizing: border-box; /* paddingを含めたサイズ固定 */
 }
 
+/* 画面全体の背景とフォントの設定 */
 body {
-    font-family: "Helvetica Neue", Arial, "Hiragino Kaku Gothic ProN", "Hiragino Sans", Meiryo, sans-serif;
+    font-family: "Hiragino Kaku Gothic ProN", "Meiryo", sans-serif;
     background-color: #f0f0f0; /* 全体背景は少しグレー、アプリ枠が白 */
     display: flex;
-    justify-content: center;
+    justify-content: center; /* 1280pxの枠を画面中央に寄せる */
     padding: 20px;
 }
 
+/* アプリのメイン外枠: 仕様書通りの1280px固定幅 */
 .app {
-    width: 1110px;
+    width: 1280px;
     background-color: #fff;
     min-height: 800px;
     box-shadow: 0 0 10px rgba(0,0,0,0.1);
     display: flex;
-    flex-direction: column;
+    flex-direction: column; /* ヘッダーとメインを縦に並べる */
 }
 
-/* 6. 上部エリア */
+/* 6. 上部エリア（ヘッダー・複数行メモ対応版） */
 .top {
     display: flex;
-    align-items: center;
-    padding: 40px 60px; /* 上下の余白を20px→40pxに拡大 */
+    align-items: center;     /* タイトルとメモを中央揃え */
+    padding: 20px 50px;      /* 余白　縦幅　横幅 */
     border-bottom: 2px solid #eee;
 }
 
 .title {
-    font-size: 55px; /* タイトルの文字サイズを24px→42pxに拡大 */
+    font-size: 52px;        /* タイトル文字をさらに巨大化（42px → 52px） */
     font-weight: 900;
-    margin-right: 80px;
+    margin-right: 60px;
     color: #333;
-    letter-spacing: 4px; /* 少し文字間を広げて高級感を出しました */
+    letter-spacing: 6px;    /* 文字の間隔も広げて存在感をアップ */
+    line-height: 1;         /* タイトルの無駄な上下余白をカット */
 }
 
 .memo-area {
-    flex-grow: 1;
+    flex-grow: 1;           /* 横幅いっぱいに広げる */
 }
 
 .memo-input {
     width: 100%;
-    height: 80px; /* メモ欄の高さを指定 */
-    padding: 0 20px;
-    font-size: 60px; /* 入力文字も少し大きく */
+    height: 120px;          /* 高さを120pxに拡大し、3〜5行程度の文章が余裕で見えるように */
+    padding: 15px 20px;     /* 内側の余白。文字が枠線にぶつからないように調整 */
+    font-size: 20px;        /* 文字サイズ16->20 */
+    line-height: 1.6;       /* 行と行の間隔を広げて、改行したときに見やすく */
     border: 2px solid #ddd;
-    border-radius: 10px;
+    border-radius: 12px;    /* 角丸を少し大きくしてモダンなデザインに */
     background-color: #fafafa;
-    transition: border-color 0.3s;
+    resize: vertical;       /* ユーザーがマウスで縦方向だけに高さを広げられる機能 */
+    font-family: inherit;   /* 入力文字のフォントをアプリ全体と統一 */
 }
 
+/* メモ欄をクリック（フォーカス）したときの見た目 */
 .memo-input:focus {
     outline: none;
-    border-color: #ccc;
-    background-color: #fff;
+    border-color: #aaa;     /* 枠線を少し濃くして、入力中であることを分かりやすく */
+    background-color: #fff; /* 背景を真っ白にして文字を読みやすく */
 }
 
-/* 4. メイン構成 */
+/* 4. メイン構成: カレンダーとカードを横並び(Flex)にする */
 .main {
     display: flex;
     flex-grow: 1;
     padding: 30px;
 }
 
-/* 7. 左側エリア（カレンダー） */
+/* 7. カレンダーエリアの幅固定 */
 .left {
     width: 400px;
     margin-right: 40px;
 }
 
+/* 日付切り替えボタンのスタイル */
 .date-nav {
     display: flex;
     align-items: center;
@@ -79,21 +86,10 @@ body {
     margin-bottom: 20px;
 }
 
-.nav-btn {
-    background: none;
-    border: 1px solid #ccc;
-    padding: 5px 10px;
-    cursor: pointer;
-    border-radius: 3px;
-}
-
-.current-date {
-    font-size: 18px;
-}
-
+/* 7.2 カレンダーのテーブルスタイル */
 .calendar {
     width: 100%;
-    border-collapse: collapse;
+    border-collapse: collapse; /* 枠線を一本にまとめる */
 }
 
 .calendar th, .calendar td {
@@ -102,80 +98,97 @@ body {
     padding: 15px 5px;
 }
 
-.calendar th {
-    background-color: #f9f9f9;
-}
-
+/* 当日(today)クラス: 背景色を水色にして目立たせる */
 .today {
     background-color: #e3f2fd; /* 水色強調 */
     font-weight: bold;
     color: #1976d2;
 }
 
-.other-month {
-    color: #ccc;
-}
-
-/* 8. 右側エリア（カードレイアウト） */
+/* 8. 右側エリア: CSS Gridを使って2列x2行を等間隔で作る */
 .right {
     flex-grow: 1;
     display: grid;
-    grid-template-columns: 1fr 1fr;
-    grid-template-rows: 1fr 1fr;
-    gap: 20px;
+    grid-template-columns: 1fr 1fr; /* 50%ずつ2列 */
+    grid-template-rows: 1fr 1fr;    /* 50%ずつ2行 */
+    gap: 20px; /* カード同士の隙間 */
 }
 
-/* 共通カード仕様 */
+/* 8.1 共通カード仕様: 影や角丸の設定 */
 .card {
     border-radius: 15px;
     padding: 20px;
     box-shadow: 0 4px 6px rgba(0,0,0,0.1);
     display: flex;
     flex-direction: column;
-    cursor: pointer;
-    transition: transform 0.2s;
+    transition: transform 0.2s; /* ホバー時に少し動かすアニメーション */
+
+    color: #ffffff !important; /* カード内のすべての文字を白にする */
+    text-shadow: 
+        -1px -1px 0 #000,  1px -1px 0 #000,
+        -1px  1px 0 #000,  1px  1px 0 #000,
+        -1px  0px 0 #000,  1px  0px 0 #000,
+         0px -1px 0 #000,  0px  1px 0 #000; /* すべての文字を黒で縁取り */
+    
+    font-size: 22px; /* タイトル以外の基本の文字サイズ */
 }
 
-.card:hover {
-    transform: translateY(-2px);
+/* 👑 タイトルだけのサイズ設定（一番大きく） */
+.card .card-title, 
+.card h2, 
+.card h3 { 
+    font-weight: 900;
+    font-size: 32px;      /* タイトルはさらに大きく 32px に */
+    margin-bottom: 15px;  /* タイトルの下の隙間 */
 }
 
-.card-title {
-    font-size: 18px;
-    margin-bottom: 15px;
-    border-bottom: 1px solid rgba(255,255,255,0.3);
-    padding-bottom: 5px;
-}
-
-.card-content {
-    flex-grow: 1;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    font-size: 20px;
+/* 📊 数値やメインのデータ部分 */
+.card p, 
+.card span {
+    font-size: 24px;      /* しっかり目立つサイズ */
     font-weight: bold;
 }
 
-/* 各カード配色 */
-.meal { background-color: #fff9c4; color: #856404; }       /* 黄色 */
-.sleep { background-color: #bbdefb; color: #0d47a1; }      /* 青色 */
-.steps { background-color: #ffcdd2; color: #b71c1c; }      /* 赤色 */
-.condition { background-color: #c8e6c9; color: #1b5e20; }  /* 緑色 */
+/* ==========================================
+    ⚠️ 吹き出し（ポップアップ）内の文字だけ元に戻す設定
+   ========================================== */
+.popup-bubble, 
+.popup-bubble * {
+    color: #1b5e20 !important; /* 文字色を本来の深い緑色に戻す */
+    text-shadow: none !important; /* 黒いフチ取りを消す */
+    font-size: 16px; /* 吹き出しタイトルのサイズを元に戻す */
+    font-weight: normal;
+}
 
-/* 8.5 体調アイコン（div構成） */
+/* 吹き出しのタイトルだけ元の太字にする */
+.bubble-title {
+    font-weight: bold !important;
+}
+
+/* 5段階の絵文字ボタンのサイズを元（40px）に戻す */
+.status-label {
+    font-size: 40px !important; 
+}
+
+/* 各カードの配色（仕様書に基づいたカラー） */
+.meal { background-color: #FFE771; color: #856404; }
+.sleep { background-color: #7091FE; color: #0d47a1; }
+.steps { background-color: #F66C6C; color: #b71c1c; }
+.condition { background-color: #86FF7B; color: #1b5e20; }
+
+/* 8.5 体調アイコン: CSSだけで顔を描く */
 .face-icon {
     width: 80px;
     height: 80px;
-    border: 3px solid #1b5e20;
-    border-radius: 50%;
-    position: relative;
+    border: 3px solid currentColor; /* 親要素の文字色(緑)を自動適用 */
+    border-radius: 50%; /* 正円にする */
+    position: relative; /* 中の目や口を配置する基準点 */
 }
 
 .eye {
     width: 10px;
     height: 10px;
-    background-color: #1b5e20;
+    background-color: currentColor;
     border-radius: 50%;
     position: absolute;
     top: 25px;
@@ -187,9 +200,195 @@ body {
 .mouth {
     width: 40px;
     height: 20px;
-    border-bottom: 3px solid #1b5e20;
-    border-radius: 0 0 20px 20px;
+    border-bottom: 3px solid currentColor;
+    border-radius: 0 0 20px 20px; /* 下側だけ角を丸めて「笑顔」にする */
     position: absolute;
     bottom: 15px;
     left: 20px;
+}
+
+/* --- 体調カード・吹き出し＆顔変化機能（ボタン大型化版） --- */
+
+/* 体調カード全体の基準設定 */
+.card.condition {
+    position: relative;
+    outline: none;
+}
+
+/* 仕掛け：ラジオボタン本体は画面から隠す */
+.cond-radio {
+    display: none;
+}
+
+/* 💡 吹き出しのサイズを拡大（横幅 280px → 340px） */
+.popup-bubble {
+    position: absolute;
+    bottom: 115%; /* 少しだけ上に余白を持たせる */
+    left: 50%;
+    transform: translateX(-50%) scale(0.9);
+    width: 340px; /* 横幅を広げてゆったりさせました */
+    background-color: #ffffff;
+    border: 2px solid #1b5e20;
+    border-radius: 18px; /* 角丸も少しリッチに */
+    padding: 20px;       /* 内側の余白を広げて窮屈感を解消 */
+    box-shadow: 0 12px 30px rgba(0,0,0,0.15);
+    z-index: 10;
+    opacity: 0;
+    pointer-events: none;
+    transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+/* 吹き出しの突起（三角矢印） */
+.popup-bubble::after {
+    content: "";
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border-width: 12px; /* 吹き出しが大きくなったので矢印も少し大きく */
+    border-style: solid;
+    border-color: #1b5e20 transparent transparent transparent;
+}
+
+/* カード内がクリックされている間、吹き出しを表示 */
+.card.condition:focus-within .popup-bubble {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateX(-50%) scale(1);
+}
+
+/* 吹き出し内のタイトルも少し大きく */
+.bubble-title {
+    font-size: 16px;
+    font-weight: bold;
+    color: #1b5e20;
+    text-align: center;
+    margin-bottom: 15px; /* ボタンとの隙間を広げる */
+}
+
+/* 5つの選択肢（ラベル）を横並びにする */
+.status-buttons {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px; /* ボタン同士の間隔を少し広げて誤タップを防止 */
+}
+
+/* 💡 5段階選択肢（ラベル）を大幅に大型化 */
+.status-label {
+    flex: 1;
+    height: 55px;        /* 高さを 40px → 55px に拡大 */
+    font-size: 40px;     /* 絵文字のサイズを 20px → 32px に大増量！ */
+    background: #f4fbf4;
+    border: 2px solid #c8e6c9; /* 枠線を少し太く */
+    border-radius: 12px; /* ボタンの角丸も強調 */
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s ease;
+}
+
+/* ボタンにマウスを乗せたとき */
+.status-label:hover {
+    background-color: #c8e6c9;
+    border-color: #a5d6a7;
+    transform: translateY(-4px); /* ひときわピョコッと浮き上がるように変更 */
+}
+
+/* 各絵文字が選択されているときのボタンの見た目（さらに分かりやすく強調） */
+#cond-5:checked ~ .popup-bubble .status-label[for="cond-5"],
+#cond-4:checked ~ .popup-bubble .status-label[for="cond-4"],
+#cond-3:checked ~ .popup-bubble .status-label[for="cond-3"],
+#cond-2:checked ~ .popup-bubble .status-label[for="cond-2"],
+#cond-1:checked ~ .popup-bubble .status-label[for="cond-1"] {
+    background-color: #a5d6a7;
+    border-color: #1b5e20;
+    transform: scale(1.05);
+}
+
+
+/* ==========================================
+   顔の形を描画するCSS（基本サイズはキープ）
+   ========================================== */
+.face-icon {
+    width: 80px;
+    height: 80px;
+    border: 3px solid #1b5e20;
+    border-radius: 50%;
+    position: relative;
+    transition: background-color 0.3s;
+}
+
+.eye {
+    width: 10px;
+    height: 10px;
+    background-color: #1b5e20;
+    border-radius: 50%;
+    position: absolute;
+    top: 25px;
+    transition: all 0.2s;
+}
+.eye-left { left: 20px; }
+.eye-right { right: 20px; }
+
+.mouth {
+    width: 40px;
+    height: 20px;
+    border-bottom: 3px solid #1b5e20;
+    position: absolute;
+    bottom: 15px;
+    left: 17px;
+    transition: all 0.2s;
+}
+
+/* --- 5: とても良い 😆 の表情 --- */
+#cond-5:checked ~ .face-icon .eye {
+    height: 5px;
+    border-radius: 10px 10px 0 0;
+    background: none;
+    border-top: 3px solid #1b5e20;
+}
+#cond-5:checked ~ .face-icon .mouth {
+    height: 25px;
+    border-radius: 0 0 25px 25px;
+    background-color: #1b5e20;
+}
+
+/* --- 4: 良い 🙂 の表情 --- */
+#cond-4:checked ~ .face-icon .mouth {
+    height: 15px;
+    border-radius: 0 0 15px 15px;
+}
+
+/* --- 3: 普通 😐 の表情 --- */
+#cond-3:checked ~ .face-icon .mouth {
+    height: 0;
+    border-radius: 0;
+    border-bottom: 3px solid #1b5e20;
+    bottom: 25px;
+}
+
+/* --- 2: 悪い 🙁 の表情 --- */
+#cond-2:checked ~ .face-icon .mouth {
+    height: 15px;
+    border: none;
+    border-top: 3px solid #1b5e20;
+    border-radius: 15px 15px 0 0;
+    bottom: 15px;
+}
+
+/* --- 1: とても悪い 😢 の表情 --- */
+#cond-1:checked ~ .face-icon .mouth {
+    height: 15px;
+    border: none;
+    border-top: 3px solid #1b5e20;
+    border-radius: 15px 15px 0 0;
+    bottom: 15px;
+}
+#cond-1:checked ~ .face-icon::after {
+    content: "💧";
+    position: absolute;
+    top: 35px;
+    left: 15px;
+    font-size: 14px;
 }

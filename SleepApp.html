@@ -23,6 +23,29 @@ header {
     display: flex;
     align-items: center;
     padding-left: 30px;
+    gap: 30px;
+}
+
+.back-button {
+    text-decoration: none;
+    color: #7b807c;
+    font-size: 60px;
+    line-height: 1;
+    font-weight: bold;
+    transition: 0.2s;
+}
+
+.back-button:hover {
+
+    opacity: 0.7;
+}
+
+header {
+    height: 100px;
+    background: #7d88e8;
+    display: flex;
+    align-items: center;
+    padding-left: 30px;
 }
 
 .title {
@@ -57,10 +80,14 @@ header {
     line-height: 2.5;
 }
 
-input[type="time"] {
-    width: 180px;
+input[type="time"],
+
+input[type="date"] {
+    width: 220px;
     height: 40px;
     font-size: 25px;
+    font-family: "Yu Gothic", "Meiryo", sans-serif;
+
 }
 
 button {
@@ -87,6 +114,7 @@ button {
     padding: 20px;
     font-size: 28px;
     border-radius: 10px;
+    white-space: pre-line;
 }
 
 .graph-title {
@@ -95,6 +123,7 @@ button {
     margin-bottom: 20px;
 }
 
+
 </style>
 
 </head>
@@ -102,7 +131,12 @@ button {
 <body>
 
 <header>
+
+    <a href="index.html" class="back-button">
+        ＜
+    </a>
     <div class="title">睡眠</div>
+
 </header>
 
 <div class="container">
@@ -163,17 +197,38 @@ button {
 // 日付表示
 // =========================
 
-const now = new Date();
+// =========================
+// URLから日付取得
+// =========================
 
-const week = ["日","月","火","水","木","金","土"];
+const params = new URLSearchParams(location.search);
 
-const year = now.getFullYear();
-const month = String(now.getMonth() + 1).padStart(2, '0');
-const day = String(now.getDate()).padStart(2, '0');
+const selectedDate = params.get("date");
 
-const todayText = `${year}/${month}/${day}（${week[now.getDay()]}）`;
+// 日付がない場合
+if (!selectedDate) {
 
-document.getElementById("todayDate").textContent = todayText;
+    document.getElementById("todayDate").textContent =
+    "日付が選択されていません";
+
+}
+else {
+
+    const dateObj = new Date(selectedDate);
+    const week = ["日","月","火","水","木","金","土"];
+    const year = dateObj.getFullYear();
+    const month =
+    String(dateObj.getMonth() + 1).padStart(2, '0');
+    const day =
+    String(dateObj.getDate()).padStart(2, '0');
+
+    const todayText =
+    `${year}/${month}/${day}（${week[dateObj.getDay()]}）`;
+
+    document.getElementById("todayDate").textContent =
+    todayText;
+}
+
 
 // =========================
 // グラフデータ
@@ -250,10 +305,38 @@ function calculateSleep() {
     document.getElementById("sleepResult").textContent =
         `${String(hours).padStart(2,'0')}時間${String(minutes).padStart(2,'0')}分`;
 
-    document.getElementById("comment").textContent =
-        `今日の睡眠時間は${String(hours).padStart(2,'0')}時間${String(minutes).padStart(2,'0')}分です。`;
+    let advice = "";
 
-    const today = new Date().getDay();
+    // 睡眠時間（時間）
+    const sleepHours = diff / 60;
+
+    // コメント分岐
+    if (sleepHours < 6) {
+
+        advice =
+        "睡眠時間が不足しています。十分な休息を取りましょう。";
+
+    }
+    else if (sleepHours >= 7 && sleepHours <= 9) {
+
+        advice =
+        "理想的な睡眠時間です。この生活リズムを維持しましょう。";
+
+    } else if (sleepHours > 9) {
+
+        advice =
+        "睡眠時間が長めです。生活リズムも意識してみましょう。";
+
+    } else {
+
+        advice = "あと少し睡眠時間を増やすとより良いです。";
+    }
+
+    // コメント表示
+    document.getElementById("comment").textContent =`今日の睡眠時間は` +`${String(hours).padStart(2,'0')}時間` +`${String(minutes).padStart(2,'0')}分です。\n` +advice;
+
+    const selected = new Date(selectedDate);
+    const today = selected.getDay();
 
     sleepData[today] = diff / 60;
 

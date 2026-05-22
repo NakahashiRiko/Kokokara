@@ -212,6 +212,7 @@ function setupCalendarNavigation() {
         console.warn("⚠ カレンダーのボタン（.nav-btn）が見つかりません");
     }
 
+    /*
     // カレンダー内のすべての「日（tdタグ）」を取得します
     const calendarCells = document.querySelectorAll('.calendar tbody td');
 
@@ -237,6 +238,7 @@ function setupCalendarNavigation() {
         // マウスを乗せた時に「押せる」とわかるように矢印を手のマークに変える
         cell.style.cursor = 'pointer';
     });
+    */
 }
 
 function setupCardNavigation() {

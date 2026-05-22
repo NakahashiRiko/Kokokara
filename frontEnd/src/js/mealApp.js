@@ -1,7 +1,7 @@
 // mealApp.js
 import { saveDailyData } from '../services/healthService.js';
 
-// 🌟 URLの末尾（?date=2026-05-19）から選択された日付を自動キャッチ
+//URLの末尾から選択された日付を自動キャッチ
 const urlParams = new URLSearchParams(window.location.search);
 const targetDate = urlParams.get('date') || new Date().toISOString().split('T')[0];
 
@@ -37,6 +37,8 @@ document.getElementById('finish_today_btn').addEventListener('click', async () =
         // 新しい安全な上書き保存関数を実行
         await saveDailyData(targetDate, mealData);
         alert(`✅ ${targetDate} の食事記録を保存しました！`);
+
+        window.location.href = `index.html?date=${targetDate}`;//パラメータをつける
         
         // 保存後、自動でホーム画面に戻る場合は以下を有効にしてください
         // window.location.href = 'index.html';

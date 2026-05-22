@@ -36,16 +36,7 @@ header {
 }
 
 .back-button:hover {
-
     opacity: 0.7;
-}
-
-header {
-    height: 100px;
-    background: #7d88e8;
-    display: flex;
-    align-items: center;
-    padding-left: 30px;
 }
 
 .title {
@@ -80,26 +71,38 @@ header {
     line-height: 2.5;
 }
 
-input[type="time"],
+.status-display {
+    font-size: 26px;
+    color: #444;
+    background: #fff;
+    padding: 15px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+    border-left: 5px solid #7d88e8;
+}
 
-input[type="date"] {
+input[type="time"] {
     width: 220px;
     height: 40px;
     font-size: 25px;
     font-family: "Yu Gothic", "Meiryo", sans-serif;
-
 }
 
 button {
-    width: 220px;
+    width: 260px;
     height: 60px;
     font-size: 25px;
-    margin-top: 30px;
+    margin-top: 10px;
     border: none;
     border-radius: 10px;
     cursor: pointer;
     background: #7d88e8;
     color: white;
+    transition: background 0.2s;
+}
+
+button.wake-mode {
+    background: #e87d7d;
 }
 
 .result {
@@ -114,7 +117,7 @@ button {
     padding: 20px;
     font-size: 28px;
     border-radius: 10px;
-    white-space: pre-line;
+    white-space: pre-wrap;
 }
 
 .graph-title {
@@ -122,7 +125,6 @@ button {
     font-size: 30px;
     margin-bottom: 20px;
 }
-
 
 </style>
 
@@ -132,9 +134,8 @@ button {
 
 <header>
 
-    <a href="index.html" class="back-button">
-        ＜
-    </a>
+    <a href="index.html" class="back-button">＜</a>
+
     <div class="title">睡眠</div>
 
 </header>
@@ -145,26 +146,30 @@ button {
 
         <div class="date" id="todayDate"></div>
 
+        <div class="status-display" id="statusDisplay">
+            まだ就寝記録がありません。
+        </div>
+
         <div class="input-area">
-
-            就寝時間：
-            <input type="time" id="sleepInput">
-
-            <br>
 
             起床時間：
             <input type="time" id="wakeInput">
 
         </div>
 
-        <button onclick="calculateSleep()">
-            記録する
+        <button id="actionButton" onclick="handleSleepButton()">
+            就寝する
         </button>
 
         <div class="result">
 
             睡眠時間：
             <span id="sleepResult">00時間00分</span>
+
+            <br>
+
+            就寝時刻：
+            <span id="bedTimeResult">00:00</span>
 
             <br>
 
@@ -194,10 +199,6 @@ button {
 <script>
 
 // =========================
-// 日付表示
-// =========================
-
-// =========================
 // URLから日付取得
 // =========================
 
@@ -205,20 +206,22 @@ const params = new URLSearchParams(location.search);
 
 const selectedDate = params.get("date");
 
-// 日付がない場合
 if (!selectedDate) {
 
     document.getElementById("todayDate").textContent =
     "日付が選択されていません";
-
 }
 else {
 
     const dateObj = new Date(selectedDate);
+
     const week = ["日","月","火","水","木","金","土"];
+
     const year = dateObj.getFullYear();
+
     const month =
     String(dateObj.getMonth() + 1).padStart(2, '0');
+
     const day =
     String(dateObj.getDate()).padStart(2, '0');
 
@@ -228,7 +231,6 @@ else {
     document.getElementById("todayDate").textContent =
     todayText;
 }
-
 
 // =========================
 // グラフデータ
@@ -271,78 +273,201 @@ const sleepChart = new Chart(ctx, {
 });
 
 // =========================
-// 睡眠時間計算
+// 状態管理
 // =========================
 
-function calculateSleep() {
+let sleepStartTime = null;
 
-    const sleep = document.getElementById("sleepInput").value;
-    const wake = document.getElementById("wakeInput").value;
+let currentStatus = "idle";
 
-    if (sleep === "" || wake === "") {
-        alert("時間を入力してください");
-        return;
+let savedDiffMinutes = 0;
+
+// =========================
+// ボタン処理
+// =========================
+
+function handleSleepButton() {
+
+    const button =
+    document.getElementById("actionButton");
+
+    const wakeInput =
+    document.getElementById("wakeInput");
+
+    // =====================
+    // 1. 就寝開始
+    // =====================
+
+    if (currentStatus === "idle") {
+
+        sleepStartTime = new Date();
+
+        currentStatus = "sleeping";
+
+        button.textContent = "タイマー終了";
+
+        button.classList.add("wake-mode");
+
+        document.getElementById("statusDisplay").textContent =
+        "睡眠計測中です。";
     }
 
-    let sleepHour = parseInt(sleep.split(":")[0]);
-    let sleepMinute = parseInt(sleep.split(":")[1]);
+    // =====================
+    // 2. タイマー終了
+    // =====================
 
-    let wakeHour = parseInt(wake.split(":")[0]);
-    let wakeMinute = parseInt(wake.split(":")[1]);
+    else if (currentStatus === "sleeping") {
 
-    let sleepTotal = sleepHour * 60 + sleepMinute;
-    let wakeTotal = wakeHour * 60 + wakeMinute;
+        const sleepEndTime = new Date();
 
-    if (wakeTotal < sleepTotal) {
-        wakeTotal += 24 * 60;
-    }
+        const diffMs =
+        sleepEndTime - sleepStartTime;
 
-    const diff = wakeTotal - sleepTotal;
+        savedDiffMinutes =
+        Math.floor(diffMs / (1000 * 60));
 
-    const hours = Math.floor(diff / 60);
-    const minutes = diff % 60;
+        const hours =
+        Math.floor(savedDiffMinutes / 60);
 
-    document.getElementById("sleepResult").textContent =
+        const minutes =
+        savedDiffMinutes % 60;
+
+        // 睡眠時間表示
+
+        document.getElementById("sleepResult").textContent =
         `${String(hours).padStart(2,'0')}時間${String(minutes).padStart(2,'0')}分`;
 
-    let advice = "";
+        currentStatus = "finished";
 
-    // 睡眠時間（時間）
-    const sleepHours = diff / 60;
+        button.textContent = "記録する";
 
-    // コメント分岐
-    if (sleepHours < 6) {
-
-        advice =
-        "睡眠時間が不足しています。十分な休息を取りましょう。";
-
-    }
-    else if (sleepHours >= 7 && sleepHours <= 9) {
-
-        advice =
-        "理想的な睡眠時間です。この生活リズムを維持しましょう。";
-
-    } else if (sleepHours > 9) {
-
-        advice =
-        "睡眠時間が長めです。生活リズムも意識してみましょう。";
-
-    } else {
-
-        advice = "あと少し睡眠時間を増やすとより良いです。";
+        document.getElementById("statusDisplay").textContent =
+        "起床時間を入力してください。";
     }
 
-    // コメント表示
-    document.getElementById("comment").textContent =`今日の睡眠時間は` +`${String(hours).padStart(2,'0')}時間` +`${String(minutes).padStart(2,'0')}分です。\n` +advice;
+    // =====================
+    // 3. 記録処理
+    // =====================
 
-    const selected = new Date(selectedDate);
-    const today = selected.getDay();
+    else if (currentStatus === "finished") {
 
-    sleepData[today] = diff / 60;
+        const wake =
+        wakeInput.value;
 
-    sleepChart.update();
+        if (wake === "") {
 
-    calculateAverage();
+            alert("起床時間を入力してください");
+
+            return;
+        }
+
+        const hours =
+        Math.floor(savedDiffMinutes / 60);
+
+        const minutes =
+        savedDiffMinutes % 60;
+
+        // =====================
+        // 起床時間から就寝時間を逆算
+        // =====================
+
+        let wakeHour =
+        parseInt(wake.split(":")[0]);
+
+        let wakeMinute =
+        parseInt(wake.split(":")[1]);
+
+        let wakeTotal =
+        wakeHour * 60 + wakeMinute;
+
+        let sleepTotal =
+        wakeTotal - savedDiffMinutes;
+
+        // 日をまたぐ場合
+
+        if (sleepTotal < 0) {
+
+            sleepTotal += 24 * 60;
+        }
+
+        const bedHour =
+        Math.floor(sleepTotal / 60);
+
+        const bedMinute =
+        sleepTotal % 60;
+
+        // 就寝時間表示
+
+        document.getElementById("bedTimeResult").textContent =
+        `${String(bedHour).padStart(2,'0')}:${String(bedMinute).padStart(2,'0')}`;
+
+        // =====================
+        // コメント
+        // =====================
+
+        let advice = "";
+
+        const sleepHours =
+        savedDiffMinutes / 60;
+
+        if (sleepHours < 6) {
+
+            advice =
+            "睡眠時間が不足しています。十分な休息を取りましょう。";
+        }
+        else if (sleepHours >= 7 &&
+                 sleepHours <= 9) {
+
+            advice =
+            "理想的な睡眠時間です。この生活リズムを維持しましょう。";
+        }
+        else if (sleepHours > 9) {
+
+            advice =
+            "睡眠時間が長めです。生活リズムも意識してみましょう。";
+        }
+        else {
+
+            advice =
+            "あと少し睡眠時間を増やすとより良いです。";
+        }
+
+        document.getElementById("comment").textContent =
+
+        `今日の睡眠時間は ${String(hours).padStart(2,'0')}時間${String(minutes).padStart(2,'0')}分です。\n${advice}`;
+
+        // =====================
+        // グラフ更新
+        // =====================
+
+        const selected =
+        new Date(selectedDate);
+
+        const today =
+        selected.getDay();
+
+        sleepData[today] =
+        Math.round((savedDiffMinutes / 60) * 10) / 10;
+
+        sleepChart.update();
+
+        calculateAverage();
+
+        // =====================
+        // 初期化
+        // =====================
+
+        currentStatus = "idle";
+
+        button.textContent = "就寝する";
+
+        button.classList.remove("wake-mode");
+
+        document.getElementById("statusDisplay").textContent =
+        "記録が完了しました。";
+
+        wakeInput.value = "";
+    }
 }
 
 // =========================
@@ -350,24 +475,36 @@ function calculateSleep() {
 // =========================
 
 function calculateAverage() {
+
     let totalMinutes = 0;
+
     let count = 0;
 
     for (let i = 0; i < sleepData.length; i++) {
+
         if (sleepData[i] > 0) {
-            totalMinutes += sleepData[i] * 60; // 分単位で合計
+
+            totalMinutes +=
+            sleepData[i] * 60;
+
             count++;
         }
     }
 
     if (count === 0) return;
 
-    const avgTotalMinutes = totalMinutes / count;
-    const avgHour = Math.floor(avgTotalMinutes / 60);
-    const avgMinute = Math.round(avgTotalMinutes % 60);
+    const avgTotalMinutes =
+    totalMinutes / count;
+
+    const avgHour =
+    Math.floor(avgTotalMinutes / 60);
+
+    const avgMinute =
+    Math.round(avgTotalMinutes % 60);
 
     document.getElementById("averageSleep").textContent =
-        `${String(avgHour).padStart(2,'0')}時間${String(avgMinute).padStart(2,'0')}分`;
+
+    `${String(avgHour).padStart(2,'0')}時間${String(avgMinute).padStart(2,'0')}分`;
 }
 
 </script>

@@ -2,9 +2,9 @@
 import { loginAnonymously } from './services/authService.js';
 import { saveDailyData, getDailyData } from './services/healthService.js'; // ★追加
 
-// アプリ全体で「今何日を選択しているか」を記憶する変数（初期値：2026年5月15日）
-// 💡 JavaScriptの月は 0 から始まるので、4 = 5月 です
-let currentDate = new Date(2026, 4, 15); 
+// アプリ全体で「今何日を選択しているか」を記憶する変数
+// JavaScriptの月は 0 から始まる
+let currentDate = new Date(); 
 
 // 曜日を日本語に変換するための配列
 const weekDays = ["日", "月", "火", "水", "木", "金", "土"];
@@ -60,6 +60,74 @@ function updateCardContents(data) {
     }
 }
 
+// 月ごとに曜日が合うようにカレンダーを自動生成するロジック
+function renderCalendar() {
+    const calendarBody = document.getElementById('calendar-body');
+    if (!calendarBody) return;
+
+    const year = currentDate.getFullYear();
+    const month = currentDate.getMonth(); // 0 = 1月, 4 = 5月...
+    
+    // 今月の1日が何曜日か (0:日 〜 6:土)、今月の末日が何日かを取得
+    const firstDayOfThisMonth = new Date(year, month, 1).getDay(); 
+    const lastDateOfThisMonth = new Date(year, month + 1, 0).getDate(); 
+    const lastDateOfLastMonth = new Date(year, month, 0).getDate(); 
+
+    let html = '';
+    let dateCount = 1;
+    let nextMonthDateCount = 1;
+
+    for (let i = 0; i < 6; i++) { // 最大6週間分ループ
+        html += '<tr>';
+        for (let j = 0; j < 7; j++) {
+            if (i === 0 && j < firstDayOfThisMonth) {
+                // ① 先月の薄い数字のエリア
+                const lastMonthDate = lastDateOfLastMonth - firstDayOfThisMonth + j + 1;
+                html += `<td class="other-month">${lastMonthDate}</td>`;
+            } else if (dateCount > lastDateOfThisMonth) {
+                // ② 来月の薄い数字のエリア
+                html += `<td class="other-month">${nextMonthDateCount}</td>`;
+                nextMonthDateCount++;
+            } else {
+                // ③ 今月の数字エリア（選択されている日なら「today」クラスを付与）
+                const isSelectedDay = (dateCount === currentDate.getDate());
+                const className = isSelectedDay ? 'class="today"' : '';
+                
+                html += `<td ${className}>${dateCount}</td>`;
+                dateCount++;
+            }
+        }
+        html += '</tr>';
+        if (dateCount > lastDateOfThisMonth && nextMonthDateCount > 1) {
+            break;
+        }
+    }
+
+    // 組み立てたHTMLをインジェクション
+    calendarBody.innerHTML = html;
+
+    // 生まれたての新しいマス目にクリックイベントを設定
+    setupCalendarCellsEvent();
+}
+
+//自動生成されたカレンダーのマス目にクリックイベントをつける関数
+function setupCalendarCellsEvent() {
+    const calendarCells = document.querySelectorAll('.calendar tbody td');
+    calendarCells.forEach(cell => {
+        if (cell.classList.contains('other-month')) return; // 先月・来月はクリック無視
+        
+        cell.style.cursor = 'pointer';
+        cell.addEventListener('click', () => {
+            const clickedDay = parseInt(cell.textContent, 10);
+            if (!isNaN(clickedDay)) {
+                console.log(`カレンダーの ${clickedDay} 日がクリックされました`);
+                currentDate.setDate(clickedDay);
+                updateDateDisplay(); // 画面更新＆データ再取得
+            }
+        });
+    });
+}
+
 /**
  * カレンダーの青いハイライト（todayクラス）を現在の選択日に移動させる関数
  */
@@ -95,10 +163,9 @@ async function updateDateDisplay() {
         dateDisplay.textContent = `${year}/${month}/${date}（${day}）`;
     }
 
-    // 🌟 追記：画面上の青いマス目の位置を更新する
-    updateCalendarHighlight();
+    // 画面上の青いマス目の位置を更新する
+    renderCalendar();
 
-    // 🌟 バックエンドの超重要処理：
     // 日付が切り替わったら、その日のデータをFirestoreから自動取得する
     const dateStr = `${year}-${month}-${date}`;
     console.log(`📅 ${dateStr} のデータを取得します...`);
@@ -173,34 +240,37 @@ function setupCalendarNavigation() {
 }
 
 function setupCardNavigation() {
-    // 1. 各カードの要素（ボタン代わり）をHTMLから探す
     const mealCard = document.querySelector('.card.meal');
     const sleepCard = document.querySelector('.card.sleep');
     const stepsCard = document.querySelector('.card.steps');
 
-    // 2. 食事カードがクリックされたら、食事画面（meal.html）へ移動
+    // 「2026-05-19」のような日付形式の文字列を取得する共通関数
+    const getFormattedDate = () => {
+        const year = currentDate.getFullYear();
+        const month = String(currentDate.getMonth() + 1).padStart(2, '0');
+        const date = String(currentDate.getDate()).padStart(2, '0');
+        return `${year}-${month}-${date}`;
+    };
+
     if (mealCard) {
         mealCard.addEventListener('click', () => {
-            console.log("食事画面へ遷移します");
-            window.location.href = '../../mealApp.html';
+            // URLの末尾に ?date=2026-05-19 を付与して遷移
+            window.location.href = `../../mealApp.html?date=${getFormattedDate()}`;
         });
     }
 
-    // 3. 睡眠カードがクリックされたら、睡眠画面（sleep.html）へ移動
     if (sleepCard) {
         sleepCard.addEventListener('click', () => {
-            console.log("睡眠画面へ遷移します");
-            window.location.href = '../../SleepApp.html';
+            window.location.href = `../../SleepApp.html?date=${getFormattedDate()}`;
         });
     }
 
-    // 4. 歩数カードがクリックされたら、歩数画面（steps.html）へ移動
     if (stepsCard) {
         stepsCard.addEventListener('click', () => {
-            console.log("歩数画面へ遷移します");
-            window.location.href = '../../walk.html';
+            window.location.href = `../../walk.html?date=${getFormattedDate()}`;
         });
     }
+    console.log("✅ 日付パラメータ付き画面遷移の設定が完了しました");
 }
 
 async function initApp() {
@@ -215,7 +285,7 @@ async function initApp() {
 
             setupCardNavigation();//画面遷移
 
-            // ★書き込みテスト（疎通確認）を追加
+            // 書き込みテスト（疎通確認）を追加
             console.log("テストデータを送信中...");
             await saveDailyData("2026-05-12", {
                 // 食事データ（階層構造）

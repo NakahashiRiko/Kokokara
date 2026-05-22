@@ -212,6 +212,7 @@ function setupCalendarNavigation() {
         console.warn("⚠ カレンダーのボタン（.nav-btn）が見つかりません");
     }
 
+    /*
     // カレンダー内のすべての「日（tdタグ）」を取得します
     const calendarCells = document.querySelectorAll('.calendar tbody td');
 
@@ -237,6 +238,7 @@ function setupCalendarNavigation() {
         // マウスを乗せた時に「押せる」とわかるように矢印を手のマークに変える
         cell.style.cursor = 'pointer';
     });
+    */
 }
 
 function setupCardNavigation() {
@@ -279,6 +281,19 @@ async function initApp() {
         if (user) {
             console.log("🔥 Firebase接続成功！ UID:", user.uid);
 
+            //日付をチェック
+            const urlParams = new URLSearchParams(window.location.search);
+            const paramDate = urlParams.get('date');
+
+            if (paramDate) {
+                // パラメータの日付（YYYY-MM-DD）を解析して currentDate を上書き
+                const parsedDate = new Date(paramDate);
+                if (!isNaN(parsedDate.getTime())) {
+                    currentDate = parsedDate;
+                    console.log(`[初期化] パラメータから日付を復元しました: ${paramDate}`);
+                }
+            }
+            
             setupCalendarNavigation();//カレンダー
 
             await updateDateDisplay();//日付表示とデータ自動取得

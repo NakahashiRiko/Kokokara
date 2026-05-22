@@ -2,28 +2,46 @@
 body{
     margin: 0;
     padding: 0;
+    font-family: "Hiragino Sans", sans-serif;/*フォントをゴシック体に指定。*/
+}
+
+/*inputタグ全てを選択*/
+input{
+    font-family: "Hiragino Sans", sans-serif;/*フォントをゴシック体に指定。*/
 }
 
 /*画面上部のタイトルのデザイン*/
 #title-box{
-    margin: 0;/*タイトルの上下の余白を消す。この枠の外側の余白を消す。*/
+    /*margin: 0;/*タイトルの上下の余白を消す。この枠の外側の余白を消す。*/
     background-color: #f5f5a7;/*背景色の指定*/
     height: 80px;/*高さの指定*/
-    padding-left: 100px;/*タイトルの左側の余白を100pxに自分で設定。marginと違いこの枠の内側に余白ができる*/
+    padding-left: 20px;/*タイトルの左側の余白を20pxに自分で設定。marginと違いこの枠の内側に余白ができる*/
+    display: flex;/*フレックスボックスの指定。テキストが横並びで表示されるようになる。*/
+    align-items: center;/*テキストを縦方向の中央に揃える。*/
+}
+
+/*画面左上の「＜」テキストのデザイン。HTMLではただのテキストだがCSSでボタンとして機能するようにする*/
+#back_app_btn{
+    color: #7b807c;
+    font-size: 40px;/*文字サイズの指定*/
+    margin-right: 20px;/*テキストの右側の余白を20pxに自分で設定。*/
+    font-weight: bold;/*文字を太字にする。*/
+    cursor: pointer;/*マウスポインタがこのテキストの上に来たとき、クリックできることを示すポインタに変わる。*/
 }
 
 /*画面上部のタイトルテキストのデザイン*/
 #app_title{
     margin: 0px;/*タイトルの左側の余白を0pxに自分で設定。*/
     font-size: 40px;/*文字サイズの指定*/
+    font-weight: bold;/*文字を太字にする。*/
     line-height: 80px;
 }
 
 #subtitle{
     display: flex;/*フレックスボックスの指定。テキストが横並びで表示されるようになる。*/
+    align-items: center;/*テキストを縦方向の中央に揃える。*/
     gap: 100px;/*テキスト(要素)間の余白を自分で設定。*/
     font-size: 20px;/*文字サイズの指定*/
-    align-items: center;
     padding: 0px 40px;/*上下の余白を0px(なし)、左右の余白を40px。*/
 }
 
@@ -92,19 +110,11 @@ body{
 
 /*「その他の食事」テキストのデザイン。*/
 #other_meals-title{
+    margin-left: 15px;/*タイトルの左側の余白を15px。これを入れるとタイトルが右側に少し移動する。*/
     font-size: 20px;/*文字サイズの指定*/
 }
 
-/*翌日の目標食事開始時刻の入力欄のデザイン*/
-#next_goal_time-box{
-    padding: 10px 40px;/*上下の余白を10px、左右の余白を40px。*/
-    margin-bottom: 20px;/*下の余白を20pxに自分で設定。*/
-    border-radius: 30px;/*ボックスの角を丸くする。*/
-    background-color: #c1f0f6;/*背景色の指定*/
-}
-
-#next_goal_time_text{
-    margin: 10px 0;/*タイトルの上下の余白を消す。*/
-    margin-left: -20px;/*タイトルの左側の余白を-20px。これを入れるとタイトルが左側に少し移動する。*/
-    font-size: 20px;/*文字サイズの指定*/
+/*「記録を保存」ボタンのデザイン*/
+#finish_today_btn{
+    font-family: "Hiragino Sans", sans-serif;/*フォントをゴシック体に指定。*/
 }

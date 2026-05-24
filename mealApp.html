@@ -25,7 +25,7 @@
 
             <!--「不足している栄養素」テキストの下に表示されるテキスト。該当日の食事回数を表示する。-->
             <!--その日の朝食・昼食・夕食の献立(breakfast-menu, lunch-menu, dinner-menuから持ってくる)が記入されていれば食事をしたとみなしカウントしここに表示。-->
-            <p id="meal_count">本日の食事回数: ◯回</p>
+            <p id="meal_count">本日の食事回数: 0回</p>
 
             <!--食事アプリの画面右上に表示されるテキスト。不足している栄養素とその期間をここで一覧で表示する。-->
             <p id="lack_nutrients">不足している栄養素: ◯, ★</p>
@@ -47,7 +47,7 @@
             </p>
         
             <!--食事の栄養素の記録。炭水化物、タンパク質、ビタミン、脂質、無機質(ミネラル)の5大栄養素をボタン(チェックボックス)で選択してもらう。-->
-            <p>栄養素: 
+            <p id="breakfast_nutrients">栄養素: 
                 <input type="checkbox" id = "carbo_breakfast" value="炭水化物"> 炭水化物
                 <input type="checkbox" id = "protein_breakfast" value="タンパク質"> タンパク質
                 <input type="checkbox" id = "fat_breakfast" value="脂質"> 脂質
@@ -70,7 +70,7 @@
             </p>
         
             <!--食事の栄養素の記録。炭水化物、タンパク質、ビタミン、脂質、無機質(ミネラル)の5大栄養素をボタン(チェックボックス)で選択してもらう。-->
-            <p>栄養素: 
+            <p id="lunch_nutrients">栄養素: 
                 <input type="checkbox" id="carbo_lunch" value="炭水化物"> 炭水化物
                 <input type="checkbox" id="protein_lunch" value="タンパク質"> タンパク質
                 <input type="checkbox" id="fat_lunch" value="脂質"> 脂質
@@ -93,7 +93,7 @@
             </p>
         
             <!--食事の栄養素の記録。炭水化物、タンパク質、ビタミン、脂質、無機質(ミネラル)の5大栄養素をボタン(チェックボックス)で選択してもらう。-->
-            <p>栄養素: 
+            <p id="dinner_nutrients">栄養素: 
                 <input type="checkbox" id="carbo_dinner" value="炭水化物"> 炭水化物
                 <input type="checkbox" id="protein_dinner" value="タンパク質"> タンパク質
                 <input type="checkbox" id="fat_dinner" value="脂質"> 脂質

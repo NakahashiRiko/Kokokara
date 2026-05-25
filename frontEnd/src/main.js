@@ -372,3 +372,30 @@ async function initApp() {
 }
 
 initApp();
+
+document.addEventListener("DOMContentLoaded", () => {
+    const dateInput = document.getElementById("current-date");
+
+    // 画面が開かれた時に初期データを読み込む
+    updateHomeScreen(dateInput.value);
+
+    // 日付が変更されたら発火するイベント
+    dateInput.addEventListener("change", async (event) => {
+        const selectedDate = event.target.value;
+        await updateHomeScreen(selectedDate);
+    });
+});
+
+// 日付に応じたデータを取得してホームのカードに反映する関数
+async function updateHomeScreen(date) {
+    // ここで共通のデータ取得（例: getDailyData(date)）を行う
+    // 例: const data = await getDailyData(date);
+    // 各カード（食事、睡眠、歩数）のテキストを data の中身に応じて書き換える処理をここに書きます
+    console.log(`${date} のデータをホームに反映します。`);
+}
+
+// 他の画面（食事・睡眠・歩数）へ移動するボタンのリンクを書き換える関数
+function updateNavigationLinks(date) {
+    // 例: <a id="link-walk" href="walk.html">歩数画面へ</a> のようなリンクがある場合
+    // document.getElementById("link-walk").href = `walk.html?date=${date}`;
+}

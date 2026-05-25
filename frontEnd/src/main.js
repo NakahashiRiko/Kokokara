@@ -126,6 +126,7 @@ function setupCalendarCellsEvent() {
             }
         });
     });
+    loadSelectedDateData();
 }
 
 
@@ -373,29 +374,65 @@ async function initApp() {
 
 initApp();
 
+// 既存のDOMContentLoadedイベントや日付切り替え処理と統合します
 document.addEventListener("DOMContentLoaded", () => {
-    const dateInput = document.getElementById("current-date");
+    // 初回読み込み時に、現在の選択日付のデータを取得してカードに反映
+    loadSelectedDateData();
 
-    // 画面が開かれた時に初期データを読み込む
-    updateHomeScreen(dateInput.value);
-
-    // 日付が変更されたら発火するイベント
-    dateInput.addEventListener("change", async (event) => {
-        const selectedDate = event.target.value;
-        await updateHomeScreen(selectedDate);
-    });
+    // 既存のカレンダーの「◀︎」「▶︎」ボタンや日付セルをクリックしたイベントの「最後」で、
+    // 必ず `loadSelectedDateData();` を呼び出すようにしてください。
 });
 
-// 日付に応じたデータを取得してホームのカードに反映する関数
-async function updateHomeScreen(date) {
-    // ここで共通のデータ取得（例: getDailyData(date)）を行う
-    // 例: const data = await getDailyData(date);
-    // 各カード（食事、睡眠、歩数）のテキストを data の中身に応じて書き換える処理をここに書きます
-    console.log(`${date} のデータをホームに反映します。`);
+/**
+ * 現在選択されている日付（currentDate）のデータをFirestoreから読み込み、
+ * ホーム画面のカードの更新と、各画面へのリンクの更新を行う関数
+ */
+async function loadSelectedDateData() {
+    // currentDate (Dateオブジェクト) を "2026-05-25" のような文字列形式に変換
+    const yyyy = currentDate.getFullYear();
+    const mm = String(currentDate.getMonth() + 1).padStart(2, '0');
+    const dd = String(currentDate.getDate()).padStart(2, '0');
+    const dateStr = `${yyyy}-${mm}-${dd}`;
+
+    try {
+        // 1. Firestoreから指定された日付のデータを取得
+        const data = await getDailyData(dateStr);
+        
+        // 2. 取得したデータをホームのカードに反映
+        // ※既存の updateCardContents 関数を呼び出します（データがない場合はnullが渡り初期表示になります）
+        updateCardContents(data);
+
+        // 3. 各画面へのリンク（<a>タグ）のhrefに `?date=xxxx` を付与する
+        updateNavigationLinks(dateStr);
+
+    } catch (error) {
+        console.error("ホーム画面のデータ読み込みエラー:", error);
+    }
 }
 
-// 他の画面（食事・睡眠・歩数）へ移動するボタンのリンクを書き換える関数
-function updateNavigationLinks(date) {
-    // 例: <a id="link-walk" href="walk.html">歩数画面へ</a> のようなリンクがある場合
-    // document.getElementById("link-walk").href = `walk.html?date=${date}`;
+/**
+ * 各カードのリンクのhref属性を動的に書き換える関数
+ * @param {string} dateStr - "2026-05-25" 形式の文字列
+ */
+function updateNavigationLinks(dateStr) {
+    // index.html内にある、各アプリ画面へのリンク（<a>タグ）の遷移先を書き換える
+    // ※HTML側のクラス名（.card-link）やaタグの構造に合わせて調整してください
+    const links = document.querySelectorAll(".card-link, .card a");
+    
+    links.forEach(link => {
+        const href = link.getAttribute("href");
+        if (href) {
+            // すでにパラメータがついている場合は一旦ベースのファイル名だけにする
+            const baseUrl = href.split('?')[0];
+            
+            // 遷移先のURLを「ファイル名.html?date=2026-05-25」の形に上書き
+            if (baseUrl.includes("mealApp.html")) {
+                link.setAttribute("href", `mealApp.html?date=${dateStr}`);
+            } else if (baseUrl.includes("SleepApp.html")) {
+                link.setAttribute("href", `SleepApp.html?date=${dateStr}`);
+            } else if (baseUrl.includes("walk.html")) {
+                link.setAttribute("href", `walk.html?date=${dateStr}`);
+            }
+        }
+    });
 }

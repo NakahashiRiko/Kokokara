@@ -49,68 +49,47 @@ window.calculateSleep = async function() {
     sleepChart.update();
     calculateAverage();
 
-    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-    //計算された確定データをFirestoreに自動送信！
-    // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+    //バックエンド追加：計算された確定データをFirestoreに自動送信！
     try {
         const sleepDataObj = {
             sleep: {
                 totalHours: hours,        // 寝た合計時間（時間）
                 totalMinutes: minutes,    // 寝た合計時間（分）
                 wakeTime: wake,           // 起床時間（例 "06:30"）
-                sleepTime: sleep          // 就寝時間（例 "23:15"）
+                sleepTime: sleep          // 自動計算された就寝時間
             }
         };
-
         await saveDailyData(targetDate, sleepDataObj);
-        console.log(`[Firestore] ${targetDate} の睡眠データを自動保存しました`);
+        console.log(`[Firestore] ${targetDate} の睡眠データを自動保存しました。`);
     } catch (error) {
-        console.error("睡眠データの保存エラー:", error);
+        console.error("睡眠データの自動保存に失敗しました:", error);
     }
 };
 
-//画面が開かれた瞬間に、URLから日付（?date=xxxx）を読み取って、その日のデータをデータベースから取得して入力欄にセットする
-document.addEventListener("DOMContentLoaded", async () => {
-    // 1. URLのパラメータから日付を取得する（なければ本日の日付をデフォルトにする）
-    const urlParams = new URLSearchParams(window.location.search);
-    let selectedDate = urlParams.get('date');
-    
-    if (!selectedDate) {
-        // パラメータがない場合は、今日の日付（YYYY-MM-DD型）にする
-        const today = new Date();
-        selectedDate = today.toISOString().split('T')[0];
-    }
 
-    // 画面上の「選択された日付：2026/05/25」などのテキスト表示を更新
-    const dateDisplay = document.getElementById("date-display"); // HTML側に該当のidがあると仮定
-    if (dateDisplay) {
-        dateDisplay.textContent = selectedDate.replace(/-/g, '/');
-    }
+// 画面を開いたときにFirestoreから既存データを読み込んで表示する
+import { getDailyData } from '../services/healthService.js'; //　getDailyDataを追加
 
-    // 2. データベースからその日のデータを読み込んで入力欄にセットする（③・⑤の処理）
-    await loadAndSpreadWalkData(selectedDate);
-});
-
-// データを読み込んで画面に反映する関数
-async function loadAndSpreadWalkData(date) {
+document.addEventListener('DOMContentLoaded', async () => {
     try {
-        // データベースからデータを取得（saveDailyDataの対になる読み込み関数があると仮定）
-        // const dailyData = await getDailyData(date); 
-        
-        // テスト用のダミーデータ（実際はDBから取得した dailyData を使います）
-        const mockData = { walk: 2248, walkTarget: 5000 }; 
+        const data = await getDailyData(targetDate);
+        if (data && data.sleep) {
+            const sleep = data.sleep;
 
-        if (mockData) {
-            // HTMLの歩数入力欄（<input>）に数値をセットする
-            const walkInput = document.getElementById("walk-input"); // 歩数入力欄のid
-            const targetInput = document.getElementById("target-input"); // 目標入力欄のid
-            
-            if (walkInput) walkInput.value = mockData.walk || "";
-            if (targetInput) targetInput.value = mockData.walkTarget || "";
-            
-            console.log(`${date} のデータを入力欄にセットしました。`);
+            // 1. 入力フォームの値を復元
+            if (sleep.sleepTime) document.getElementById("sleepInput").value = sleep.sleepTime;
+            if (sleep.wakeTime) document.getElementById("wakeInput").value = sleep.wakeTime;
+
+            // 2. 計算結果テキストとコメントの復元
+            if (sleep.totalHours !== undefined && sleep.totalMinutes !== undefined) {
+                const h = String(sleep.totalHours).padStart(2, '0');
+                const m = String(sleep.totalMinutes).padStart(2, '0');
+                
+                document.getElementById("sleepResult").textContent = `${h}時間${m}分`;
+                document.getElementById("comment").textContent = `今日の睡眠時間は${h}時間${m}分です。`;
+            }
         }
     } catch (error) {
-        console.error("データの読み込みに失敗しました:", error);
+        console.error("睡眠データの読み込みに失敗しました:", error);
     }
-}
+});

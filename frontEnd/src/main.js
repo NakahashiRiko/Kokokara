@@ -128,9 +128,11 @@ function setupCalendarCellsEvent() {
     });
 }
 
+
 /**
  * カレンダーの青いハイライト（todayクラス）を現在の選択日に移動させる関数
  */
+/*
 function updateCalendarHighlight() {
     // 1. まず、現在カレンダー内のどこかに付いている「today」クラスをすべて消去する
     const allCells = document.querySelectorAll('.calendar tbody td');
@@ -146,6 +148,7 @@ function updateCalendarHighlight() {
         }
     });
 }
+*/
 
 /**
  * 画面の日付表示を更新し、その日のデータを読み込む関数

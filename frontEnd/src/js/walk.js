@@ -4,7 +4,7 @@ import { loginAnonymously } from '../services/authService.js';
 
 // URLから日付を自動キャッチ（なければ本日の日付）
 const urlParams = new URLSearchParams(window.location.search);
-const targetDate = urlParams.get('date') || new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().split('T')[0];//日本時間
+const targetDate = urlParams.get('date') || new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().split('T')[0]; // 日本時間
 
 // 画面が読み込まれた時の初期化処理
 document.addEventListener('DOMContentLoaded', async () => {
@@ -20,22 +20,22 @@ document.addEventListener('DOMContentLoaded', async () => {
         backBtn.setAttribute('href', `frontEnd/src/index.html?date=${targetDate}`);
     }
 
-    //3. まずは匿名ログインを実行して、認証を完了させる
+    // 3. Firebase匿名ログインを実行
     try {
         const user = await loginAnonymously();
         if (user) {
             console.log("🔥 歩数画面でのFirebase接続成功！ UID:", user.uid);
             
-            // 4. ログインが成功した後に、既存データをFirestoreから読み込んで復元
+            // 4. ログイン成功後に、既存データをFirestoreから読み込んで復元
             await loadExistingWalkData();
         }
     } catch (error) {
-        console.error("❌ 歩数画面でのログイン、またはデータ復元に失敗しました:", error);
+        console.error("❌ Firebaseログインに失敗しました:", error);
     }
 });
 
 /**
- * HTML側の元の updatePage を横からキャッチして、
+ * 🌟【機能①】HTML側の元の updatePage を横からキャッチして、
  * 計算処理が終わった直後にFirestoreへ保存する仕組み（フック）
  */
 // HTML側の元の関数を変数に退避させる
@@ -47,20 +47,9 @@ window.updatePage = async function() {
     // 1. まずHTML側に書かれている元の計算やローカルストレージへの保存、コメント書き換え、グラフ更新をそのまま実行
     if (typeof originalUpdatePage === 'function') {
         originalUpdatePage();
-    } else {
-        // もしHTML側の関数がまだ読み込まれていなければ最低限の画面表示更新
-        let target = Number(document.getElementById("targetInput").value);
-        let step = Number(document.getElementById("stepInput").value);
-        let diff = step - target;
-        const commentEl = document.getElementById("comment");
-        if (commentEl) {
-            commentEl.innerText = diff >= 0 ? 
-                `今日の歩数は${step}歩です。\n目標と${diff}歩の差があります。\nおめでとうございます！\nこれからも続けましょう！` :
-                `今日の歩数は${step}歩です。\n目標と${Math.abs(diff)}歩の差があります。\nもっと頑張りましょう！`;
-        }
     }
 
-    // 2. 画面の入力欄から数値を回収
+    // 2. HTMLの入力欄（targetInput と stepInput）から最新の数値を回収
     let target = Number(document.getElementById("targetInput").value) || 0;
     let step = Number(document.getElementById("stepInput").value) || 0;
 
@@ -87,7 +76,7 @@ window.updatePage = async function() {
 };
 
 /**
- * Firestoreからデータを読み込んでフォームに復元する関数
+ * 🌟【機能②】Firestoreからデータを読み込んでフォームに復元する関数
  */
 async function loadExistingWalkData() {
     try {

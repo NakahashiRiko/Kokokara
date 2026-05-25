@@ -1,5 +1,6 @@
 // SleepApp.js
 import { saveDailyData, getDailyData } from '../services/healthService.js';
+import { loginAnonymously } from '../services/authService.js';
 
 // URLから日付を自動キャッチ（なければ本日の日付）
 const urlParams = new URLSearchParams(window.location.search);
@@ -19,8 +20,18 @@ document.addEventListener('DOMContentLoaded', async () => {
         backBtn.setAttribute('href', `frontEnd/src/index.html?date=${targetDate}`);
     }
 
-    // 3.画面を開いた時に既存データをFirestoreから読み込んで復元
-    await loadExistingSleepData();
+    // 3. まずは匿名ログインを実行して、認証を完了させる
+    try {
+        const user = await loginAnonymously();
+        if (user) {
+            console.log("🔥 睡眠画面でのFirebase接続成功！ UID:", user.uid);
+            
+            // 4. ログインが成功した後に、既存データをFirestoreから読み込んで復元
+            await loadExistingSleepData();
+        }
+    } catch (error) {
+        console.error("❌ 睡眠画面でのログイン、またはデータ復元に失敗しました:", error);
+    }
 });
 
 /**

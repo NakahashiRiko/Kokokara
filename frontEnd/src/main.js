@@ -414,25 +414,16 @@ async function loadSelectedDateData() {
  * 各カードのリンクのhref属性を動的に書き換える関数
  * @param {string} dateStr - "2026-05-25" 形式の文字列
  */
+/**
+ * 各カードのリンクのhref属性を動的に書き換える関数
+ */
 function updateNavigationLinks(dateStr) {
-    // index.html内にある、各アプリ画面へのリンク（<a>タグ）の遷移先を書き換える
-    // ※HTML側のクラス名（.card-link）やaタグの構造に合わせて調整してください
-    const links = document.querySelectorAll(".card-link, .card a");
-    
-    links.forEach(link => {
-        const href = link.getAttribute("href");
-        if (href) {
-            // すでにパラメータがついている場合は一旦ベースのファイル名だけにする
-            const baseUrl = href.split('?')[0];
-            
-            // 遷移先のURLを「ファイル名.html?date=2026-05-25」の形に上書き
-            if (baseUrl.includes("mealApp.html")) {
-                link.setAttribute("href", `mealApp.html?date=${dateStr}`);
-            } else if (baseUrl.includes("SleepApp.html")) {
-                link.setAttribute("href", `SleepApp.html?date=${dateStr}`);
-            } else if (baseUrl.includes("walk.html")) {
-                link.setAttribute("href", `walk.html?date=${dateStr}`);
-            }
-        }
-    });
+    const mealLink = document.getElementById("link-meal");
+    const sleepLink = document.getElementById("link-sleep");
+    const walkLink = document.getElementById("link-walk");
+
+    // 2つ上の階層（../../）に対して日付パラメータを付与
+    if (mealLink) mealLink.setAttribute("href", `../../mealApp.html?date=${dateStr}`);
+    if (sleepLink) sleepLink.setAttribute("href", `../../SleepApp.html?date=${dateStr}`);
+    if (walkLink) walkLink.setAttribute("href", `../../walk.html?date=${dateStr}`);
 }

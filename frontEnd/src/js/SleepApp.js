@@ -8,11 +8,17 @@ const targetDate = urlParams.get('date') || new Date(Date.now() - new Date().get
 
 // 画面が読み込まれた時の処理
 document.addEventListener('DOMContentLoaded', async () => {
-    // 1. ヘッダーの日付表示を更新
-    const todayDateEl = document.getElementById("todayDate");
-    if (todayDateEl) {
-        todayDateEl.textContent = `対象日: ${targetDate.replace(/-/g, '/')}`;
-    }
+    // 1.HTML側の「今日にする処理」に勝つために、少し遅れて日付表示を過去日に確定させる
+    setTimeout(() => {
+        const todayDateEl = document.getElementById("todayDate");
+        if (todayDateEl) {
+            todayDateEl.textContent = `対象日: ${targetDate.replace(/-/g, '/')}`;
+        }
+        // HTML側の内部変数 selectedDate も上書きしてズレを防止する
+        if (window.selectedDate !== undefined) {
+            window.selectedDate = targetDate;
+        }
+    }, 50);
 
     // 2. 左上の「＜」ボタンの戻り先をセット
     const backBtn = document.querySelector('.back-button');

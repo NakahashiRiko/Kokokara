@@ -2,11 +2,11 @@
 import { saveDailyData, getDailyData } from '../services/healthService.js';
 import { loginAnonymously } from '../services/authService.js';
 
-// URLから日付を自動キャッチ（なければ本日の日付）
+// URLから日付を自動キャッチ（なければ日本時間の本日の日付）
 const urlParams = new URLSearchParams(window.location.search);
-const targetDate = urlParams.get('date') || new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().split('T')[0];//日本時間
+const targetDate = urlParams.get('date') || new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().split('T')[0];
 
-// 画面が読み込まれた時の処理
+// 画面が読み込まれた時の初期化処理
 document.addEventListener('DOMContentLoaded', async () => {
     // 1.HTML側の「今日にする処理」に勝つために、少し遅れて日付表示を過去日に確定させる
     setTimeout(() => {
@@ -20,23 +20,23 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }, 50);
 
-    // 2. 左上の「＜」ボタンの戻り先をセット
+    // 2. 左上の「＜」ボタンの戻り先を動的にセット
     const backBtn = document.querySelector('.back-button');
     if (backBtn) {
         backBtn.setAttribute('href', `frontEnd/src/index.html?date=${targetDate}`);
     }
 
-    // 3. まずは匿名ログインを実行して、認証を完了させる
+    // 3. Firebase匿名ログインを実行
     try {
         const user = await loginAnonymously();
         if (user) {
             console.log("🔥 睡眠画面でのFirebase接続成功！ UID:", user.uid);
             
-            // 4. ログインが成功した後に、既存データをFirestoreから読み込んで復元
+            // 4. ログイン成功後に、既存データをFirestoreから読み込んで復元
             await loadExistingSleepData();
         }
     } catch (error) {
-        console.error("❌ 睡眠画面でのログイン、またはデータ復元に失敗しました:", error);
+        console.error("❌ Firebaseログインに失敗しました:", error);
     }
 });
 
@@ -44,10 +44,8 @@ document.addEventListener('DOMContentLoaded', async () => {
  * HTML側の古い calculateSleep を横からキャッチして、
  * 計算処理が終わった直後にFirestoreへ保存する仕組み（フック）
  */
-// HTML側の元の関数を変数に退避させる
 const originalCalculateSleep = window.calculateSleep;
 
-// window.calculateSleep を新しく作り直して上書きする
 window.calculateSleep = async function() {
     
     // 1. まずHTML側に書かれている元の計算やアドバイス表示、グラフ更新をそのまま実行
@@ -121,7 +119,7 @@ async function loadExistingSleepData() {
         if (data && data.sleep) {
             const sleep = data.sleep;
 
-            // 入力フォームの値を復元 (main.js側の名前に合わせる)
+            // 入力フォームの値を復元
             if (sleep.sleeptime) document.getElementById("sleepInput").value = sleep.sleeptime;
             if (sleep.waketime) document.getElementById("wakeInput").value = sleep.waketime;
 

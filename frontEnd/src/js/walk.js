@@ -84,3 +84,11 @@ async function saveWalkToFirebase(steps, target) {
 
 // HTML側の入力エリア（oninputなど）から呼び出せるようにグローバル展開
 window.updatePageWithSave = updatePageWithSave;
+
+document.addEventListener('DOMContentLoaded', () => {
+    const backBtn = document.querySelector('.back');
+    if (backBtn) {
+        // HTMLの href 属性を相対パス + 日付パラメータに書き換え
+        backBtn.setAttribute('href', `frontEnd/src/index.html?date=${targetDate}`);
+    }
+});

@@ -93,3 +93,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         console.error("睡眠データの読み込みに失敗しました:", error);
     }
 });
+
+document.addEventListener('DOMContentLoaded', () => {
+    const backBtn = document.querySelector('.back-button');
+    if (backBtn) {
+        // HTMLの href 属性を相対パス + 日付パラメータに書き換え
+        backBtn.setAttribute('href', `frontEnd/src/index.html?date=${targetDate}`);
+    }
+});

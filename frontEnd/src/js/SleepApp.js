@@ -4,7 +4,7 @@ import { loginAnonymously } from '../services/authService.js';
 
 // URLから日付を自動キャッチ（なければ本日の日付）
 const urlParams = new URLSearchParams(window.location.search);
-const targetDate = urlParams.get('date') || new Date().toISOString().split('T')[0];
+const targetDate = urlParams.get('date') || new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().split('T')[0];//日本時間
 
 // 画面が読み込まれた時の処理
 document.addEventListener('DOMContentLoaded', async () => {

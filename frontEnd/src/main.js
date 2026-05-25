@@ -58,6 +58,21 @@ function updateCardContents(data) {
             stepsValue.textContent = "0歩";
         }
     }
+
+    // 4. コンディションカードの書き換え
+    if (data && data.condition !== undefined) {
+        const savedCondition = data.condition; // 1〜5の数値
+        const targetRadio = document.getElementById(`cond-${savedCondition}`);
+        if (targetRadio) {
+            targetRadio.checked = true; // 保存されていた体調にチェックを入れる
+        }
+    } else {
+        // もしその日のデータがまだ無い場合は、すべてのチェックを外して初期状態にする
+        for (let i = 1; i <= 5; i++) {
+            const radioBtn = document.getElementById(`cond-${i}`);
+            if (radioBtn) radioBtn.checked = false;
+        }
+    }
 }
 
 // 月ごとに曜日が合うようにカレンダーを自動生成するロジック
@@ -363,7 +378,9 @@ async function initApp() {
                     steps: 8000,
                     // 目標歩数
                     walkTarget: 5000
-                }
+                },
+                //コンディションデータ
+                condition: 5
             });
             console.log("✅ Firestoreへの書き込みに成功しました！");
         }
@@ -429,3 +446,35 @@ function updateNavigationLinks(dateStr) {
     if (sleepLink) sleepLink.setAttribute("href", `../../SleepApp.html?date=${dateStr}`);
     if (walkLink) walkLink.setAttribute("href", `../../walk.html?date=${dateStr}`);
 }
+
+//コンディションの保存
+/**
+ * 体調（5段階ラジオボタン）が変更されたらFirestoreに自動保存する
+ */
+document.addEventListener("DOMContentLoaded", () => {
+    // 5つのラジオボタン全てに「変更されたら保存する」イベントを設定
+    for (let i = 1; i <= 5; i++) {
+        const radioBtn = document.getElementById(`cond-${i}`);
+        if (radioBtn) {
+            radioBtn.addEventListener("change", async () => {
+                // currentDate から "YYYY-MM-DD" 形式の文字列を作成
+                const yyyy = currentDate.getFullYear();
+                const mm = String(currentDate.getMonth() + 1).padStart(2, '0');
+                const dd = String(currentDate.getDate()).padStart(2, '0');
+                const dateStr = `${yyyy}-${mm}-${dd}`;
+
+                try {
+                    // 選択された体調の数値（1〜5）をFirestoreに保存
+                    const conditionData = {
+                        condition: i
+                    };
+                    
+                    await saveDailyData(dateStr, conditionData);
+                    console.log(`[Firestore] ${dateStr} の体調を ${i} に保存しました。`);
+                } catch (error) {
+                    console.error("❌ 体調の保存に失敗しました:", error);
+                }
+            });
+        }
+    }
+});

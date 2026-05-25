@@ -1,18 +1,38 @@
 // SleepApp.js
-import { saveDailyData } from '../services/healthService.js';
+import { saveDailyData, getDailyData } from '../services/healthService.js';
 
-// URLから日付を自動キャッチして、画面の左上のテキストを上書き
+// URLから日付を自動キャッチ（なければ本日の日付）
 const urlParams = new URLSearchParams(window.location.search);
 const targetDate = urlParams.get('date') || new Date().toISOString().split('T')[0];
 
-// HTML内の既存の「日付表示」エリアを上書き（元のnew Date()の固定表示を置き換え）
-document.getElementById("todayDate").textContent = `対象日: ${targetDate.replace(/-/g, '/')}`;
+// 画面が読み込まれた時の初期化処理
+document.addEventListener('DOMContentLoaded', async () => {
+    // 1. ヘッダーの日付表示を更新
+    const todayDateEl = document.getElementById("todayDate");
+    if (todayDateEl) {
+        todayDateEl.textContent = `対象日: ${targetDate.replace(/-/g, '/')}`;
+    }
+
+    // 2.既存データを読込・復元する
+    await loadExistingSleepData();
+
+    // 3.ボタンのクリックイベントを設定
+    const saveBtn = document.getElementById("saveSleepButton");
+    if (saveBtn) {
+        saveBtn.addEventListener('click', calculateAndSaveSleep);
+    }
+
+    // 4.左上の「＜」ボタンの戻り先を動的にセット
+    const backBtn = document.querySelector('.back-button');
+    if (backBtn) {
+        backBtn.setAttribute('href', `frontEnd/src/index.html?date=${targetDate}`);
+    }
+});
 
 /**
- * 元々HTMLの<script>内にあった calculateSleep() 関数を
- * モジュールとして再定義し、最後にFirestore保存を追加します
+ * 睡眠時間を計算し、Firestoreに保存してホームへ戻る関数
  */
-window.calculateSleep = async function() {
+async function calculateAndSaveSleep() {
     const sleep = document.getElementById("sleepInput").value;
     const wake = document.getElementById("wakeInput").value;
 
@@ -30,74 +50,71 @@ window.calculateSleep = async function() {
     let wakeTotal = wakeHour * 60 + wakeMinute;
 
     if (wakeTotal < sleepTotal) {
-        wakeTotal += 24 * 60;
+        wakeTotal += 24 * 60; // 日をまたぐ場合の計算
     }
 
     const diff = wakeTotal - sleepTotal;
     const hours = Math.floor(diff / 60);
     const minutes = diff % 60;
 
-    // 画面のUI書き換え（既存の処理）
-    document.getElementById("sleepResult").textContent =
-        `${String(hours).padStart(2,'0')}時間${String(minutes).padStart(2,'0')}分`;
-    document.getElementById("comment").textContent =
-        `今日の睡眠時間は${String(hours).padStart(2,'0')}時間${String(minutes).padStart(2,'0')}分です。`;
+    // 画面のテキストを即時書き換え
+    document.getElementById("sleepResult").textContent = `${String(hours).padStart(2, '0')}時間${String(minutes).padStart(2, '0')}分`;
+    document.getElementById("comment").textContent = `今日の睡眠時間は${String(hours).padStart(2, '0')}時間${String(minutes).padStart(2, '0')}分です。`;
 
-    // グラフ更新処理（既存の処理）
-    const today = new Date().getDay();
-    sleepData[today] = diff / 60;
-    sleepChart.update();
-    calculateAverage();
+    // グラフ用データ（既存のフロントエンドのグローバル関数・配列がある場合のみ実行）
+    if (typeof sleepData !== 'undefined' && typeof sleepChart !== 'undefined') {
+        const today = new Date(targetDate).getDay();
+        sleepData[today] = diff / 60;
+        sleepChart.update();
+        if (typeof calculateAverage === 'function') calculateAverage();
+    }
 
-    //バックエンド追加：計算された確定データをFirestoreに自動送信！
+    // Firestoreへデータを保存
     try {
         const sleepDataObj = {
             sleep: {
-                totalHours: hours,        // 寝た合計時間（時間）
-                totalMinutes: minutes,    // 寝た合計時間（分）
-                wakeTime: wake,           // 起床時間（例 "06:30"）
-                sleepTime: sleep          // 自動計算された就寝時間
+                hour: hours,         // main.jsの表記に合わせた階層構造
+                minute: minutes,
+                waketime: wake,      // 小文字に統一
+                sleeptime: sleep     // 小文字に統一
             }
         };
+
         await saveDailyData(targetDate, sleepDataObj);
-        console.log(`[Firestore] ${targetDate} の睡眠データを自動保存しました。`);
+        alert(`✅ ${targetDate} の睡眠データを保存しました！`);
+
+        // 保存が成功したら、日付を引き継いでホーム画面に戻る（相対パス）
+        window.location.href = `frontEnd/src/index.html?date=${targetDate}`;
+
     } catch (error) {
-        console.error("睡眠データの自動保存に失敗しました:", error);
+        console.error("❌ 睡眠データの自動保存に失敗しました:", error);
+        alert("保存に失敗しました。コンソールを確認してください。");
     }
-};
+}
 
-
-// 画面を開いたときにFirestoreから既存データを読み込んで表示する
-import { getDailyData } from '../services/healthService.js'; //　getDailyDataを追加
-
-document.addEventListener('DOMContentLoaded', async () => {
+/**
+ * Firestoreからデータを読み込んでフォームに復元する関数
+ */
+async function loadExistingSleepData() {
     try {
         const data = await getDailyData(targetDate);
         if (data && data.sleep) {
             const sleep = data.sleep;
 
-            // 1. 入力フォームの値を復元
-            if (sleep.sleepTime) document.getElementById("sleepInput").value = sleep.sleepTime;
-            if (sleep.wakeTime) document.getElementById("wakeInput").value = sleep.wakeTime;
+            // 入力フォームの値を復元 (プロパティ名をmain.jsと統一)
+            if (sleep.sleeptime) document.getElementById("sleepInput").value = sleep.sleeptime;
+            if (sleep.waketime) document.getElementById("wakeInput").value = sleep.waketime;
 
-            // 2. 計算結果テキストとコメントの復元
-            if (sleep.totalHours !== undefined && sleep.totalMinutes !== undefined) {
-                const h = String(sleep.totalHours).padStart(2, '0');
-                const m = String(sleep.totalMinutes).padStart(2, '0');
+            // 計算結果テキストとコメントの復元
+            if (sleep.hour !== undefined && sleep.minute !== undefined) {
+                const h = String(sleep.hour).padStart(2, '0');
+                const m = String(sleep.minute).padStart(2, '0');
                 
                 document.getElementById("sleepResult").textContent = `${h}時間${m}分`;
                 document.getElementById("comment").textContent = `今日の睡眠時間は${h}時間${m}分です。`;
             }
         }
     } catch (error) {
-        console.error("睡眠データの読み込みに失敗しました:", error);
+        console.error("❌ 睡眠データの読み込みに失敗しました:", error);
     }
-});
-
-document.addEventListener('DOMContentLoaded', () => {
-    const backBtn = document.querySelector('.back-button');
-    if (backBtn) {
-        // HTMLの href 属性を相対パス + 日付パラメータに書き換え
-        backBtn.setAttribute('href', `frontEnd/src/index.html?date=${targetDate}`);
-    }
-});
+}

@@ -245,7 +245,7 @@ function setupCalendarNavigation() {
 }
 
 
-/*画面遷移
+//画面遷移
 function setupCardNavigation() {
     const mealCard = document.querySelector('.card.meal');
     const sleepCard = document.querySelector('.card.sleep');
@@ -260,7 +260,7 @@ function setupCardNavigation() {
     };
 
 
-
+/*
     if (mealCard) {
         mealCard.addEventListener('click', () => {
             // URLの末尾に ?date=2026-05-19 を付与して遷移
@@ -279,10 +279,9 @@ function setupCardNavigation() {
             window.location.href = `../../walk.html?date=${getFormattedDate()}`;
         });
     }
+        */
     console.log("✅ 日付パラメータ付き画面遷移の設定が完了しました");
 }
-
-*/
 
 async function initApp() {
     try {

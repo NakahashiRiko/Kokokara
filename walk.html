@@ -1,298 +1,704 @@
 <!DOCTYPE html>
+
 <html lang="ja">
 
 <head>
 
-<meta charset="UTF-8">
+    <meta charset="UTF-8">
 
-<title>歩数</title>
+    <title>歩数</title>
 
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-<style>
+    <style>
 
-body{
-    margin:0;
-    background:#efefef;
-    font-family:sans-serif;
-}
+        body{
+            margin:0;
+            background:#efefef;
+            font-family:sans-serif;
+        }
 
-header{
-    height:90px;
-    background:#f58f8f;
-    display:flex;
-    align-items:center;
-    padding:0 30px;
-    font-size:50px;
-    font-weight:bold;
-}
+        header{
+            height:90px;
+            background:#f58f8f;
+            display:flex;
+            align-items:center;
+            padding:0 30px;
+            font-size:50px;
+            font-weight:bold;
+        }
 
-.back{
-    color:gray;
-    font-size:60px;
-    margin-right:15px;
-}
+        .back{
+            color:#7b807c;
+            font-size:60px;
+            margin-right:15px;
+            text-decoration:none;
+        }
 
-.main{
-    display:flex;
-    background:white;
-    min-height:calc(100vh - 90px);
-}
+        .main{
+            display:flex;
+            background:white;
+            min-height:calc(100vh - 90px);
+        }
 
-.left,.right{
-    padding:40px;
-    box-sizing:border-box;
-}
+        .left,
+        .right{
+            padding:30px 40px 40px 40px;
+            box-sizing:border-box;
+        }
 
-.left{
-    width:45%;
-}
+        .left{
+            width:45%;
+            display:flex;
+            flex-direction:column;
+        }
 
-.right{
-    width:55%;
-    display:flex;
-    justify-content:center;
-    align-items:flex-start;
-}
+        .right{
+            width:55%;
+        }
 
-.date{
-    font-size:42px;
-    text-align:center;
-    margin-bottom:50px;
-}
+        .date{
+            font-size:42px;
+            text-align:center;
+            margin-bottom:35px;
+        }
 
-.row{
-    display:flex;
-    justify-content:center;
-    align-items:center;
-    font-size:35px;
-    margin-top:30px;
-}
+        .row{
+            display:flex;
+            justify-content:center;
+            align-items:center;
+            font-size:35px;
+            margin-top:20px;
+        }
 
-.label{
-    width:260px;
-    text-align:right;
-    padding-right:20px;
-    box-sizing:border-box;
-}
+        .label{
+            width:260px;
+            text-align:right;
+            padding-right:20px;
+            box-sizing:border-box;
+        }
 
-.value{
-    width:220px;
-    text-align:left;
-}
+        .value{
+            width:240px;
+            text-align:left;
+        }
 
-.avg-box{
-    margin-top:30px;
-    text-align:center;
-    font-size:35px;
-    line-height:1.5;
-    margin-left:-92px;
-}
+        .avg-box{
+            margin-top:20px;
+            text-align:center;
+            font-size:35px;
+            line-height:1.5;
+            margin-left:-92px;
+        }
 
-.avg-date{
-    margin-bottom:10px;
-}
+        .avg-date{
+            margin-bottom:10px;
+        }
 
-input{
-    width:90px;
-    height:45px;
-    font-size:28px;
-    text-align:center;
-}
+        input{
+            width:100px;
+            height:45px;
+            font-size:28px;
+            text-align:center;
+        }
 
-.comment,.graph-box{
-    background:#dcdcdc;
-    box-sizing:border-box;
-}
+        #saveButton{
+            width:220px;
+            height:65px;
+            border:none;
+            border-radius:15px;
+            background:#f58f8f;
+            color:white;
+            font-size:30px;
+            font-weight:bold;
+            cursor:pointer;
+        }
 
-.comment{
-    margin-top:80px;
-    padding:25px;
-    font-size:30px;
-    line-height:1.6;
-    margin-top:auto;
-    min-height:200px;
-    text-align:center;
-    white-space:pre-line;
-    overflow-wrap:break-word;
-}
+        .comment,
+        .graph-box{
+            background:#dcdcdc;
+            box-sizing:border-box;
+        }
 
-.graph-box{
-    width:100%;
-    height:700px;
-    padding:20px;
-    margin-top:-5px;
-}
+        .comment{
+            padding:25px;
+            font-size:26px;
+            line-height:1.6;
+            margin-top:auto;
+            min-height:200px;
+            text-align:center;
+            display:flex;
+            justify-content:center;
+            align-items:center;
+        }
 
-canvas{
-    width:100% !important;
-    height:100% !important;
-}
+        .graph-box{
+            width:100%;
+            height:700px;
+            padding:20px;
+        }
 
-</style>
+        canvas{
+            width:100% !important;
+            height:100% !important;
+        }
+
+    </style>
 
 </head>
 
 <body>
 
-<header>
-<div class="back">＜</div>
-歩数
-</header>
+    <header>
 
-<div class="main">
+        <a href="index.html" class="back">＜</a>
 
-<div class="left">
+        歩数
 
-<div class="date" id="selectedDate"></div>
+    </header>
 
-<div class="row">
+    <div class="main">
 
-<div class="label">目　　　標：</div>
+        <div class="left">
 
-<div class="value">
-<input type="number" id="targetInput" value="5000">歩
-</div>
+            <div class="date" id="selectedDate"></div>
 
-</div>
+            <div class="row">
 
-<div class="row">
+                <div class="label">
+                    目　　　標：
+                </div>
 
-<div class="label">今日の歩数：</div>
+                <div class="value">
 
-<div class="value" id="todayStep"></div>
+                    <input
+                        type="number"
+                        id="targetInput"
+                        value="5000"
+                    >
 
-</div>
+                    歩
 
-<div class="avg-box">
+                </div>
 
-<div class="avg-date" id="avgLabel"></div>
+            </div>
 
-<div id="avgText"></div>
+            <div class="row">
 
-</div>
+                <div class="label">
+                    今日の歩数：
+                </div>
 
-<div class="comment" id="comment"></div>
+                <div class="value">
 
-</div>
+                    <input
+                        type="number"
+                        id="stepInput"
+                        value="0"
+                    >
 
-<div class="right">
+                    歩
 
-<div class="graph-box">
-<canvas id="chart"></canvas>
-</div>
+                </div>
 
-</div>
+            </div>
 
-</div>
+            <div
+                style="
+                    text-align:center;
+                    margin-top:25px;
+                "
+            >
 
-<script>
+                <button id="saveButton">
+                    記録する
+                </button>
 
-const selectedDay = 12;
+            </div>
 
-const stepData = {};
+            <div class="avg-box">
 
-for(let i = 1;i <= 31;i++){
-    stepData[i] = Math.floor(Math.random() * 8000);
-}
+                <div
+                    class="avg-date"
+                    id="avgLabel"
+                >
+                </div>
 
-document.getElementById("selectedDate").innerText
-= "2026/05/" + String(selectedDay).padStart(2,"0");
+                <div id="avgText"></div>
 
-const todayStep = stepData[selectedDay];
+            </div>
 
-document.getElementById("todayStep").innerText
-= todayStep + "歩";
+            <div
+                class="comment"
+                id="comment"
+            >
+            </div>
 
-/* グラフ */
+        </div>
 
-let labels = [];
-let data = [];
+        <div class="right">
 
-for(let i = 6;i >= 0;i--){
+            <div class="graph-box">
 
-    let day = selectedDay - i;
+                <canvas id="chart"></canvas>
 
-    if(day <= 0) continue;
+            </div>
 
-    labels.push(day + "日");
-    data.push(stepData[day]);
-}
+        </div>
 
-/* 先週平均 */
+    </div>
 
-let startDay = selectedDay - 9;
-let endDay = selectedDay - 3;
+    <script>
 
-let sum = 0;
-let count = 0;
+        /* 日付取得 */
 
-for(let day = startDay;day <= endDay;day++){
-    sum += stepData[day];
-    count++;
-}
+        const params =
+            new URLSearchParams(location.search);
 
-document.getElementById("avgLabel").innerText
-= "2026/05/" + String(startDay).padStart(2,"0")
-+ "~2026/05/" + String(endDay).padStart(2,"0");
+        const selectedDay =
+            params.get("day")
+            ?
+            Number(params.get("day"))
+            :
+            new Date().getDate();
 
-document.getElementById("avgText").innerText
-= "の平均歩数：" + Math.floor(sum / count) + "歩";
+        const today = new Date();
 
-/* グラフ */
+        const year =
+            today.getFullYear();
 
-new Chart(document.getElementById("chart"),{
+        const month =
+            today.getMonth() + 1;
 
-    type:"bar",
 
-    data:{
-        labels:labels,
-        datasets:[{
-            data:data
-        }]
-    },
 
-    options:{
-        responsive:true,
-        maintainAspectRatio:false,
-        plugins:{
-            legend:{ display:false }
-        },
-        scales:{
-            y:{ beginAtZero:true }
+        /* 表示日付 */
+
+        document.getElementById("selectedDate").innerText =
+            year +
+            "/" +
+            String(month).padStart(2,"0") +
+            "/" +
+            String(selectedDay).padStart(2,"0");
+
+
+
+        /* 保存キー */
+
+        const selectedKey =
+            year +
+            "-" +
+            String(month).padStart(2,"0") +
+            "-" +
+            String(selectedDay).padStart(2,"0");
+
+
+
+        /* データ */
+
+        const stepData = {};
+
+
+
+        /* 30日前 */
+
+        for(let i = 30; i >= 0; i--){
+
+            let d = new Date();
+
+            d.setDate(today.getDate() - i);
+
+            let y = d.getFullYear();
+
+            let m =
+                String(d.getMonth() + 1)
+                .padStart(2,"0");
+
+            let day =
+                String(d.getDate())
+                .padStart(2,"0");
+
+            let key =
+                y +
+                "-" +
+                m +
+                "-" +
+                day;
+
+            let saved =
+                localStorage.getItem(key);
+
+            stepData[key] =
+                saved
+                ?
+                Number(saved)
+                :
+                0;
         }
-    }
 
-});
 
-function updatePage(){
 
-    let target = Number(document.getElementById("targetInput").value);
+        /* 保存済み */
 
-    let diff = todayStep - target;
+        let savedStep =
+            localStorage.getItem(selectedKey);
 
-    document.getElementById("comment").innerText
-    = diff >= 0 ?
+        if(savedStep){
 
-    "今日の歩数は" + todayStep + "歩です。\n" +
-    "目標と" + diff + "歩の差があります。\n" +
-    "おめでとうございます！\nこれからも続けましょう！"
+            document.getElementById("stepInput").value =
+                savedStep;
+        }
 
-    :
 
-    "今日の歩数は" + todayStep + "歩です。\n" +
-    "目標と" + Math.abs(diff) + "歩の差があります。\n" +
-    "もっと頑張りましょう！";
 
-}
+        /* 平均 */
 
-document.getElementById("targetInput")
-.addEventListener("input",updatePage);
+        let todayDay =
+            today.getDay();
 
-updatePage();
+        let thisSunday =
+            new Date(today);
 
-</script>
+        thisSunday.setDate(
+            today.getDate() - todayDay
+        );
 
-<script type="module" src="frontEnd/src/js/walk.js"></script>
+        let lastSunday =
+            new Date(thisSunday);
+
+        lastSunday.setDate(
+            thisSunday.getDate() - 7
+        );
+
+        let lastSaturday =
+            new Date(lastSunday);
+
+        lastSaturday.setDate(
+            lastSunday.getDate() + 6
+        );
+
+        let sum = 0;
+
+        for(let i = 0; i < 7; i++){
+
+            let d =
+                new Date(lastSunday);
+
+            d.setDate(
+                lastSunday.getDate() + i
+            );
+
+            let y =
+                d.getFullYear();
+
+            let m =
+                String(d.getMonth()+1)
+                .padStart(2,"0");
+
+            let day =
+                String(d.getDate())
+                .padStart(2,"0");
+
+            let key =
+                y +
+                "-" +
+                m +
+                "-" +
+                day;
+
+            sum += stepData[key] || 0;
+        }
+
+        let avg =
+            Math.floor(sum / 7);
+
+
+
+        document.getElementById("avgLabel").innerText =
+            String(lastSunday.getMonth()+1)
+            .padStart(2,"0")
+            +
+            "/"
+            +
+            String(lastSunday.getDate())
+            .padStart(2,"0")
+            +
+            " ~ "
+            +
+            String(lastSaturday.getMonth()+1)
+            .padStart(2,"0")
+            +
+            "/"
+            +
+            String(lastSaturday.getDate())
+            .padStart(2,"0");
+
+
+
+        document.getElementById("avgText").innerText =
+            "の平均歩数：" +
+            avg +
+            "歩";
+
+
+
+        /* グラフ */
+
+        let chart;
+
+
+
+        function createChart(){
+
+            let labels = [];
+
+            let graphData = [];
+
+            for(let i = 6; i >= 0; i--){
+
+                let d =
+                    new Date(
+                        year,
+                        month - 1,
+                        selectedDay
+                    );
+
+                d.setDate(
+                    d.getDate() - i
+                );
+
+                let y =
+                    d.getFullYear();
+
+                let m =
+                    String(d.getMonth()+1)
+                    .padStart(2,"0");
+
+                let day =
+                    String(d.getDate())
+                    .padStart(2,"0");
+
+                let key =
+                    y +
+                    "-" +
+                    m +
+                    "-" +
+                    day;
+
+                labels.push(
+                    Number(day) + "日"
+                );
+
+                graphData.push(
+                    stepData[key] || 0
+                );
+            }
+
+
+
+            if(chart){
+
+                chart.destroy();
+            }
+
+
+
+            chart =
+                new Chart(
+                    document.getElementById("chart"),
+                    {
+                        type:"bar",
+
+                        data:{
+                            labels:labels,
+
+                            datasets:[
+                                {
+                                    data:graphData
+                                }
+                            ]
+                        },
+
+                        options:{
+                            responsive:true,
+
+                            maintainAspectRatio:false,
+
+                            plugins:{
+                                legend:{
+                                    display:false
+                                },
+
+                                tooltip:{
+                                    enabled:false
+                                }
+                            },
+
+                            scales:{
+                                y:{
+                                    beginAtZero:true,
+
+                                    ticks:{
+                                        callback:function(value){
+
+                                            return value + "歩";
+                                        }
+                                    }
+                                }
+                            }
+                        },
+
+                        plugins:[
+                            {
+                                afterDatasetsDraw(chart){
+
+                                    const { ctx } = chart;
+
+                                    ctx.save();
+
+                                    ctx.font =
+                                        "16px sans-serif";
+
+                                    ctx.textAlign =
+                                        "center";
+
+                                    ctx.textBaseline =
+                                        "bottom";
+
+                                    chart.data.datasets.forEach(
+                                        (dataset,i)=>{
+
+                                            const meta =
+                                                chart.getDatasetMeta(i);
+
+                                            meta.data.forEach(
+                                                (bar,index)=>{
+
+                                                    const value =
+                                                        dataset.data[index];
+
+                                                    ctx.fillText(
+                                                        value,
+                                                        bar.x,
+                                                        bar.y - 8
+                                                    );
+                                                }
+                                            );
+                                        }
+                                    );
+                                }
+                            }
+                        ]
+                    }
+                );
+        }
+
+
+
+        /* 更新 */
+
+        function updatePage(){
+
+            let target =
+                Number(
+                    document.getElementById("targetInput").value
+                );
+
+            let step =
+                Number(
+                    document.getElementById("stepInput").value
+                );
+
+
+
+            /* 保存 */
+
+            localStorage.setItem(
+                selectedKey,
+                step
+            );
+
+            stepData[selectedKey] = step;
+
+
+
+            /* グラフ更新 */
+
+            createChart();
+
+
+
+            /* コメント */
+
+            let diff =
+                step - target;
+
+
+
+            if(diff >= 0){
+
+                document.getElementById("comment").innerText =
+
+                    "今日の歩数は" +
+                    step +
+                    "歩です。"
+
+                    +
+
+                    "目標と" +
+                    diff +
+                    "歩の差があります。"
+
+                    +
+
+                    "おめでとうございます！"
+
+                    +
+
+                    "これからも続けましょう！";
+            }
+
+            else{
+
+                document.getElementById("comment").innerText =
+
+                    "今日の歩数は" +
+                    step +
+                    "歩です。"
+
+                    +
+
+                    "目標と" +
+                    Math.abs(diff) +
+                    "歩の差があります。"
+
+                    +
+
+                    "もっと頑張りましょう！";
+            }
+        }
+
+
+
+        /* ボタン */
+
+        document
+            .getElementById("saveButton")
+            .addEventListener(
+                "click",
+                updatePage
+            );
+
+
+
+        /* 初回 */
+
+        updatePage();
+
+    </script>
+
+    <script type="module" src="frontEnd/src/js/SleepApp.js"></script>
+
 </body>
+
 </html>

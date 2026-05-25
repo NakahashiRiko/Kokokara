@@ -126,7 +126,7 @@ function setupCalendarCellsEvent() {
             }
         });
     });
-    loadSelectedDateData();
+    //loadSelectedDateData();
 }
 
 
@@ -374,6 +374,7 @@ async function initApp() {
 
 initApp();
 
+/*
 // 既存のDOMContentLoadedイベントや日付切り替え処理と統合します
 document.addEventListener("DOMContentLoaded", () => {
     // 初回読み込み時に、現在の選択日付のデータを取得してカードに反映
@@ -382,6 +383,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // 既存のカレンダーの「◀︎」「▶︎」ボタンや日付セルをクリックしたイベントの「最後」で、
     // 必ず `loadSelectedDateData();` を呼び出すようにしてください。
 });
+*/
 
 /**
  * 現在選択されている日付（currentDate）のデータをFirestoreから読み込み、

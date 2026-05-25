@@ -241,6 +241,8 @@ function setupCalendarNavigation() {
     */
 }
 
+
+/*画面遷移
 function setupCardNavigation() {
     const mealCard = document.querySelector('.card.meal');
     const sleepCard = document.querySelector('.card.sleep');
@@ -253,6 +255,8 @@ function setupCardNavigation() {
         const date = String(currentDate.getDate()).padStart(2, '0');
         return `${year}-${month}-${date}`;
     };
+
+
 
     if (mealCard) {
         mealCard.addEventListener('click', () => {
@@ -274,6 +278,8 @@ function setupCardNavigation() {
     }
     console.log("✅ 日付パラメータ付き画面遷移の設定が完了しました");
 }
+
+*/
 
 async function initApp() {
     try {

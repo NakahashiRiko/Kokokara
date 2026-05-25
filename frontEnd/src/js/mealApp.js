@@ -13,7 +13,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
-// 「1日の記録を終了して確定する」ボタンが押されたときの保存イベント
+// 「記録確定」ボタンが押されたときの保存イベント
 document.getElementById('finish_today_btn').addEventListener('click', async () => {
     try {
         // 画面の入力フィールドから値を回収
@@ -47,6 +47,10 @@ document.getElementById('finish_today_btn').addEventListener('click', async () =
         alert("エラーが発生しました。コンソールを確認してください。");
     }
 });
+
+
+
+
 
 
 
@@ -108,13 +112,77 @@ function countMeals(){
     return count;//食事回数を返す。
 }
 
-//-------------------------[機能3]記録保存ボタンの動作-------------------------//
+//-------------------------[機能3]不足栄養素を見つける-------------------------//
+//現時点での不足栄養素を求める関数
+function lackNutrients(){
+    //デフォルトの状態だと何も摂取してないので全ての栄養素が不足していると考えて良い。
+    //不足栄養素を入れる配列を用意。初期値は5つの栄養素全て。
+    let lackNutrientsArray = ["炭水化物", "タンパク質", "脂質", "ビタミン", "ミネラル"];
+
+    //朝食で摂取した栄養素を取得。
+    let breakfastNutrients = document.querySelectorAll('#breakfast_nutrients input[type="checkbox"]:checked');
+
+    //朝食で摂取した栄養素の中に、lackNutrientsArrayに入っている栄養素があったら、その栄養素は不足していないと見なす。なのでlackNutrientsArrayから削除する。
+    //forEachで朝食で摂取した栄養素を1つずつ見ていく。boxという配列を用意しbreakfastNutrientsの中身を1つずつ入れていく(配列要素の走査)。
+    breakfastNutrients.forEach(box => {
+        let nutrients = box.value;//breakfastNutrientsの中身のデータを取り出す。
+
+        //上で取得したデータがlackNutrientsArray配列の何番目の要素なのかを取得。取得できなかったら-1が返る。
+        let index = lackNutrientsArray.indexOf(nutrients);
+
+        //取得したデータの栄養素がまだ取得してない状態にあった場合。
+        if(index !== -1){//要素番号を取得できた場合。
+            //lackNutrientsArrayの中から取得したデータの栄養素を削除する。index番目の要素を1つ削除する。
+            lackNutrientsArray.splice(index, 1);
+        }
+    });
+
+    //昼食で摂取した栄養素を取得。
+    let lunchNutrients = document.querySelectorAll('#lunch_nutrients input[type="checkbox"]:checked');
+
+    //昼食で摂取した栄養素の中に、lackNutrientsArrayに入っている栄養素があったら、その栄養素は不足していないと見なす。なのでlackNutrientsArrayから削除する。
+    lunchNutrients.forEach(box => {
+        let nutrients = box.value;//lunchNutrientsの中身のデータを取り出す。
+
+        //上で取得したデータがlackNutrientsArray配列の何番目の要素なのかを取得。取得できなかったら-1が返る。
+        let index = lackNutrientsArray.indexOf(nutrients);
+
+        //取得したデータの栄養素がまだ取得してない状態にあった場合。
+        if(index !== -1){//要素番号を取得できた場合。
+            //lackNutrientsArrayの中から取得したデータの栄養素を削除する。index番目の要素を1つ削除する。
+            lackNutrientsArray.splice(index, 1);
+        }
+    });
+
+    //夕食で摂取した栄養素を取得。
+    let dinnerNutrients = document.querySelectorAll('#dinner_nutrients input[type="checkbox"]:checked');
+
+    //夕食で摂取した栄養素の中に、lackNutrientsArrayに入っている栄養素があったら、その栄養素は不足していないと見なす。なのでlackNutrientsArrayから削除する。
+    dinnerNutrients.forEach(box => {
+        let nutrients = box.value;//dinnerNutrientsの中身のデータを取り出す。
+
+        //上で取得したデータがlackNutrientsArray配列の何番目の要素なのかを取得。取得できなかったら-1が返る。
+        let index = lackNutrientsArray.indexOf(nutrients);
+
+        //取得したデータの栄養素がまだ取得してない状態にあった場合。
+        if(index !== -1){//要素番号を取得できた場合。
+            //lackNutrientsArrayの中から取得したデータの栄養素を削除する。index番目の要素を1つ削除する。
+            lackNutrientsArray.splice(index, 1);
+        }
+    });
+    //ここでまだlackNutrientsArrayに残っている栄養素は、朝昼夕のどの食事でも摂取されていない栄養素なので、不足していると見なすことができる。
+
+    return lackNutrientsArray;//不足栄養素を返す。
+}
+
+//-------------------------[機能4]記録保存ボタンの動作-------------------------//
 //記録保存ボタンをHTMLから取得
 const finishBtn = document.getElementById('save_records_btn');
 
 //記録保存ボタンがクリックされたときの動作（ここで全体の指揮をとる）
 finishBtn.addEventListener('click', () => {
-    //-------------------------[機能4]食事回数を表示-------------------------//
+
+    //-------------------------[機能5]食事回数を表示-------------------------//
     //食事回数のカウントをする関数を呼び出す。これで食事回数が取得できた。
     let todayMealCount = countMeals();
 
@@ -123,8 +191,21 @@ finishBtn.addEventListener('click', () => {
     //食事回数を更新し表示する。
     mealCountText.textContent = `本日の食事回数: ${todayMealCount}回`;
 
-    //記録を保存したことをユーザーに知らせるポップアップ
-    //alert(`本日の食事回数 ${todayMealCount}回 で記録を保存しました！`);
+    //-------------------------[機能6]不足栄養素を表示-------------------------//
+    let lackNutrientsArray = lackNutrients();//不足栄養素を求める関数を呼び出す。これで不足栄養素の配列が取得できた。
 
-    //-------------------------[機能4]栄養素とかdisabled化などの処理はここから-------------------------//
+    //不足栄養素を表示するテキストを取得する。
+    let lackNutrientsText = document.getElementById('lack_nutrients');
+
+    if(lackNutrientsArray.length > 0){//不足栄養素がある場合。
+        //不足栄養素を更新し表示する。配列を文字列に変換して表示する。.join(', ')で配列の要素をカンマ区切りの文字列に変換する。
+        lackNutrientsText.textContent = `本日の不足栄養素: ${lackNutrientsArray.join(', ')}`;
+    }
+
+    else{//不足栄養素がない場合。
+        //不足栄養素がないことを表示する。
+        lackNutrientsText.textContent = `本日の不足栄養素: なし`;
+    }
+
+    //-------------------------[機能7]栄養素とかdisabled化などの処理はここから-------------------------//
 });

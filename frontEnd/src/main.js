@@ -313,15 +313,39 @@ async function initApp() {
                 meal: {
                     breakfast: {
                         menu: "テスト用のトースト",
-                        time: "08:30"
+                        time: "08:30",
+                        nutrients: {
+                            carbohydrates: false,
+                            protein: false,
+                            fat: false,
+                            vitamin: false,
+                            minerals: false
+                        }
                     },
                     lunch: {
                         menu: "",
-                        time: ""
+                        time: "",
+                        nutrients: {
+                            carbohydrates: false,
+                            protein: false,
+                            fat: false,
+                            vitamin: false,
+                            minerals: false
+                        }
                     },
                     dinner: {
                         menu: "",
-                        time: ""
+                        time: "",
+                        nutrients: {
+                            carbohydrates: false,
+                            protein: false,
+                            fat: false,
+                            vitamin: false,
+                            minerals: false
+                        }
+                    },
+                    other:{
+                        menu: ""
                     }
                 },
                 // 睡眠データ（階層構造）
@@ -329,7 +353,7 @@ async function initApp() {
                     hour: 7,
                     minute: 15,
                     waketime: "07:00",
-                    sleeptime: "23:45"//自動計算で出す就寝時間
+                    sleeptime: ""//自動計算で出す就寝時間
                 },
                 // 歩数データ
                 walk: 8000,

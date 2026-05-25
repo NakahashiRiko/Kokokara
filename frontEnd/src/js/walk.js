@@ -34,8 +34,10 @@ function updatePageWithSave() {
 async function saveWalkToFirebase(steps, target) {
     try {
         const walkData = {
-            walk: steps,
-            walkTarget: target
+            walk: {
+                steps: steps,
+                walkTarget: target
+            }
         };
         await saveDailyData(targetDate, walkData);
         console.log(`[Firestore] ${targetDate} の歩数データを自動更新しました: ${steps}/${target}歩`);

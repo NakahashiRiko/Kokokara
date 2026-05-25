@@ -356,9 +356,11 @@ async function initApp() {
                     sleeptime: ""//自動計算で出す就寝時間
                 },
                 // 歩数データ
-                walk: 8000,
-                // 目標歩数
-                walkTarget: 5000
+                walk: {
+                    steps: 8000,
+                    // 目標歩数
+                    walkTarget: 5000
+                }
             });
             console.log("✅ Firestoreへの書き込みに成功しました！");
         }

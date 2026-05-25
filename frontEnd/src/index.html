@@ -12,7 +12,7 @@
             <h1 class="title">ココカラ</h1>
             <div class="memo-area">
                 <!-- inputからtextarea（複数行入力対応）に変更しました -->
-                <textarea placeholder="メモを入力（複数行の入力、保存機能あり）" class="memo-input"></textarea>
+                <textarea placeholder="メモを入力（右下でメモ欄の幅を変更可）" class="memo-input"></textarea>
             </div>
         </header>
 
@@ -40,7 +40,7 @@
             <!-- 8. 右側エリア（ライフログカード） -->
             <section class="right">
                 <!-- 食事カード（リンク化） -->
-                <a href="mealApp.html" class="card-link">
+                <a href="../../mealApp.html" class="card-link">
                     <div class="card meal">
                         <h3 class="card-title">食事</h3>
                         <div class="card-content">
@@ -52,7 +52,7 @@
                 </a>
 
                 <!-- 睡眠カード（リンク化） -->
-                <a href="SleepApp.html" class="card-link">
+                <a href="../../SleepApp.html" class="card-link">
                     <div class="card sleep">
                         <h3 class="card-title">睡眠</h3>
                         <div class="card-content">
@@ -62,7 +62,7 @@
                 </a>
 
                 <!-- 歩数カード（リンク化） -->
-                <a href="walk.html" class="card-link">
+                <a href="../../walk.html" class="card-link">
                     <div class="card steps">
                         <h3 class="card-title">歩数</h3>
                         <div class="card-content">
@@ -72,32 +72,33 @@
                 </a>
 
                 <!-- 体調カード（ポップアップの仕掛けがあるため、そのまま維持） -->
-                <div class="card condition" tabindex="0">
-                    <h3 class="card-title">体調</h3>
-                    <div class="card-content">
-                        <!-- 💡 仕掛け：5段階の隠しラジオボタン -->
-                        <input type="radio" name="condition-select" id="cond-5" class="cond-radio" checked>
-                        <input type="radio" name="condition-select" id="cond-4" class="cond-radio">
-                        <input type="radio" name="condition-select" id="cond-3" class="cond-radio">
-                        <input type="radio" name="condition-select" id="cond-2" class="cond-radio">
-                        <input type="radio" name="condition-select" id="cond-1" class="cond-radio">
+                <div class="card condition">
+                    <input type="checkbox" id="toggle-bubble" class="bubble-toggle-input">
 
-                        <!-- メイン表示用の顔アイコン -->
+                    <input type="radio" name="condition-select" id="cond-5" class="cond-radio" checked>
+                    <input type="radio" name="condition-select" id="cond-4" class="cond-radio">
+                    <input type="radio" name="condition-select" id="cond-3" class="cond-radio">
+                    <input type="radio" name="condition-select" id="cond-2" class="cond-radio">
+                    <input type="radio" name="condition-select" id="cond-1" class="cond-radio">
+    
+                    <label for="toggle-bubble" class="face-trigger">
+                        <h3 class="card-title">体調</h3>
                         <div class="face-icon">
                             <div class="eye eye-left"></div>
                             <div class="eye eye-right"></div>
                             <div class="mouth"></div>
                         </div>
+                    </label>
 
-                        <!-- クリック時に表示される5段階の吹き出し -->
+                    <div class="card-content">
                         <div class="popup-bubble">
                             <p class="bubble-title">今日の体調は？</p>
                             <div class="status-buttons">
-                                <label for="cond-5" class="status-label" title="とても良い">😆</label>
-                                <label for="cond-4" class="status-label" title="良い">🙂</label>
-                                <label for="cond-3" class="status-label" title="普通">😐</label>
-                                <label for="cond-2" class="status-label" title="悪い">🙁</label>
-                                <label for="cond-1" class="status-label" title="とても悪い">😢</label>
+                                <label for="cond-5" class="status-label" title="とても良い" onclick="document.getElementById('toggle-bubble').checked=false">😆</label>
+                                <label for="cond-4" class="status-label" title="良い" onclick="document.getElementById('toggle-bubble').checked=false">🙂</label>
+                                <label for="cond-3" class="status-label" title="普通" onclick="document.getElementById('toggle-bubble').checked=false">😐</label>
+                                <label for="cond-2" class="status-label" title="悪い" onclick="document.getElementById('toggle-bubble').checked=false">🙁</label>
+                                <label for="cond-1" class="status-label" title="とても悪い" onclick="document.getElementById('toggle-bubble').checked=false">😢</label>
                             </div>
                         </div>
                     </div>

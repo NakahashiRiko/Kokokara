@@ -8,17 +8,23 @@ const targetDate = urlParams.get('date') || new Date(Date.now() - new Date().get
 
 // 画面が読み込まれた時の初期化処理
 document.addEventListener('DOMContentLoaded', async () => {
-    // 1.HTML側の「今日にする処理」に勝つために、少し遅れて日付表示を過去日に確定させる
+    
+    // 1.HTML側の強力な「今日(26日)」の処理を完全に上書き・乗っ取る
     setTimeout(() => {
+        //対象日のテキスト表示を過去日に強制書き換え
         const todayDateEl = document.getElementById("todayDate");
         if (todayDateEl) {
             todayDateEl.textContent = `対象日: ${targetDate.replace(/-/g, '/')}`;
         }
-        // HTML側の内部変数 selectedDate も上書きしてズレを防止する
-        if (window.selectedDate !== undefined) {
-            window.selectedDate = targetDate;
+        
+        //HTML側で作られたグラフの日付基準を、URLの過去日に強制同期させる
+        if (window.sleepChart) {
+            // HTML内のグラフや曜日計算を正しい日付ベースで再計算させるための処理
+            const selected = new Date(targetDate);
+            // グラフを正しい日付の状態で一度更新
+            window.sleepChart.update();
         }
-    }, 50);
+    }, 100); // HTML側の処理が完全に終わった後に確実に実行させるための時間（100ミリ秒）
 
     // 2. 左上の「＜」ボタンの戻り先を動的にセット
     const backBtn = document.querySelector('.back-button');
@@ -41,8 +47,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 });
 
 /**
- * HTML側の古い calculateSleep を横からキャッチして、
- * 計算処理が終わった直後にFirestoreへ保存する仕組み（フック）
+ * HTML側のボタンが押されたら、
+ * 計算処理を行った直後にFirestoreへ保存する仕組み
  */
 const originalCalculateSleep = window.calculateSleep;
 
@@ -52,7 +58,6 @@ window.calculateSleep = async function() {
     if (typeof originalCalculateSleep === 'function') {
         originalCalculateSleep();
     } else {
-        // もしHTML側にまだ関数が読み込まれていなければ、HTML内の計算ロジックをここで実行
         const sleep = document.getElementById("sleepInput").value;
         const wake = document.getElementById("wakeInput").value;
         if (sleep === "" || wake === "") return;
@@ -129,7 +134,19 @@ async function loadExistingSleepData() {
                 const m = String(sleep.minute).padStart(2, '0');
                 
                 document.getElementById("sleepResult").textContent = `${h}時間${m}分`;
-                document.getElementById("comment").textContent = `今日の睡眠時間は${h}時間${m}分です。`;
+                
+                // コメント欄も復元（HTML側の判定ロジックに合わせたアドバイスを生成）
+                let advice = "理想的な睡眠時間です。この生活リズムを維持しましょう。";
+                const totalHours = sleep.hour + (sleep.minute / 60);
+                if (totalHours < 6) {
+                    advice = "睡眠時間が不足しています。十分な休息を取りましょう。";
+                } else if (totalHours > 9) {
+                    advice = "睡眠時間が長めです。生活リズムも意識してみましょう。";
+                } else if (totalHours >= 6 && totalHours < 7) {
+                    advice = "あと少し睡眠時間を増やすとより良いです。";
+                }
+                
+                document.getElementById("comment").textContent = `今日の睡眠時間は${h}時間${m}分です。\n${advice}`;
             }
         }
     } catch (error) {

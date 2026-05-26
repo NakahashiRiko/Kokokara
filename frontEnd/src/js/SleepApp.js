@@ -6,25 +6,22 @@ import { loginAnonymously } from '../services/authService.js';
 const urlParams = new URLSearchParams(window.location.search);
 const targetDate = urlParams.get('date') || new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().split('T')[0];
 
-//画面が読み込まれた時の初期化処理
+// 画面が読み込まれた時の初期化処理
 document.addEventListener('DOMContentLoaded', async () => {
     
-    // 1.HTML側の強力な「今日(26日)」の処理を完全に上書き・乗っ取る
+    // 1. HTML側の強力な「今日(26日)」の処理を完全に上書き・乗っ取る
     setTimeout(() => {
-        //対象日のテキスト表示を過去日に強制書き換え
+        // 対象日のテキスト表示を過去日に強制書き換え
         const todayDateEl = document.getElementById("todayDate");
         if (todayDateEl) {
             todayDateEl.textContent = `対象日: ${targetDate.replace(/-/g, '/')}`;
         }
         
-        //HTML側で作られたグラフの日付基準を、URLの過去日に強制同期させる
-        if (window.sleepChart) {
-            // HTML内のグラフや曜日計算を正しい日付ベースで再計算させるための処理
-            const selected = new Date(targetDate);
-            // グラフを正しい日付の状態で一度更新
-            window.sleepChart.update();
+        // HTML側のローカル変数 selectedDate のガードが外れている場合、ここでも同期をかける
+        if (window.selectedDate !== undefined) {
+            window.selectedDate = targetDate;
         }
-    }, 100); // HTML側の処理が完全に終わった後に確実に実行させるための時間（100ミリ秒）
+    }, 100);
 
     // 2. 左上の「＜」ボタンの戻り先を動的にセット
     const backBtn = document.querySelector('.back-button');
@@ -38,7 +35,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (user) {
             console.log("🔥 睡眠画面でのFirebase接続成功！ UID:", user.uid);
             
-            // 4. ログイン成功後に、既存データをFirestoreから読み込んで復元
+            // 4. ログイン成功後に、既存データをFirestoreから読み込んでフォームと【グラフ】を復元
             await loadExistingSleepData();
         }
     } catch (error) {
@@ -97,10 +94,10 @@ window.calculateSleep = async function() {
     try {
         const sleepDataObj = {
             sleep: {
-                hour: hours,         // main.jsのデータ構造に統一
+                hour: hours,         
                 minute: minutes,
-                waketime: wake,      // 小文字
-                sleeptime: sleep     // 小文字
+                waketime: wake,      
+                sleeptime: sleep     
             }
         };
 
@@ -116,7 +113,7 @@ window.calculateSleep = async function() {
 };
 
 /**
- * Firestoreからデータを読み込んでフォームに復元する関数
+ * Firestoreからデータを読み込んでフォームと【グラフ】に復元する関数
  */
 async function loadExistingSleepData() {
     try {
@@ -124,18 +121,17 @@ async function loadExistingSleepData() {
         if (data && data.sleep) {
             const sleep = data.sleep;
 
-            // 入力フォームの値を復元
+            // ① 入力フォームの値を復元
             if (sleep.sleeptime) document.getElementById("sleepInput").value = sleep.sleeptime;
             if (sleep.waketime) document.getElementById("wakeInput").value = sleep.waketime;
 
-            // 計算結果テキストとコメントの復元
+            // ② 計算結果テキストとコメントの復元
             if (sleep.hour !== undefined && sleep.minute !== undefined) {
                 const h = String(sleep.hour).padStart(2, '0');
                 const m = String(sleep.minute).padStart(2, '0');
                 
                 document.getElementById("sleepResult").textContent = `${h}時間${m}分`;
                 
-                // コメント欄も復元（HTML側の判定ロジックに合わせたアドバイスを生成）
                 let advice = "理想的な睡眠時間です。この生活リズムを維持しましょう。";
                 const totalHours = sleep.hour + (sleep.minute / 60);
                 if (totalHours < 6) {
@@ -147,6 +143,24 @@ async function loadExistingSleepData() {
                 }
                 
                 document.getElementById("comment").textContent = `今日の睡眠時間は${h}時間${m}分です。\n${advice}`;
+
+                // 🌟 ③ 【追加】HTML側のグラフ用配列（sleepData）にデータを復元し、グラフを再描画する
+                if (window.sleepData && window.sleepChart) {
+                    // targetDateから曜日（0:日 〜 6:土）を取得
+                    const selectedDateObj = new Date(targetDate);
+                    const dayOfWeek = selectedDateObj.getDay(); 
+
+                    // グラフデータ配列の該当する曜日の位置に、今回の睡眠時間をセット（時間単位の少数点）
+                    window.sleepData[dayOfWeek] = totalHours;
+
+                    // グラフ画面を最新の状態にリフレッシュ（描画）
+                    window.sleepChart.update();
+
+                    // HTML側にある平均値計算ロジック（もし存在すれば）を実行
+                    if (typeof window.calculateAverage === 'function') {
+                        window.calculateAverage();
+                    }
+                }
             }
         }
     } catch (error) {

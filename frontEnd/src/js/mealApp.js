@@ -14,7 +14,13 @@ document.addEventListener('DOMContentLoaded', async () => {
         dateDisplay.textContent = `選択された日付: ${targetDate.replace(/-/g, '/')}`;
     }
 
-    // 2.Firebaseに自動ログインし、成功したらデータを復元する
+    //2. 左上の「＜」戻るボタンのリンク先に日付を引き継がせる
+    const backBtn = document.querySelector('.back'); // HTMLのクラス名「back」に合わせる
+    if (backBtn) {
+        backBtn.setAttribute('href', `frontEnd/src/index.html?date=${targetDate}`);
+    }
+
+    // 3. Firebaseに自動ログインし、成功したらデータを復元する
     try {
         const user = await loginAnonymously();
         if (user) {
@@ -41,7 +47,6 @@ async function loadExistingMealData() {
             if (meal.breakfast) {
                 if (meal.breakfast.menu) document.getElementById('bf_menu').value = meal.breakfast.menu;
                 if (meal.breakfast.calorie) document.getElementById('bf_cal').value = meal.breakfast.calorie;
-                // 栄養素チェックボックスの復元
                 restoreNutrients('bf_p', 'bf_f', 'bf_c', meal.breakfast.nutrients);
             }
 
@@ -59,19 +64,8 @@ async function loadExistingMealData() {
                 restoreNutrients('dn_p', 'dn_f', 'dn_c', meal.dinner.nutrients);
             }
 
-            // データ復元後に、自動的にHTML側の「記録保存（集計）」ボタンを一度クリックさせて、
-            // 回数や不足栄養素のテキスト表示を最新の状態にする
-            const finishBtn = document.getElementById('save_records_btn');
-            if (finishBtn) {
-                // 自動保存とループするのを防ぐため、一時的にクリックだけをシミュレート
-                const originalText = finishBtn.textContent;
-                // 集計処理だけを実行（下のイベントリスナーが動きます）
-                setTimeout(() => {
-                    // 読み込み時の初期集計を実行するために、集計ロジックだけを動かしたい場合は
-                    // 保存ボタンのクリックイベントを呼び出します（アラート等は出ないように制御）
-                    console.log("📊 復元データの集計表示を更新しました");
-                }, 100);
-            }
+            // 初期ロード時にも集計表示（食事回数など）をHTMLに反映させるため、ボタンのイベントを1回キック
+            updateMealSummaryDisplay();
         }
     } catch (error) {
         console.error("❌ 食事データの読み込みに失敗しました:", error);
@@ -161,27 +155,32 @@ function lackNutrients(){
     return lackNutrientsArray;
 }
 
+// 画面表示を更新するための共通集計ロジック
+function updateMealSummaryDisplay() {
+    let todayMealCount = countMeals();
+    let mealCountText = document.getElementById('meal_count');
+    if (mealCountText) mealCountText.textContent = `本日の食事回数: ${todayMealCount}回`;
+
+    let lackNutrientsArray = lackNutrients();
+    let lackNutrientsText = document.getElementById('lack_nutrients');
+    if (lackNutrientsText) {
+        if(lackNutrientsArray.length > 0){
+            lackNutrientsText.textContent = `本日の不足栄養素: ${lackNutrientsArray.join(', ')}`;
+        } else {
+            lackNutrientsText.textContent = `本日の不足栄養素: なし`;
+        }
+    }
+}
+
 //---------------------[機能5]記録保存ボタンの動作-------------------------//
 const finishBtn = document.getElementById('save_records_btn');
 
 finishBtn.addEventListener('click', async () => {
 
-    //-------------------------[機能6]食事回数を表示-------------------------//
-    let todayMealCount = countMeals();
-    let mealCountText = document.getElementById('meal_count');
-    mealCountText.textContent = `本日の食事回数: ${todayMealCount}回`;
+    // 画面上の集計テキスト（回数・不足栄養素）を最新にする
+    updateMealSummaryDisplay();
 
-    //-------------------------[機能7]不足栄養素を表示-------------------------//
-    let lackNutrientsArray = lackNutrients();
-    let lackNutrientsText = document.getElementById('lack_nutrients');
-
-    if(lackNutrientsArray.length > 0){
-        lackNutrientsText.textContent = `本日の不足栄養素: ${lackNutrientsArray.join(', ')}`;
-    } else {
-        lackNutrientsText.textContent = `本日の不足栄養素: なし`;
-    }
-
-    //画面の全ての入力欄からデータを回収して、Firestoreへ自動保存する
+    // 画面の全ての入力欄からデータを回収して、Firestoreへ自動保存する
     const bfMenu = document.getElementById('bf_menu').value;
     const bfCal = parseInt(document.getElementById('bf_cal').value) || 0;
     
@@ -216,11 +215,11 @@ finishBtn.addEventListener('click', async () => {
         await saveDailyData(targetDate, mealDataObj);
         alert(`✅ ${targetDate} の食事データをFirestoreに保存しました！`);
 
-        // 保存が成功したらホーム画面に戻る
+        // 保存が成功したら、日付を引き継いだままホーム画面に戻る
         window.location.href = `frontEnd/src/index.html?date=${targetDate}`;
 
     } catch (error) {
         console.error("❌ 食事データの保存に失敗しました:", error);
-        alert("データの保存に失敗しました。コンソールログを確認してください。");
+        alert("データの保存に失敗しました。");
     }
 });

@@ -1,0 +1,55 @@
+/* ==========================================================================
+   7. Googleログインボタン用の装飾
+   ========================================================================== */
+/* 「または」の区切り線 */
+.or-separator {
+    text-align: center;
+    margin: 20px 0;
+    font-size: 14px;
+    color: #999;
+    position: relative;
+}
+.or-separator::before, .or-separator::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    width: 38%;
+    height: 1px;
+    background-color: #ddd;
+}
+.or-separator::before { left: 0; }
+.or-separator::after { right: 0; }
+
+/* Googleボタン本体 */
+.google-btn {
+    width: 100%;
+    padding: 14px;
+    font-size: 16px;
+    font-weight: bold;
+    color: #3c4043; /* Google標準の文字色 */
+    background-color: #ffffff;
+    border: 2px solid #dadce0; /* 薄いグレーの枠線 */
+    border-radius: 10px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px; /* アイコンと文字のスキマ */
+    transition: background-color 0.2s, box-shadow 0.2s, transform 0.2s;
+}
+
+/* ホバー時の演出（ほんの少しグレーにして影をつける） */
+.google-btn:hover {
+    background-color: #f8f9fa;
+    box-shadow: 0 1px 3px rgba(60,64,67, 0.3), 0 4px 8px rgba(60,64,67, 0.15);
+    transform: translateY(-1px);
+}
+
+.google-btn:active {
+    background-color: #f1f3f4;
+    transform: translateY(0);
+}
+
+.google-icon {
+    display: block;
+}

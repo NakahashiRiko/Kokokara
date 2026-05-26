@@ -1,19 +1,47 @@
 // mealApp.js
-import { saveDailyData } from '../services/healthService.js';
+import { saveDailyData, getDailyData } from '../services/healthService.js'; // 🌟 getDailyDataを追加
 
-//URLの末尾から選択された日付を自動キャッチ
+// URLの末尾から選択された日付を自動キャッチ
 const urlParams = new URLSearchParams(window.location.search);
 const targetDate = urlParams.get('date') || new Date().toISOString().split('T')[0];
 
-// HTML上の日付テキストエリアを、選択された日付に書き換える（初期化処理）
-document.addEventListener('DOMContentLoaded', () => {
+//画面が開いた時（初期化）に、Firestoreから既存データを読み込んで画面に表示する処理
+document.addEventListener('DOMContentLoaded', async () => {
+    // 1. 日付テキストエリアの書き換え
     const dateDisplay = document.getElementById('date');
     if (dateDisplay) {
         dateDisplay.textContent = `選択された日付: ${targetDate.replace(/-/g, '/')}`;
     }
+
+    // 2. Firestoreから過去の保存データを取得して入力欄に復元
+    try {
+        const existingData = await getDailyData(targetDate);
+        if (existingData && existingData.meal) {
+            console.log(`[データ復元] ${targetDate} の食事データを読み込みました`, existingData.meal);
+            
+            const meal = existingData.meal;
+            // 朝食の復元
+            if (meal.breakfast) {
+                document.getElementById('breakfast_menu').value = meal.breakfast.menu || "";
+                document.getElementById('breakfast_really_time').value = meal.breakfast.time || "";
+            }
+            // 昼食の復元
+            if (meal.lunch) {
+                document.getElementById('lunch_menu').value = meal.lunch.menu || "";
+                document.getElementById('lunch_really_time').value = meal.lunch.time || "";
+            }
+            // 夕食の復元
+            if (meal.dinner) {
+                document.getElementById('dinner_menu').value = meal.dinner.menu || "";
+                document.getElementById('dinner_really_time').value = meal.dinner.time || "";
+            }
+        } 
+    } catch (error) {
+        console.error("データの復元（読み込み）に失敗しました:", error);
+    }
 });
 
-// 「記録確定」ボタンが押されたときの保存イベント
+// 「1日の記録を終了して確定する」ボタン（または「記録確定」ボタン）が押されたときの保存イベント
 document.getElementById('finish_today_btn').addEventListener('click', async () => {
     try {
         // 画面の入力フィールドから値を回収
@@ -38,21 +66,13 @@ document.getElementById('finish_today_btn').addEventListener('click', async () =
         await saveDailyData(targetDate, mealData);
         alert(`✅ ${targetDate} の食事記録を保存しました！`);
 
-        window.location.href = `index.html?date=${targetDate}`;//パラメータをつける
-        
-        // 保存後、自動でホーム画面に戻る場合は以下を有効にしてください
-        // window.location.href = 'index.html';
+        // 日付パラメータを維持したままホーム（index.html）に戻る
+        window.location.href = `index.html?date=${targetDate}`;
     } catch (error) {
         console.error("食事データの保存に失敗しました:", error);
         alert("エラーが発生しました。コンソールを確認してください。");
     }
 });
-
-
-
-
-
-
 
 
 

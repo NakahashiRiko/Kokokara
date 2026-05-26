@@ -1,6 +1,6 @@
 // main.js
 import { loginAnonymously } from './services/authService.js';
-import { saveDailyData, getDailyData } from './services/healthService.js'; // ★追加
+import { saveDailyData, getDailyData } from './services/healthService.js'; 
 
 // アプリ全体で「今何日を選択しているか」を記憶する変数
 // JavaScriptの月は 0 から始まる
@@ -56,6 +56,21 @@ function updateCardContents(data) {
             stepsValue.textContent = `${Number(data.walk).toLocaleString()}歩`;
         } else {
             stepsValue.textContent = "0歩";
+        }
+    }
+
+    // 4. コンディションカードの書き換え
+    if (data && data.condition !== undefined) {
+        const savedCondition = data.condition; // 1〜5の数値
+        const targetRadio = document.getElementById(`cond-${savedCondition}`);
+        if (targetRadio) {
+            targetRadio.checked = true; // 保存されていた体調にチェックを入れる
+        }
+    } else {
+        // もしその日のデータがまだ無い場合は、すべてのチェックを外して初期状態にする
+        for (let i = 1; i <= 5; i++) {
+            const radioBtn = document.getElementById(`cond-${i}`);
+            if (radioBtn) radioBtn.checked = false;
         }
     }
 }
@@ -126,11 +141,14 @@ function setupCalendarCellsEvent() {
             }
         });
     });
+    //loadSelectedDateData();
 }
+
 
 /**
  * カレンダーの青いハイライト（todayクラス）を現在の選択日に移動させる関数
  */
+/*
 function updateCalendarHighlight() {
     // 1. まず、現在カレンダー内のどこかに付いている「today」クラスをすべて消去する
     const allCells = document.querySelectorAll('.calendar tbody td');
@@ -146,6 +164,7 @@ function updateCalendarHighlight() {
         }
     });
 }
+*/
 
 /**
  * 画面の日付表示を更新し、その日のデータを読み込む関数
@@ -241,6 +260,8 @@ function setupCalendarNavigation() {
     */
 }
 
+
+//画面遷移
 function setupCardNavigation() {
     const mealCard = document.querySelector('.card.meal');
     const sleepCard = document.querySelector('.card.sleep');
@@ -254,6 +275,8 @@ function setupCardNavigation() {
         return `${year}-${month}-${date}`;
     };
 
+
+/*
     if (mealCard) {
         mealCard.addEventListener('click', () => {
             // URLの末尾に ?date=2026-05-19 を付与して遷移
@@ -272,6 +295,7 @@ function setupCardNavigation() {
             window.location.href = `../../walk.html?date=${getFormattedDate()}`;
         });
     }
+        */
     console.log("✅ 日付パラメータ付き画面遷移の設定が完了しました");
 }
 
@@ -307,15 +331,39 @@ async function initApp() {
                 meal: {
                     breakfast: {
                         menu: "テスト用のトースト",
-                        time: "08:30"
+                        time: "08:30",
+                        nutrients: {
+                            carbohydrates: false,
+                            protein: false,
+                            fat: false,
+                            vitamin: false,
+                            minerals: false
+                        }
                     },
                     lunch: {
                         menu: "",
-                        time: ""
+                        time: "",
+                        nutrients: {
+                            carbohydrates: false,
+                            protein: false,
+                            fat: false,
+                            vitamin: false,
+                            minerals: false
+                        }
                     },
                     dinner: {
                         menu: "",
-                        time: ""
+                        time: "",
+                        nutrients: {
+                            carbohydrates: false,
+                            protein: false,
+                            fat: false,
+                            vitamin: false,
+                            minerals: false
+                        }
+                    },
+                    other:{
+                        menu: ""
                     }
                 },
                 // 睡眠データ（階層構造）
@@ -323,12 +371,16 @@ async function initApp() {
                     hour: 7,
                     minute: 15,
                     waketime: "07:00",
-                    sleeptime: "23:45"//自動計算で出す就寝時間
+                    sleeptime: ""//自動計算で出す就寝時間
                 },
                 // 歩数データ
-                walk: 8000,
-                // 目標歩数
-                walkTarget: 5000
+                walk: {
+                    steps: 8000,
+                    // 目標歩数
+                    walkTarget: 5000
+                },
+                //コンディションデータ
+                condition: 5
             });
             console.log("✅ Firestoreへの書き込みに成功しました！");
         }
@@ -338,3 +390,91 @@ async function initApp() {
 }
 
 initApp();
+
+/*
+// 既存のDOMContentLoadedイベントや日付切り替え処理と統合します
+document.addEventListener("DOMContentLoaded", () => {
+    // 初回読み込み時に、現在の選択日付のデータを取得してカードに反映
+    loadSelectedDateData();
+
+    // 既存のカレンダーの「◀︎」「▶︎」ボタンや日付セルをクリックしたイベントの「最後」で、
+    // 必ず `loadSelectedDateData();` を呼び出すようにしてください。
+});
+*/
+
+/**
+ * 現在選択されている日付（currentDate）のデータをFirestoreから読み込み、
+ * ホーム画面のカードの更新と、各画面へのリンクの更新を行う関数
+ */
+async function loadSelectedDateData() {
+    // currentDate (Dateオブジェクト) を "2026-05-25" のような文字列形式に変換
+    const yyyy = currentDate.getFullYear();
+    const mm = String(currentDate.getMonth() + 1).padStart(2, '0');
+    const dd = String(currentDate.getDate()).padStart(2, '0');
+    const dateStr = `${yyyy}-${mm}-${dd}`;
+
+    try {
+        // 1. Firestoreから指定された日付のデータを取得
+        const data = await getDailyData(dateStr);
+        
+        // 2. 取得したデータをホームのカードに反映
+        // ※既存の updateCardContents 関数を呼び出します（データがない場合はnullが渡り初期表示になります）
+        updateCardContents(data);
+
+        // 3. 各画面へのリンク（<a>タグ）のhrefに `?date=xxxx` を付与する
+        updateNavigationLinks(dateStr);
+
+    } catch (error) {
+        console.error("ホーム画面のデータ読み込みエラー:", error);
+    }
+}
+
+/**
+ * 各カードのリンクのhref属性を動的に書き換える関数
+ * @param {string} dateStr - "2026-05-25" 形式の文字列
+ */
+/**
+ * 各カードのリンクのhref属性を動的に書き換える関数
+ */
+function updateNavigationLinks(dateStr) {
+    const mealLink = document.getElementById("link-meal");
+    const sleepLink = document.getElementById("link-sleep");
+    const walkLink = document.getElementById("link-walk");
+
+    // 2つ上の階層（../../）に対して日付パラメータを付与
+    if (mealLink) mealLink.setAttribute("href", `../../mealApp.html?date=${dateStr}`);
+    if (sleepLink) sleepLink.setAttribute("href", `../../SleepApp.html?date=${dateStr}`);
+    if (walkLink) walkLink.setAttribute("href", `../../walk.html?date=${dateStr}`);
+}
+
+//コンディションの保存
+/**
+ * 体調（5段階ラジオボタン）が変更されたらFirestoreに自動保存する
+ */
+document.addEventListener("DOMContentLoaded", () => {
+    // 5つのラジオボタン全てに「変更されたら保存する」イベントを設定
+    for (let i = 1; i <= 5; i++) {
+        const radioBtn = document.getElementById(`cond-${i}`);
+        if (radioBtn) {
+            radioBtn.addEventListener("change", async () => {
+                // currentDate から "YYYY-MM-DD" 形式の文字列を作成
+                const yyyy = currentDate.getFullYear();
+                const mm = String(currentDate.getMonth() + 1).padStart(2, '0');
+                const dd = String(currentDate.getDate()).padStart(2, '0');
+                const dateStr = `${yyyy}-${mm}-${dd}`;
+
+                try {
+                    // 選択された体調の数値（1〜5）をFirestoreに保存
+                    const conditionData = {
+                        condition: i
+                    };
+                    
+                    await saveDailyData(dateStr, conditionData);
+                    console.log(`[Firestore] ${dateStr} の体調を ${i} に保存しました。`);
+                } catch (error) {
+                    console.error("❌ 体調の保存に失敗しました:", error);
+                }
+            });
+        }
+    }
+});

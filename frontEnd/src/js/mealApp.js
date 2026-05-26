@@ -3,8 +3,7 @@ import { saveDailyData, getDailyData } from '../services/healthService.js'; // �
 
 // URLの末尾から選択された日付を自動キャッチ
 const urlParams = new URLSearchParams(window.location.search);
-const targetDate = urlParams.get('date') || new Date().toISOString().split('T')[0];
-
+const targetDate = urlParams.get('date') || new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().split('T')[0];
 // 画面が開いた時（初期化）に、Firestoreから既存データを読み込んで画面に復元する処理
 document.addEventListener('DOMContentLoaded', async () => {
     // 1. 日付テキストエリアの書き換え
@@ -15,6 +14,14 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // 2. Firestoreから過去の保存データを取得して入力欄に復元
     try {
+        //ログイン
+        const user = await loginAnonymously();
+                if (user) {
+                    console.log("🔥 歩数画面でのFirebase接続成功！ UID:", user.uid);
+                    
+                    // 4. ログイン成功後に、既存データをFirestoreから読み込んで復元
+                    await loadExistingWalkData();
+                }
         const existingData = await getDailyData(targetDate);
         if (existingData && existingData.meal) {
             console.log(`[データ復元] ${targetDate} の食事データを読み込みました`, existingData.meal);

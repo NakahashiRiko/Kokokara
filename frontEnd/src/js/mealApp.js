@@ -15,6 +15,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // 「記録確定」ボタンが押されたときの保存イベント
 document.getElementById('finish_today_btn').addEventListener('click', async () => {
+    //--------------ここから変更して良い。----------------------//
+    
+    //--------------ここまで変更して良い。----------------------//
     try {
         // 画面の入力フィールドから値を回収
         const mealData = {

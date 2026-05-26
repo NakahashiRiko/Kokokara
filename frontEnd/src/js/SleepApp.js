@@ -9,7 +9,7 @@ const targetDate = urlParams.get('date') || new Date(Date.now() - new Date().get
 // 画面が読み込まれた時の初期化処理
 document.addEventListener('DOMContentLoaded', async () => {
     
-    // 1. HTML側の強力な「今日(26日)」の処理を完全に上書き・乗っ取る
+    // 1. HTML側の強力な「今日」の処理を完全に上書き・乗っ取る
     setTimeout(() => {
         // 対象日のテキスト表示を過去日に強制書き換え
         const todayDateEl = document.getElementById("todayDate");
@@ -121,11 +121,11 @@ async function loadExistingSleepData() {
         if (data && data.sleep) {
             const sleep = data.sleep;
 
-            // ① 入力フォームの値を復元
+            // 入力フォームの値を復元
             if (sleep.sleeptime) document.getElementById("sleepInput").value = sleep.sleeptime;
             if (sleep.waketime) document.getElementById("wakeInput").value = sleep.waketime;
 
-            // ② 計算結果テキストとコメントの復元
+            // 計算結果テキストとコメントの復元
             if (sleep.hour !== undefined && sleep.minute !== undefined) {
                 const h = String(sleep.hour).padStart(2, '0');
                 const m = String(sleep.minute).padStart(2, '0');
@@ -144,7 +144,7 @@ async function loadExistingSleepData() {
                 
                 document.getElementById("comment").textContent = `今日の睡眠時間は${h}時間${m}分です。\n${advice}`;
 
-                // 🌟 ③ 【追加】HTML側のグラフ用配列（sleepData）にデータを復元し、グラフを再描画する
+                // HTML側のグラフ用配列（sleepData）にデータを復元し、グラフを再描画する
                 if (window.sleepData && window.sleepChart) {
                     // targetDateから曜日（0:日 〜 6:土）を取得
                     const selectedDateObj = new Date(targetDate);

@@ -5,7 +5,7 @@ import { saveDailyData, getDailyData } from '../services/healthService.js'; // �
 const urlParams = new URLSearchParams(window.location.search);
 const targetDate = urlParams.get('date') || new Date().toISOString().split('T')[0];
 
-//画面が開いた時（初期化）に、Firestoreから既存データを読み込んで画面に表示する処理
+// 画面が開いた時（初期化）に、Firestoreから既存データを読み込んで画面に復元する処理
 document.addEventListener('DOMContentLoaded', async () => {
     // 1. 日付テキストエリアの書き換え
     const dateDisplay = document.getElementById('date');
@@ -20,31 +20,87 @@ document.addEventListener('DOMContentLoaded', async () => {
             console.log(`[データ復元] ${targetDate} の食事データを読み込みました`, existingData.meal);
             
             const meal = existingData.meal;
-            // 朝食の復元
+
+            // --- 朝食の復元 ---
             if (meal.breakfast) {
                 document.getElementById('breakfast_menu').value = meal.breakfast.menu || "";
                 document.getElementById('breakfast_really_time').value = meal.breakfast.time || "";
             }
-            // 昼食の復元
+            // --- 昼食の復元 ---
             if (meal.lunch) {
                 document.getElementById('lunch_menu').value = meal.lunch.menu || "";
                 document.getElementById('lunch_really_time').value = meal.lunch.time || "";
             }
-            // 夕食の復元
+            // --- 夕食の復元 ---
             if (meal.dinner) {
                 document.getElementById('dinner_menu').value = meal.dinner.menu || "";
                 document.getElementById('dinner_really_time').value = meal.dinner.time || "";
             }
-        } 
+
+            // --- その他の食事の復元 ---
+            if (meal.otherMeals) {
+                document.getElementById('other_meals_input').value = meal.otherMeals || "";
+            }
+
+            // --- 翌日の目標時間の復元 ---
+            if (meal.nextGoalTime) {
+                if (meal.nextGoalTime.breakfast) document.getElementById('next_breakfast_goal_time').value = meal.nextGoalTime.breakfast;
+                if (meal.nextGoalTime.lunch) document.getElementById('next_lunch_goal_time').value = meal.nextGoalTime.lunch;
+                if (meal.nextGoalTime.dinner) document.getElementById('next_dinner_goal_time').value = meal.nextGoalTime.dinner;
+            }
+
+            // --- 栄養素（チェックボックス）の復元 ---
+            // 朝食の栄養素
+            if (meal.breakfastNutrients) {
+                meal.breakfastNutrients.forEach(val => {
+                    const cb = document.querySelector(`#breakfast-box input[value="${val}"]`);
+                    if (cb) cb.checked = true;
+                });
+            }
+            // 昼食の栄養素
+            if (meal.lunchNutrients) {
+                meal.lunchNutrients.forEach(val => {
+                    const cb = document.querySelector(`#lunch-box input[value="${val}"]`);
+                    if (cb) cb.checked = true;
+                });
+            }
+            // 夕食の栄養素
+            if (meal.dinnerNutrients) {
+                meal.dinnerNutrients.forEach(val => {
+                    const cb = document.querySelector(`#dinner-box input[value="${val}"]`);
+                    if (cb) cb.checked = true;
+                });
+            }
+
+            // 読み込み完了後、フロント側の集計・表示処理を1度走らせて画面を更新する
+            if (typeof countMeals === 'function') {
+                let todayMealCount = countMeals();
+                document.getElementById('meal_count').textContent = `本日の食事回数: ${todayMealCount}回`;
+            }
+            if (typeof lackNutrients === 'function') {
+                let lackNutrientsArray = lackNutrients();
+                let lackNutrientsText = document.getElementById('lack_nutrients');
+                if (lackNutrientsArray.length > 0) {
+                    lackNutrientsText.textContent = `不足している栄養素: ${lackNutrientsArray.join('、')}`;
+                } else {
+                    lackNutrientsText.textContent = `不足している栄養素: なし`;
+                }
+            }
+        }
     } catch (error) {
         console.error("データの復元（読み込み）に失敗しました:", error);
     }
 });
 
-// 「1日の記録を終了して確定する」ボタン（または「記録確定」ボタン）が押されたときの保存イベント
+// 「記録確定」ボタンが押されたときの保存イベント
 document.getElementById('finish_today_btn').addEventListener('click', async () => {
     try {
-        // 画面の入力フィールドから値を回収
+        //チェックボックス（選択された栄養素）の値を配列で回収する処理
+        const getCheckedValues = (boxId) => {
+            return Array.from(document.querySelectorAll(`${boxId} input[type="checkbox"]:checked`)).map(cb => cb.value);
+        };
+
+        // 画面の入力フィールドからすべての値を回収
         const mealData = {
             meal: {
                 breakfast: {
@@ -58,23 +114,32 @@ document.getElementById('finish_today_btn').addEventListener('click', async () =
                 dinner: {
                     menu: document.getElementById('dinner_menu').value || "",
                     time: document.getElementById('dinner_really_time').value || ""
-                }
+                },
+                //新たに以下の項目もFirestoreへ一緒に保存するように拡張します
+                otherMeals: document.getElementById('other_meals_input').value || "",
+                nextGoalTime: {
+                    breakfast: document.getElementById('next_breakfast_goal_time').value || "",
+                    lunch: document.getElementById('next_lunch_goal_time').value || "",
+                    dinner: document.getElementById('next_dinner_goal_time').value || ""
+                },
+                breakfastNutrients: getCheckedValues('#breakfast-box'),
+                lunchNutrients: getCheckedValues('#lunch-box'),
+                dinnerNutrients: getCheckedValues('#dinner-box')
             }
         };
 
-        // 新しい安全な上書き保存関数を実行
+        // 安全な上書き保存関数を実行
         await saveDailyData(targetDate, mealData);
         alert(`✅ ${targetDate} の食事記録を保存しました！`);
 
         // 日付パラメータを維持したままホーム（index.html）に戻る
-        window.location.href = `frontEnd/src/index.html?date=${targetDate}`;
+        window.location.href = `index.html?date=${targetDate}`;
+        
     } catch (error) {
         console.error("食事データの保存に失敗しました:", error);
         alert("エラーが発生しました。コンソールを確認してください。");
     }
 });
-
-
 
 //--------------------[機能1]タイトル画面のアプリに遷移するボタンの動作------------------//
 

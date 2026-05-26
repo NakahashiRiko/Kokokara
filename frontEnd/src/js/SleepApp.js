@@ -6,7 +6,7 @@ import { loginAnonymously } from '../services/authService.js';
 const urlParams = new URLSearchParams(window.location.search);
 const targetDate = urlParams.get('date') || new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().split('T')[0];
 
-// 画面が読み込まれた時の初期化処理
+//画面が読み込まれた時の初期化処理
 document.addEventListener('DOMContentLoaded', async () => {
     
     // 1.HTML側の強力な「今日(26日)」の処理を完全に上書き・乗っ取る

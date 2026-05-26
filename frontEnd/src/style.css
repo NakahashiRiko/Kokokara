@@ -42,11 +42,12 @@ body {
     font-weight: 900;        /* 文字を最高に太く */
     margin-right: 60px;      /* メモ欄との間のスキマ */
     color: #333;
-    letter-spacing: 6px;    /* 文字と文字の間隔を少し広げておしゃれに */
+    letter-spacing: 8px;    /* 文字と文字の間隔を少し広げておしゃれに */
     line-height: 1;          /* 上下の無駄な余白をカット *//* 💡 ポイント1：文字を綺麗なグラデーションにする（緑から青緑への爽やかなグラデ） */
     
     background: linear-gradient(135deg, #1b5e20 0%, #388e3c 50%, #00796b 100%);
-    -webkit-background-clip: text;
+    -webkit-background-clip: text; /* 古いChrome/Safari用 */
+    background-clip: text;         /* ✨標準コード（これを足すとエディタのエラーが消えます） */
     -webkit-text-fill-color: transparent; /* 文字の中身を透明にしてグラデーションをくり抜く */
     
     /* 💡 ポイント2：文字の下におしゃれな装飾ラインを引くための準備 */

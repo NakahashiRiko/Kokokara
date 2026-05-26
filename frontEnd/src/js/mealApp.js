@@ -1,225 +1,254 @@
 // mealApp.js
-import { saveDailyData, getDailyData } from '../services/healthService.js';
-import { loginAnonymously } from '../services/authService.js';
+import { saveDailyData } from '../services/healthService.js';
 
-// URLの末尾から選択された日付を自動キャッチ
+//URLの末尾から選択された日付を自動キャッチ
 const urlParams = new URLSearchParams(window.location.search);
-const targetDate = urlParams.get('date') || new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().split('T')[0];
+const targetDate = urlParams.get('date') || new Date().toISOString().split('T')[0];
 
-// 画面が開いた時（初期化）に、Firebaseログインとデータ復元を行う
-document.addEventListener('DOMContentLoaded', async () => {
-    // 1. 日付テキストエリアの書き換え
+// HTML上の日付テキストエリアを、選択された日付に書き換える（初期化処理）
+document.addEventListener('DOMContentLoaded', () => {
     const dateDisplay = document.getElementById('date');
     if (dateDisplay) {
         dateDisplay.textContent = `選択された日付: ${targetDate.replace(/-/g, '/')}`;
     }
-
-    //2. 左上の「＜」戻るボタンのリンク先に日付を引き継がせる
-    const backBtn = document.querySelector('.back'); // HTMLのクラス名「back」に合わせる
-    if (backBtn) {
-        backBtn.setAttribute('href', `frontEnd/src/index.html?date=${targetDate}`);
-    }
-
-    // 3. Firebaseに自動ログインし、成功したらデータを復元する
-    try {
-        const user = await loginAnonymously();
-        if (user) {
-            console.log("🔥 食事画面でのFirebase接続成功！ UID:", user.uid);
-            // ログイン成功後に、Firestoreからデータを読み込む
-            await loadExistingMealData();
-        }
-    } catch (error) {
-        console.error("❌ Firebaseログインに失敗しました:", error);
-    }
 });
 
-/**
- * Firestoreからデータを読み込んで画面に復元する関数
- */
-async function loadExistingMealData() {
+// 「記録確定」ボタンが押されたときの保存イベント
+document.getElementById('finish_today_btn').addEventListener('click', async () => {
     try {
-        const existingData = await getDailyData(targetDate);
-        if (existingData && existingData.meal) {
-            console.log(`[データ復元] ${targetDate} の食事データを読み込みました`, existingData.meal);
-            const meal = existingData.meal;
-
-            // --- 朝食の復元 ---
-            if (meal.breakfast) {
-                if (meal.breakfast.menu) document.getElementById('bf_menu').value = meal.breakfast.menu;
-                if (meal.breakfast.calorie) document.getElementById('bf_cal').value = meal.breakfast.calorie;
-                restoreNutrients('bf_p', 'bf_f', 'bf_c', meal.breakfast.nutrients);
-            }
-
-            // --- 昼食の復元 ---
-            if (meal.lunch) {
-                if (meal.lunch.menu) document.getElementById('lh_menu').value = meal.lunch.menu;
-                if (meal.lunch.calorie) document.getElementById('lh_cal').value = meal.lunch.calorie;
-                restoreNutrients('lh_p', 'lh_f', 'lh_c', meal.lunch.nutrients);
-            }
-
-            // --- 夕食の復元 ---
-            if (meal.dinner) {
-                if (meal.dinner.menu) document.getElementById('dn_menu').value = meal.dinner.menu;
-                if (meal.dinner.calorie) document.getElementById('dn_cal').value = meal.dinner.calorie;
-                restoreNutrients('dn_p', 'dn_f', 'dn_c', meal.dinner.nutrients);
-            }
-
-            // 初期ロード時にも集計表示（食事回数など）をHTMLに反映させるため、ボタンのイベントを1回キック
-            updateMealSummaryDisplay();
-        }
-    } catch (error) {
-        console.error("❌ 食事データの読み込みに失敗しました:", error);
-    }
-}
-
-// 栄養素のチェックボックスを自動でONにするための補助関数
-function restoreNutrients(pId, fId, cId, nutrientsArray) {
-    if (!nutrientsArray) return;
-    if (nutrientsArray.includes('たんぱく質')) document.getElementById(pId).checked = true;
-    if (nutrientsArray.includes('脂質')) document.getElementById(fId).checked = true;
-    if (nutrientsArray.includes('炭水化物')) document.getElementById(cId).checked = true;
-}
-
-
-//-------------------------[機能1]朝食の栄養素を配列に格納する-------------------------//
-function bfNutrients(){
-    let bfNutrientsArray = [];
-    let bfProtein = document.getElementById('bf_p');
-    let bfFat = document.getElementById('bf_f');
-    let bfCarbo = document.getElementById('bf_c');
-
-    if(bfProtein.checked){ bfNutrientsArray.push('たんぱく質'); }
-    if(bfFat.checked){ bfNutrientsArray.push('脂質'); }
-    if(bfCarbo.checked){ bfNutrientsArray.push('炭水化物'); }
-
-    return bfNutrientsArray;
-}
-
-//-------------------------[機能2]昼食の栄養素を配列に格納する-------------------------//
-function lhNutrients(){
-    let lhNutrientsArray = [];
-    let lhProtein = document.getElementById('lh_p');
-    let lhFat = document.getElementById('lh_f');
-    let lhCarbo = document.getElementById('lh_c');
-
-    if(lhProtein.checked){ lhNutrientsArray.push('たんぱく質'); }
-    if(lhFat.checked){ lhNutrientsArray.push('脂質'); }
-    if(lhCarbo.checked){ lhNutrientsArray.push('炭水化物'); }
-
-    return lhNutrientsArray;
-}
-
-//-------------------------[機能3]夕食の栄養素を配列に格納する-------------------------//
-function dnNutrients(){
-    let dnNutrientsArray = [];
-    let dnProtein = document.getElementById('dn_p');
-    let dnFat = document.getElementById('dn_f');
-    let dnCarbo = document.getElementById('dn_c');
-
-    if(dnProtein.checked){ dnNutrientsArray.push('たんぱく質'); }
-    if(dnFat.checked){ dnNutrientsArray.push('脂質'); }
-    if(dnCarbo.checked){ dnNutrientsArray.push('炭水化物'); }
-
-    return dnNutrientsArray;
-}
-
-//-------------------------[機能4]食事回数をカウントする-------------------------//
-function countMeals(){
-    let mealCount = 0;
-    let bfMenu = document.getElementById('bf_menu').value;
-    let lhMenu = document.getElementById('lh_menu').value;
-    let dnMenu = document.getElementById('dn_menu').value;
-
-    if(bfMenu !== ''){ mealCount++; }
-    if(lhMenu !== ''){ mealCount++; }
-    if(dnMenu !== ''){ mealCount++; }
-
-    return mealCount;
-}
-
-//-------------------------[機能4-2]不足栄養素を格納する-------------------------//
-function lackNutrients(){
-    let requiredNutrients = ['たんぱく質', '脂質', '炭水化物'];
-    let takenNutrients = [];
-
-    let bf = bfNutrients();
-    let lh = lhNutrients();
-    let dn = dnNutrients();
-
-    takenNutrients = takenNutrients.concat(bf, lh, dn);
-
-    let uniqueTakenNutrients = Array.from(new Set(takenNutrients));
-
-    let lackNutrientsArray = requiredNutrients.filter(nutrient => !uniqueTakenNutrients.includes(nutrient));
-
-    return lackNutrientsArray;
-}
-
-// 画面表示を更新するための共通集計ロジック
-function updateMealSummaryDisplay() {
-    let todayMealCount = countMeals();
-    let mealCountText = document.getElementById('meal_count');
-    if (mealCountText) mealCountText.textContent = `本日の食事回数: ${todayMealCount}回`;
-
-    let lackNutrientsArray = lackNutrients();
-    let lackNutrientsText = document.getElementById('lack_nutrients');
-    if (lackNutrientsText) {
-        if(lackNutrientsArray.length > 0){
-            lackNutrientsText.textContent = `本日の不足栄養素: ${lackNutrientsArray.join(', ')}`;
-        } else {
-            lackNutrientsText.textContent = `本日の不足栄養素: なし`;
-        }
-    }
-}
-
-//---------------------[機能5]記録保存ボタンの動作-------------------------//
-const finishBtn = document.getElementById('save_records_btn');
-
-finishBtn.addEventListener('click', async () => {
-
-    // 画面上の集計テキスト（回数・不足栄養素）を最新にする
-    updateMealSummaryDisplay();
-
-    // 画面の全ての入力欄からデータを回収して、Firestoreへ自動保存する
-    const bfMenu = document.getElementById('bf_menu').value;
-    const bfCal = parseInt(document.getElementById('bf_cal').value) || 0;
-    
-    const lhMenu = document.getElementById('lh_menu').value;
-    const lhCal = parseInt(document.getElementById('lh_cal').value) || 0;
-    
-    const dnMenu = document.getElementById('dn_menu').value;
-    const dnCal = parseInt(document.getElementById('dn_cal').value) || 0;
-
-    try {
-        const mealDataObj = {
+        // 画面の入力フィールドから値を回収
+        const mealData = {
             meal: {
                 breakfast: {
-                    menu: bfMenu,
-                    calorie: bfCal,
-                    nutrients: bfNutrients()
+                    menu: document.getElementById('breakfast_menu').value || "",
+                    time: document.getElementById('breakfast_really_time').value || ""
                 },
                 lunch: {
-                    menu: lhMenu,
-                    calorie: lhCal,
-                    nutrients: lhNutrients()
+                    menu: document.getElementById('lunch_menu').value || "",
+                    time: document.getElementById('lunch_really_time').value || ""
                 },
                 dinner: {
-                    menu: dnMenu,
-                    calorie: dnCal,
-                    nutrients: dnNutrients()
+                    menu: document.getElementById('dinner_menu').value || "",
+                    time: document.getElementById('dinner_really_time').value || ""
                 }
             }
         };
 
-        // データを送信して保存
-        await saveDailyData(targetDate, mealDataObj);
-        alert(`✅ ${targetDate} の食事データをFirestoreに保存しました！`);
+        // 新しい安全な上書き保存関数を実行
+        await saveDailyData(targetDate, mealData);
+        alert(`✅ ${targetDate} の食事記録を保存しました！`);
 
-        // 保存が成功したら、日付を引き継いだままホーム画面に戻る
-        window.location.href = `frontEnd/src/index.html?date=${targetDate}`;
-
+        window.location.href = `index.html?date=${targetDate}`;//パラメータをつける
+        
+        // 保存後、自動でホーム画面に戻る場合は以下を有効にしてください
+        // window.location.href = 'index.html';
     } catch (error) {
-        console.error("❌ 食事データの保存に失敗しました:", error);
-        alert("データの保存に失敗しました。");
+        console.error("食事データの保存に失敗しました:", error);
+        alert("エラーが発生しました。コンソールを確認してください。");
     }
+});
+
+
+
+
+
+
+
+
+
+//--------------------[機能1]タイトル画面のアプリに遷移するボタンの動作------------------//
+
+//ボタン変数の宣言
+const backAppBtn = document.getElementById('back_app_btn');/*HTMLの「＜」テキストをJavaScriptで取得*/
+
+//「＜」テキスト(ボタン)がクリックされたときの動作
+backAppBtn.addEventListener('click', () => {
+    window.location.href = 'frontEnd/src/index.html'; /*タイトル画面に遷移させる。htmlが同じフォルダになかったのでパスを指定。*/
+});
+
+//-------------------------[機能2]食事回数のカウント-------------------------//
+
+//食事が記録されたかどうかチェックする関数。朝昼夕全てこれを使う。
+//id名が食事ごとに違うが似ているので引数名mealTypeでカバーする。
+function checkMeal(mealType){
+    //食事開始時刻が入力されているかを取得
+    let timeInput = document.getElementById(`${mealType}_really_time`);
+
+    //献立が入力されているかを取得
+    let menuInput = document.getElementById(`${mealType}_menu`);
+
+    //栄養素が入力されているかを取得
+    let nutrientsInput = document.querySelectorAll(`#${mealType}_nutrients input[type="checkbox"]:checked`);
+
+    //上3つの項目が全て記入されてる状態であったら食事をしたと見なす。
+    if((timeInput.value != "") && (menuInput.value != "") && (nutrientsInput.length > 0)){
+        return true;//食事が記録されたと見なす。
+    }
+    else{
+        return false;//食事が記録されたと見なさない。
+    }
+}
+
+//食事回数をカウントする関数。
+function countMeals(){
+    let count = 0;//食事回数をカウントする変数。
+
+    //朝昼夕の食事がされたかどうかの変数を用意。上のCheckMeal関数の呼び出し。
+    let isBreakfastChecked = checkMeal('breakfast');//朝食が記録されたかどうかを取得。引数に'breakfast'を入れることで朝食の入力欄をチェックする。
+    let isLunchChecked = checkMeal('lunch');//昼食が記録されたかどうかを取得。引数に'lunch'を入れることで昼食の入力欄をチェックする。
+    let isDinnerChecked = checkMeal('dinner');//夕食が記録されたかどうかを取得。引数に'dinner'を入れることで夕食の入力欄をチェックする。
+
+    //朝昼夕の食事がされたかどうかの条件分岐。
+    if(isBreakfastChecked){//朝
+        count++;
+    }
+    if(isLunchChecked){//昼
+        count++;
+    }
+    if(isDinnerChecked){//夕
+        count++;
+    }
+
+    return count;//食事回数を返す。
+}
+
+//-------------------------[機能3]不足栄養素を見つける-------------------------//
+//現時点での不足栄養素を求める関数
+function lackNutrients(){
+    //デフォルトの状態だと何も摂取してないので全ての栄養素が不足していると考えて良い。
+    //不足栄養素を入れる配列を用意。初期値は5つの栄養素全て。
+    let lackNutrientsArray = ["炭水化物", "タンパク質", "脂質", "ビタミン", "ミネラル"];
+
+    //朝食で摂取した栄養素を取得。
+    let breakfastNutrients = document.querySelectorAll('#breakfast_nutrients input[type="checkbox"]:checked');
+
+    //朝食で摂取した栄養素の中に、lackNutrientsArrayに入っている栄養素があったら、その栄養素は不足していないと見なす。なのでlackNutrientsArrayから削除する。
+    //forEachで朝食で摂取した栄養素を1つずつ見ていく。boxという配列を用意しbreakfastNutrientsの中身を1つずつ入れていく(配列要素の走査)。
+    breakfastNutrients.forEach(box => {
+        let nutrients = box.value;//breakfastNutrientsの中身のデータを取り出す。
+
+        //上で取得したデータがlackNutrientsArray配列の何番目の要素なのかを取得。取得できなかったら-1が返る。
+        let index = lackNutrientsArray.indexOf(nutrients);
+
+        //取得したデータの栄養素がまだ取得してない状態にあった場合。
+        if(index !== -1){//要素番号を取得できた場合。
+            //lackNutrientsArrayの中から取得したデータの栄養素を削除する。index番目の要素を1つ削除する。
+            lackNutrientsArray.splice(index, 1);
+        }
+    });
+
+    //昼食で摂取した栄養素を取得。
+    let lunchNutrients = document.querySelectorAll('#lunch_nutrients input[type="checkbox"]:checked');
+
+    //昼食で摂取した栄養素の中に、lackNutrientsArrayに入っている栄養素があったら、その栄養素は不足していないと見なす。なのでlackNutrientsArrayから削除する。
+    lunchNutrients.forEach(box => {
+        let nutrients = box.value;//lunchNutrientsの中身のデータを取り出す。
+
+        //上で取得したデータがlackNutrientsArray配列の何番目の要素なのかを取得。取得できなかったら-1が返る。
+        let index = lackNutrientsArray.indexOf(nutrients);
+
+        //取得したデータの栄養素がまだ取得してない状態にあった場合。
+        if(index !== -1){//要素番号を取得できた場合。
+            //lackNutrientsArrayの中から取得したデータの栄養素を削除する。index番目の要素を1つ削除する。
+            lackNutrientsArray.splice(index, 1);
+        }
+    });
+
+    //夕食で摂取した栄養素を取得。
+    let dinnerNutrients = document.querySelectorAll('#dinner_nutrients input[type="checkbox"]:checked');
+
+    //夕食で摂取した栄養素の中に、lackNutrientsArrayに入っている栄養素があったら、その栄養素は不足していないと見なす。なのでlackNutrientsArrayから削除する。
+    dinnerNutrients.forEach(box => {
+        let nutrients = box.value;//dinnerNutrientsの中身のデータを取り出す。
+
+        //上で取得したデータがlackNutrientsArray配列の何番目の要素なのかを取得。取得できなかったら-1が返る。
+        let index = lackNutrientsArray.indexOf(nutrients);
+
+        //取得したデータの栄養素がまだ取得してない状態にあった場合。
+        if(index !== -1){//要素番号を取得できた場合。
+            //lackNutrientsArrayの中から取得したデータの栄養素を削除する。index番目の要素を1つ削除する。
+            lackNutrientsArray.splice(index, 1);
+        }
+    });
+    //ここでまだlackNutrientsArrayに残っている栄養素は、朝昼夕のどの食事でも摂取されていない栄養素なので、不足していると見なすことができる。
+
+    return lackNutrientsArray;//不足栄養素を返す。
+}
+
+//-------------------------[機能4]記録済みの内容をロックする-------------------------//
+//記録済みの内容をロックする関数。引数に食事の種類を入れる。朝昼夕でそれぞれ呼び出す。
+function lockMeal(mealType){
+    //食事開始時刻をロック
+    //その食事の食事開始時刻欄を取得。
+    let timeInput = document.getElementById(`${mealType}_really_time`);
+
+    //実際に入力済みであったらその食事の食事開始時刻欄をdisabledにする。
+    if(timeInput.value != ""){//入力済みであった場合。
+        timeInput.disabled = true;//disabledにする。
+    }
+
+    //献立をロック
+    //その食事の献立欄を取得。
+    let menuInput = document.getElementById(`${mealType}_menu`);
+
+    //実際に入力済みであったらその食事の食事開始時刻欄をdisabledにする。
+    if(menuInput.value != ""){//入力済みであった場合。
+        menuInput.disabled = true;//disabledにする。
+    }
+
+    //栄養素をロック
+    //その食事の中で「チェック済みのもの」だけを取得して数を調べる
+    let checkedNutrients = document.querySelectorAll(`#${mealType}_nutrients input[type="checkbox"]:checked`);
+
+    //もし1項目でもチェック済みであった場合
+    if(checkedNutrients.length > 0){
+        //今度はチェックの有無に関わらず、その食事のすべてのチェックボックスを取得し直す
+        let allNutrientsInput = document.querySelectorAll(`#${mealType}_nutrients input[type="checkbox"]`);
+        
+        //すべてのボックスを一つずつdisabledにする。ロックする。
+        allNutrientsInput.forEach(box => {
+            box.disabled = true; 
+        });
+    }
+}
+
+//-------------------------[機能5]記録保存ボタンの動作-------------------------//
+//記録保存ボタンをHTMLから取得
+const finishBtn = document.getElementById('save_records_btn');
+
+//記録保存ボタンがクリックされたときの動作（ここで全体の指揮をとる）
+finishBtn.addEventListener('click', () => {
+
+    //-------------------------[機能6]食事回数を表示-------------------------//
+    //食事回数のカウントをする関数を呼び出す。これで食事回数が取得できた。
+    let todayMealCount = countMeals();
+
+    //食事回数を表示するテキストを取得する。
+    let mealCountText = document.getElementById('meal_count');
+    //食事回数を更新し表示する。
+    mealCountText.textContent = `本日の食事回数: ${todayMealCount}回`;
+
+    //-------------------------[機能7]不足栄養素を表示-------------------------//
+    let lackNutrientsArray = lackNutrients();//不足栄養素を求める関数を呼び出す。これで不足栄養素の配列が取得できた。
+
+    //不足栄養素を表示するテキストを取得する。
+    let lackNutrientsText = document.getElementById('lack_nutrients');
+
+    if(lackNutrientsArray.length > 0){//不足栄養素がある場合。
+        //不足栄養素を更新し表示する。配列を文字列に変換して表示する。.join(', ')で配列の要素をカンマ区切りの文字列に変換する。
+        lackNutrientsText.textContent = `本日の不足栄養素: ${lackNutrientsArray.join(', ')}`;
+    }
+
+    else{//不足栄養素がない場合。
+        //不足栄養素がないことを表示する。
+        lackNutrientsText.textContent = `本日の不足栄養素: なし`;
+    }
+
+    //-------------------------[機能8]ボタンを押すとその時点で記入済みの内容をdisabledにする-------------------------//
+    //朝昼夕の食事の内容をロックする関数を呼び出す。引数に食事の種類を入れる。朝昼夕でそれぞれ呼び出す。
+    lockMeal('breakfast');//朝食の内容をロックする。
+    lockMeal('lunch');//昼食の内容をロックする。
+    lockMeal('dinner');//夕食の内容をロックする。
+
+    //-------------------------[機能9]栄養素とかdisabled化などの処理はここから-------------------------//
 });

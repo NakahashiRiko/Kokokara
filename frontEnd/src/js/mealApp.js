@@ -67,7 +67,7 @@ document.getElementById('finish_today_btn').addEventListener('click', async () =
         alert(`✅ ${targetDate} の食事記録を保存しました！`);
 
         // 日付パラメータを維持したままホーム（index.html）に戻る
-        window.location.href = `index.html?date=${targetDate}`;
+        window.location.href = `frontEnd/src/index.html?date=${targetDate}`;
     } catch (error) {
         console.error("食事データの保存に失敗しました:", error);
         alert("エラーが発生しました。コンソールを確認してください。");

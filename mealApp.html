@@ -25,10 +25,10 @@
 
             <!--「不足している栄養素」テキストの下に表示されるテキスト。該当日の食事回数を表示する。-->
             <!--その日の朝食・昼食・夕食の献立(breakfast-menu, lunch-menu, dinner-menuから持ってくる)が記入されていれば食事をしたとみなしカウントしここに表示。-->
-            <p id="meal_count">本日の食事回数: ◯回</p>
+            <p id="meal_count">本日の食事回数: 0回</p>
 
             <!--食事アプリの画面右上に表示されるテキスト。不足している栄養素とその期間をここで一覧で表示する。-->
-            <p id="lack_nutrients">不足している栄養素: ◯, ★</p>
+            <p id="lack_nutrients">本日の不足栄養素: 炭水化物, タンパク質, 脂質, ビタミン, ミネラル</p>
         </div> 
 
         <!---朝食の記録のグループ-->
@@ -46,13 +46,13 @@
                 <input id="breakfast_menu" type="text"> <!--食事の献立の記録。テキストを入力できるようにする。-->
             </p>
         
-            <!--食事の栄養素の記録。炭水化物、タンパク質、ビタミン、脂質、無機質(ミネラル)の5大栄養素をボタン(チェックボックス)で選択してもらう。-->
-            <p>栄養素: 
+            <!--食事の栄養素の記録。炭水化物、タンパク質、ビタミン、脂質、ミネラルの5大栄養素をボタン(チェックボックス)で選択してもらう。-->
+            <p id="breakfast_nutrients">栄養素: 
                 <input type="checkbox" id = "carbo_breakfast" value="炭水化物"> 炭水化物
                 <input type="checkbox" id = "protein_breakfast" value="タンパク質"> タンパク質
                 <input type="checkbox" id = "fat_breakfast" value="脂質"> 脂質
                 <input type="checkbox" id = "vitamin_breakfast" value="ビタミン"> ビタミン
-                <input type="checkbox" id = "mineral_breakfast" value="無機質(ミネラル)"> 無機質(ミネラル)
+                <input type="checkbox" id = "mineral_breakfast" value="ミネラル"> ミネラル
             </p>
         </div>
 
@@ -69,13 +69,13 @@
                 <input id="lunch_menu" type = "text"> <!--食事の献立の記録。テキストを入力できるようにする。-->
             </p>
         
-            <!--食事の栄養素の記録。炭水化物、タンパク質、ビタミン、脂質、無機質(ミネラル)の5大栄養素をボタン(チェックボックス)で選択してもらう。-->
-            <p>栄養素: 
+            <!--食事の栄養素の記録。炭水化物、タンパク質、ビタミン、脂質、ミネラルの5大栄養素をボタン(チェックボックス)で選択してもらう。-->
+            <p id="lunch_nutrients">栄養素: 
                 <input type="checkbox" id="carbo_lunch" value="炭水化物"> 炭水化物
                 <input type="checkbox" id="protein_lunch" value="タンパク質"> タンパク質
                 <input type="checkbox" id="fat_lunch" value="脂質"> 脂質
                 <input type="checkbox" id="vitamin_lunch" value="ビタミン"> ビタミン
-                <input type="checkbox" id="mineral_lunch" value="無機質(ミネラル)"> 無機質(ミネラル)
+                <input type="checkbox" id="mineral_lunch" value="ミネラル"> ミネラル
             </p>
         </div>
         
@@ -92,13 +92,13 @@
                 <input id="dinner_menu" type = "text"> <!--食事の献立の記録。テキストを入力できるようにする。-->
             </p>
         
-            <!--食事の栄養素の記録。炭水化物、タンパク質、ビタミン、脂質、無機質(ミネラル)の5大栄養素をボタン(チェックボックス)で選択してもらう。-->
-            <p>栄養素: 
+            <!--食事の栄養素の記録。炭水化物、タンパク質、ビタミン、脂質、ミネラルの5大栄養素をボタン(チェックボックス)で選択してもらう。-->
+            <p id="dinner_nutrients">栄養素: 
                 <input type="checkbox" id="carbo_dinner" value="炭水化物"> 炭水化物
                 <input type="checkbox" id="protein_dinner" value="タンパク質"> タンパク質
                 <input type="checkbox" id="fat_dinner" value="脂質"> 脂質
                 <input type="checkbox" id="vitamin_dinner" value="ビタミン"> ビタミン
-                <input type="checkbox" id="mineral_dinner" value="無機質(ミネラル)"> 無機質(ミネラル)
+                <input type="checkbox" id="mineral_dinner" value="ミネラル"> ミネラル
             </p>
         </div>
 
@@ -109,9 +109,14 @@
             </p>
         </div>
 
+        <!--記録を保存ボタン。画面右下に表示させるようにする。現段階での入力の蹴りがついたら押してもらう。ここで現時点での食事回数、不足栄養素を表示する。-->
+        <p>
+            <button id="save_records_btn">記録保存</button>
+        </p>
+
         <!--確定ボタン。画面右下に表示させるようにする。その日の入力が完了したらこれを押すようにしてもらう。-->
         <p>
-            <button id="finish_today_btn">1日の記録を終了して確定する</button>
+            <button id="finish_today_btn">記録確定</button>
         </p>
         <script type="module" src="frontEnd/src/js/mealApp.js"></script>
     </body>

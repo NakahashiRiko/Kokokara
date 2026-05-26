@@ -175,14 +175,51 @@ function lackNutrients(){
     return lackNutrientsArray;//不足栄養素を返す。
 }
 
-//-------------------------[機能4]記録保存ボタンの動作-------------------------//
+//-------------------------[機能4]記録済みの内容をロックする-------------------------//
+//記録済みの内容をロックする関数。引数に食事の種類を入れる。朝昼夕でそれぞれ呼び出す。
+function lockMeal(mealType){
+    //食事開始時刻をロック
+    //その食事の食事開始時刻欄を取得。
+    let timeInput = document.getElementById(`${mealType}_really_time`);
+
+    //実際に入力済みであったらその食事の食事開始時刻欄をdisabledにする。
+    if(timeInput.value != ""){//入力済みであった場合。
+        timeInput.disabled = true;//disabledにする。
+    }
+
+    //献立をロック
+    //その食事の献立欄を取得。
+    let menuInput = document.getElementById(`${mealType}_menu`);
+
+    //実際に入力済みであったらその食事の食事開始時刻欄をdisabledにする。
+    if(menuInput.value != ""){//入力済みであった場合。
+        menuInput.disabled = true;//disabledにする。
+    }
+
+    //栄養素をロック
+    //その食事の中で「チェック済みのもの」だけを取得して数を調べる
+    let checkedNutrients = document.querySelectorAll(`#${mealType}_nutrients input[type="checkbox"]:checked`);
+
+    //もし1項目でもチェック済みであった場合
+    if(checkedNutrients.length > 0){
+        //今度はチェックの有無に関わらず、その食事のすべてのチェックボックスを取得し直す
+        let allNutrientsInput = document.querySelectorAll(`#${mealType}_nutrients input[type="checkbox"]`);
+        
+        //すべてのボックスを一つずつdisabledにする。ロックする。
+        allNutrientsInput.forEach(box => {
+            box.disabled = true; 
+        });
+    }
+}
+
+//-------------------------[機能5]記録保存ボタンの動作-------------------------//
 //記録保存ボタンをHTMLから取得
 const finishBtn = document.getElementById('save_records_btn');
 
 //記録保存ボタンがクリックされたときの動作（ここで全体の指揮をとる）
 finishBtn.addEventListener('click', () => {
 
-    //-------------------------[機能5]食事回数を表示-------------------------//
+    //-------------------------[機能6]食事回数を表示-------------------------//
     //食事回数のカウントをする関数を呼び出す。これで食事回数が取得できた。
     let todayMealCount = countMeals();
 
@@ -191,7 +228,7 @@ finishBtn.addEventListener('click', () => {
     //食事回数を更新し表示する。
     mealCountText.textContent = `本日の食事回数: ${todayMealCount}回`;
 
-    //-------------------------[機能6]不足栄養素を表示-------------------------//
+    //-------------------------[機能7]不足栄養素を表示-------------------------//
     let lackNutrientsArray = lackNutrients();//不足栄養素を求める関数を呼び出す。これで不足栄養素の配列が取得できた。
 
     //不足栄養素を表示するテキストを取得する。
@@ -207,5 +244,11 @@ finishBtn.addEventListener('click', () => {
         lackNutrientsText.textContent = `本日の不足栄養素: なし`;
     }
 
-    //-------------------------[機能7]栄養素とかdisabled化などの処理はここから-------------------------//
+    //-------------------------[機能8]ボタンを押すとその時点で記入済みの内容をdisabledにする-------------------------//
+    //朝昼夕の食事の内容をロックする関数を呼び出す。引数に食事の種類を入れる。朝昼夕でそれぞれ呼び出す。
+    lockMeal('breakfast');//朝食の内容をロックする。
+    lockMeal('lunch');//昼食の内容をロックする。
+    lockMeal('dinner');//夕食の内容をロックする。
+
+    //-------------------------[機能9]栄養素とかdisabled化などの処理はここから-------------------------//
 });

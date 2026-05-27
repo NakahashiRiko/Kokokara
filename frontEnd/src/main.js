@@ -371,7 +371,7 @@ async function initApp() {
                     hour: 7,
                     minute: 15,
                     waketime: "07:00",
-                    sleeptime: ""//自動計算で出す就寝時間
+                    bedtime: "00:00"//自動計算で出す就寝時間
                 },
                 // 歩数データ
                 walk: {

@@ -11,31 +11,30 @@ document.addEventListener('DOMContentLoaded', async () => {
     
     // 1. HTML側の強力な「今日」の処理を完全に上書き・乗っ取る
     setTimeout(() => {
-        // 対象日のテキスト表示を過去日に強制書き換え
         const todayDateEl = document.getElementById("todayDate");
         if (todayDateEl) {
             todayDateEl.textContent = `対象日: ${targetDate.replace(/-/g, '/')}`;
         }
         
-        // HTML側のローカル変数 selectedDate のガードが外れている場合、ここでも同期をかける
         if (window.selectedDate !== undefined) {
             window.selectedDate = targetDate;
         }
     }, 100);
 
-    // 2. 左上の「＜」ボタンの戻り先を動的にセット
+    // 2.左上の「＜」ボタンの戻り先を動的にセット
     const backBtn = document.querySelector('.back-button');
     if (backBtn) {
-        backBtn.setAttribute('href', `frontEnd/src/index.html?date=${targetDate}`);
+        // 元の index.html へのパスに修正（環境に合わせて調整してください）
+        backBtn.setAttribute('href', `index.html?date=${targetDate}`);
     }
 
-    // 3. Firebase匿名ログインを実行
+    // 3.Firebase匿名ログインを実行
     try {
         const user = await loginAnonymously();
         if (user) {
             console.log("🔥 睡眠画面でのFirebase接続成功！ UID:", user.uid);
             
-            // 4. ログイン成功後に、既存データをFirestoreから読み込んでフォームと【グラフ】を復元
+            // 4. 既存データをFirestoreから読み込んで復元
             await loadExistingSleepData();
         }
     } catch (error) {
@@ -44,71 +43,46 @@ document.addEventListener('DOMContentLoaded', async () => {
 });
 
 /**
- * HTML側のボタンが押されたら、
- * 計算処理を行った直後にFirestoreへ保存する仕組み
+ * HTML側の「記録処理（currentStatus === 'finished'）」の後に 
+ * Firestoreへ自動保存を割り込ませるためのフック
  */
-const originalCalculateSleep = window.calculateSleep;
+const originalHandleSleepButton = window.handleSleepButton;
 
-window.calculateSleep = async function() {
-    
-    // 1. まずHTML側に書かれている元の計算やアドバイス表示、グラフ更新をそのまま実行
-    if (typeof originalCalculateSleep === 'function') {
-        originalCalculateSleep();
-    } else {
-        const sleep = document.getElementById("sleepInput").value;
-        const wake = document.getElementById("wakeInput").value;
-        if (sleep === "" || wake === "") return;
-        
-        let sleepHour = parseInt(sleep.split(":")[0]);
-        let sleepMinute = parseInt(sleep.split(":")[1]);
-        let wakeHour = parseInt(wake.split(":")[0]);
-        let wakeMinute = parseInt(wake.split(":")[1]);
-        let sleepTotal = sleepHour * 60 + sleepMinute;
-        let wakeTotal = wakeHour * 60 + wakeMinute;
-        if (wakeTotal < sleepTotal) wakeTotal += 24 * 60;
-        const diff = wakeTotal - sleepTotal;
-        const hours = Math.floor(diff / 60);
-        const minutes = diff % 60;
-        
-        document.getElementById("sleepResult").textContent = `${String(hours).padStart(2, '0')}時間${String(minutes).padStart(2, '0')}分`;
+window.handleSleepButton = async function() {
+    // 1. まずHTML側の元のボタン処理（タイマー開始・停止・計算）を実行
+    if (typeof originalHandleSleepButton === 'function') {
+        originalHandleSleepButton();
     }
 
-    // 2. 画面の入力欄から保存用のデータを回収
-    const sleep = document.getElementById("sleepInput").value;
-    const wake = document.getElementById("wakeInput").value;
+    // 2. HTML側のステータスが "idle" に戻った瞬間（＝記録処理が正常に完了した時）にFirestoreに保存する
+    if (window.currentStatus === "idle") {
+        const wakeInput = document.getElementById("wakeInput");
+        const bedTimeResult = document.getElementById("bedTimeResult").textContent;
+        
+        // HTML内のグローバル変数から計算済みの値を取得
+        const totalMinutes = window.savedDiffMinutes || 0;
+        const hours = Math.floor(totalMinutes / 60);
+        const minutes = totalMinutes % 60;
 
-    if (sleep === "" || wake === "") return;
+        try {
+            const sleepDataObj = {
+                sleep: {
+                    hour: hours,         
+                    minute: minutes,
+                    waketime: wakeInput.value || "", // 記録直後は空になっている可能性があるので直前の値か空文字
+                    bedtime: bedTimeResult          // 逆算された就寝時刻を保存
+                }
+            };
 
-    let sleepHour = parseInt(sleep.split(":")[0]);
-    let sleepMinute = parseInt(sleep.split(":")[1]);
-    let wakeHour = parseInt(wake.split(":")[0]);
-    let wakeMinute = parseInt(wake.split(":")[1]);
-    let sleepTotal = sleepHour * 60 + sleepMinute;
-    let wakeTotal = wakeHour * 60 + wakeMinute;
-    if (wakeTotal < sleepTotal) wakeTotal += 24 * 60;
-    const diff = wakeTotal - sleepTotal;
-    const hours = Math.floor(diff / 60);
-    const minutes = diff % 60;
+            await saveDailyData(targetDate, sleepDataObj);
+            alert(`✅ ${targetDate} の睡眠データを保存しました！`);
 
-    // 3. Firestoreへデータを自動保存
-    try {
-        const sleepDataObj = {
-            sleep: {
-                hour: hours,         
-                minute: minutes,
-                waketime: wake,      
-                sleeptime: sleep     
-            }
-        };
+            // 保存が成功したらホーム画面に戻る
+            window.location.href = `index.html?date=${targetDate}`;
 
-        await saveDailyData(targetDate, sleepDataObj);
-        alert(`✅ ${targetDate} の睡眠データを保存しました！`);
-
-        // 保存が成功したらホーム画面に戻る
-        window.location.href = `frontEnd/src/index.html?date=${targetDate}`;
-
-    } catch (error) {
-        console.error("❌ 睡眠データの自動保存に失敗しました:", error);
+        } catch (error) {
+            console.error("❌ 睡眠データの自動保存に失敗しました:", error);
+        }
     }
 };
 
@@ -121,17 +95,27 @@ async function loadExistingSleepData() {
         if (data && data.sleep) {
             const sleep = data.sleep;
 
-            // 入力フォームの値を復元
-            if (sleep.sleeptime) document.getElementById("sleepInput").value = sleep.sleeptime;
-            if (sleep.waketime) document.getElementById("wakeInput").value = sleep.waketime;
+            // 1. 起床時間と就寝時間のテキスト復元
+            if (sleep.waketime) {
+                // 起床時間インプットの復元（過去データ確認用）
+                const wakeInput = document.getElementById("wakeInput");
+                if (wakeInput) wakeInput.value = sleep.waketime;
+            }
+            
+            if (sleep.bedtime) {
+                const bedTimeEl = document.getElementById("bedTimeResult");
+                if (bedTimeEl) bedTimeEl.textContent = sleep.bedtime;
+            }
 
-            // 計算結果テキストとコメントの復元
+            // 2. 計算結果テキストとコメントの復元
             if (sleep.hour !== undefined && sleep.minute !== undefined) {
                 const h = String(sleep.hour).padStart(2, '0');
                 const m = String(sleep.minute).padStart(2, '0');
                 
-                document.getElementById("sleepResult").textContent = `${h}時間${m}分`;
+                const sleepResultEl = document.getElementById("sleepResult");
+                if (sleepResultEl) sleepResultEl.textContent = `${h}時間${m}分`;
                 
+                // アドバイスの再生成
                 let advice = "理想的な睡眠時間です。この生活リズムを維持しましょう。";
                 const totalHours = sleep.hour + (sleep.minute / 60);
                 if (totalHours < 6) {
@@ -142,24 +126,32 @@ async function loadExistingSleepData() {
                     advice = "あと少し睡眠時間を増やすとより良いです。";
                 }
                 
-                document.getElementById("comment").textContent = `今日の睡眠時間は${h}時間${m}分です。\n${advice}`;
+                const commentEl = document.getElementById("comment");
+                if (commentEl) {
+                    commentEl.textContent = `今日の睡眠時間は ${h}時間${m}分です。\n${advice}`;
+                }
 
-                // HTML側のグラフ用配列（sleepData）にデータを復元し、グラフを再描画する
+                // 3. HTML側のグラフ用配列（sleepData）にデータを復元し、グラフを再描画
                 if (window.sleepData && window.sleepChart) {
-                    // targetDateから曜日（0:日 〜 6:土）を取得
                     const selectedDateObj = new Date(targetDate);
-                    const dayOfWeek = selectedDateObj.getDay(); 
+                    const dayOfWeek = selectedDateObj.getDay(); // 0:日 〜 6:土
 
-                    // グラフデータ配列の該当する曜日の位置に、今回の睡眠時間をセット（時間単位の少数点）
-                    window.sleepData[dayOfWeek] = totalHours;
+                    // グラフデータ配列に時間（小数点）をセット
+                    window.sleepData[dayOfWeek] = Math.round(totalHours * 10) / 10;
 
-                    // グラフ画面を最新の状態にリフレッシュ（描画）
+                    // グラフ画面を最新の状態にリフレッシュ
                     window.sleepChart.update();
 
-                    // HTML側にある平均値計算ロジック（もし存在すれば）を実行
+                    // 平均値計算ロジックを実行
                     if (typeof window.calculateAverage === 'function') {
                         window.calculateAverage();
                     }
+                }
+                
+                // すでにデータがある場合は、ステータス表示を更新
+                const statusDisplay = document.getElementById("statusDisplay");
+                if (statusDisplay) {
+                    statusDisplay.textContent = "本日の睡眠は記録済みです。";
                 }
             }
         }

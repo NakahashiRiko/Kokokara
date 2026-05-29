@@ -36,33 +36,33 @@ document.addEventListener('DOMContentLoaded', async () => {
         console.error("❌ Firebaseログインに失敗しました:", error);
     }
 
-    // 5.HTMLの関数をフックするのではなく、ボタンのクリックイベントを直接監視する
-    const sleepBtn = document.getElementById("button");
+    // 5.
+    // id="button" がなくても、class="btn" から確実に要素を捕まえます
+    const sleepBtn = document.getElementById("button") || document.querySelector(".btn");
+    
     if (sleepBtn) {
-        console.log("🎯 ボタン(id='button')の監視を開始しました。");
+        console.log("Target Button Loaded Successfully!");
 
         sleepBtn.addEventListener("click", () => {
-            // モードを判定するために、クリックされた瞬間のボタンのテキストを即座に取得
+            // クリックされた瞬間のテキストと起床入力欄の値を退避
             const currentBtnText = sleepBtn.textContent.trim();
-            
-            // HTML側でクリアされる前に、入力された起床時間を事前にキープ
             const wakeInput = document.getElementById("wakeInput");
             const preInputValue = wakeInput ? wakeInput.value : "";
 
-            console.log(`クリック検知 - 現在のボタン: "${currentBtnText}", 入力値: "${preInputValue}"`);
+            console.log(`[Click!]: "${currentBtnText}", Input: "${preInputValue}"`);
 
-            // ボタンが「記録する」の状態で押されたときだけ、保存処理を発動させる
+            // ボタンが「記録する」の状態で押された時だけ、Firestoreへの保存処理を走らせる
             if (currentBtnText === "記録する") {
                 if (preInputValue === "") {
-                    console.log("⚠️ 起床時間が空欄のため、保存処理をスキップします。");
+                    console.log("⚠️ 起床時間が空欄のため、保存処理へは進みません。");
                     return;
                 }
 
-                // HTML側のタイマー計算処理（画面の書き換え）が完了するのを150ミリ秒だけ待つ
+                // HTML側のタイマー・画面初期化処理が終わるのを少しだけ待つ
                 setTimeout(async () => {
                     console.log("📝 記録完了を検知。Firestoreへの保存を開始します...");
 
-                    // HTML側が計算して画面に出力した「〇〇時間〇〇分」から数字を逆算
+                    // 画面に計算・出力された「〇〇時間〇〇分」から数値を解析
                     const sleepResultText = document.getElementById("sleepResult").textContent;
                     let totalMinutes = 0;
                     
@@ -93,10 +93,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                         await saveDailyData(targetDate, sleepDataObj);
                         console.log("✅ Firestoreへの保存が正常に完了しました。");
                         
-                        // コメント（アラート）を表示
+                        // アラートを表示してホームへ戻る
                         alert(`✅ ${targetDate} の睡眠データを保存しました！`);
-
-                        // ホーム画面に戻る
                         window.location.href = `index.html?date=${targetDate}`;
 
                     } catch (error) {
@@ -107,12 +105,12 @@ document.addEventListener('DOMContentLoaded', async () => {
             }
         });
     } else {
-        console.error("❌ HTML側に id='button' の要素が見つかりません。インスペクターを確認してください。");
+        console.error("❌ ボタン要素（ID: button または Class: btn）が見つかりません。");
     }
 });
 
 /**
- * グラフを即時書き換える共通処理
+ * グラフを即時書き換える処理
  */
 function updateLocalChart(totalHours) {
     const ctx = document.getElementById('sleepChart');
@@ -129,7 +127,7 @@ function updateLocalChart(totalHours) {
 }
 
 /**
- * Firestoreからデータを読み込んでフォームとグラフに復元する関数
+ * Firestoreからデータを読み込んで復元する関数
  */
 async function loadExistingSleepData() {
     try {
@@ -137,7 +135,6 @@ async function loadExistingSleepData() {
         if (data && data.sleep) {
             const sleep = data.sleep;
 
-            // 1. 起床時間と就寝時間のテキスト復元
             if (sleep.waketime) {
                 const wakeInput = document.getElementById("wakeInput");
                 if (wakeInput) wakeInput.value = sleep.waketime;
@@ -148,7 +145,6 @@ async function loadExistingSleepData() {
                 if (bedTimeEl) bedTimeEl.textContent = sleep.bedtime;
             }
 
-            // 2. 計算結果テキストとコメントの復元
             if (sleep.hour !== undefined && sleep.minute !== undefined) {
                 const h = String(sleep.hour).padStart(2, '0');
                 const m = String(sleep.minute).padStart(2, '0');
@@ -171,7 +167,6 @@ async function loadExistingSleepData() {
                     commentEl.textContent = `今日の睡眠時間は${h}時間${m}分です。\n${advice}`;
                 }
 
-                // 3. 既存データがある場合のグラフ描画
                 updateLocalChart(totalHours);
                 
                 const statusDisplay = document.getElementById("statusDisplay");

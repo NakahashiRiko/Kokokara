@@ -20,7 +20,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     // 2. 左上の「＜」ボタンの戻り先をセット
     const backBtn = document.querySelector('.back-button');
     if (backBtn) {
-        backBtn.setAttribute('href', `index.html?date=${targetDate}`);
+        backBtn.setAttribute('href', `frontEnd/src/index.html?date=${targetDate}`);
     }
 
     // 3. Firebase匿名ログインを実行
@@ -35,79 +35,57 @@ document.addEventListener('DOMContentLoaded', async () => {
     } catch (error) {
         console.error("❌ Firebaseログインに失敗しました:", error);
     }
-
-    // 5.
-    // id="button" がなくても、class="btn" から確実に要素を捕まえます
-    const sleepBtn = document.getElementById("button") || document.querySelector(".btn");
-    
-    if (sleepBtn) {
-        console.log("Target Button Loaded Successfully!");
-
-        sleepBtn.addEventListener("click", () => {
-            // クリックされた瞬間のテキストと起床入力欄の値を退避
-            const currentBtnText = sleepBtn.textContent.trim();
-            const wakeInput = document.getElementById("wakeInput");
-            const preInputValue = wakeInput ? wakeInput.value : "";
-
-            console.log(`[Click!]: "${currentBtnText}", Input: "${preInputValue}"`);
-
-            // ボタンが「記録する」の状態で押された時だけ、Firestoreへの保存処理を走らせる
-            if (currentBtnText === "記録する") {
-                if (preInputValue === "") {
-                    console.log("⚠️ 起床時間が空欄のため、保存処理へは進みません。");
-                    return;
-                }
-
-                // HTML側のタイマー・画面初期化処理が終わるのを少しだけ待つ
-                setTimeout(async () => {
-                    console.log("📝 記録完了を検知。Firestoreへの保存を開始します...");
-
-                    // 画面に計算・出力された「〇〇時間〇〇分」から数値を解析
-                    const sleepResultText = document.getElementById("sleepResult").textContent;
-                    let totalMinutes = 0;
-                    
-                    if (sleepResultText && sleepResultText.includes("時間")) {
-                        const match = sleepResultText.match(/(\d+)時間(\d+)分/);
-                        if (match) {
-                            const h = parseInt(match[1], 10);
-                            const m = parseInt(match[2], 10);
-                            totalMinutes = (h * 60) + m;
-                        }
-                    }
-
-                    const hours = Math.floor(totalMinutes / 60);
-                    const minutes = totalMinutes % 60;
-                    const bedTimeResult = document.getElementById("bedTimeResult").textContent;
-
-                    try {
-                        const sleepDataObj = {
-                            sleep: {
-                                hour: hours,         
-                                minute: minutes,
-                                waketime: preInputValue, // バックアップしておいた起床時間
-                                bedtime: bedTimeResult   // 逆算された就寝時刻
-                            }
-                        };
-
-                        // Firestoreへ自動保存
-                        await saveDailyData(targetDate, sleepDataObj);
-                        console.log("✅ Firestoreへの保存が正常に完了しました。");
-                        
-                        // アラートを表示してホームへ戻る
-                        alert(`✅ ${targetDate} の睡眠データを保存しました！`);
-                        window.location.href = `index.html?date=${targetDate}`;
-
-                    } catch (error) {
-                        console.error("❌ 睡眠データの自動保存に失敗しました:", error);
-                        alert("データベースの保存に失敗しました。");
-                    }
-                }, 150);
-            }
-        });
-    } else {
-        console.error("❌ ボタン要素（ID: button または Class: btn）が見つかりません。");
-    }
 });
+
+/**
+ * タイミングのズレを完全に無くすため、HTML側の計算直後にデータを受け取って即実行します。
+ */
+window.saveToFirestoreViaJS = async function(passedWakeTime, passedBedTime) {
+    console.log("📝 HTML側からの呼び出しに成功。Firestoreへの保存を開始します...");
+    console.log(`引数チェック - 起床時間: ${passedWakeTime}, 就寝時刻: ${passedBedTime}`);
+
+    // 画面に確定表示されている「〇〇時間〇〇分」から数字を逆算して抽出
+    const sleepResultText = document.getElementById("sleepResult").textContent;
+    let totalMinutes = 0;
+    
+    if (sleepResultText && sleepResultText.includes("時間")) {
+        const match = sleepResultText.match(/(\d+)時間(\d+)分/);
+        if (match) {
+            const h = parseInt(match[1], 10);
+            const m = parseInt(match[2], 10);
+            totalMinutes = (h * 60) + m;
+        }
+    }
+
+    const hours = Math.floor(totalMinutes / 60);
+    const minutes = totalMinutes % 60;
+
+    try {
+        const sleepDataObj = {
+            sleep: {
+                hour: hours,         
+                minute: minutes,
+                waketime: passedWakeTime, 
+                bedtime: passedBedTime   
+            }
+        };
+
+        // Firestoreへ自動保存
+        await saveDailyData(targetDate, sleepDataObj);
+        console.log("✅ Firestoreへの保存が正常に完了しました。");
+        
+        // グラフをその場で同期更新
+        updateLocalChart(hours + (minutes / 60));
+
+        // アラートを表示して、カレンダー（ホーム）へ日付付きで戻る
+        alert(`✅ ${targetDate} の睡眠データを保存しました！`);
+        window.location.href = `index.html?date=${targetDate}`;
+
+    } catch (error) {
+        console.error("❌ 睡眠データの自動保存に失敗しました:", error);
+        alert("データベースの保存に失敗しました。");
+    }
+};
 
 /**
  * グラフを即時書き換える処理

@@ -35,78 +35,81 @@ document.addEventListener('DOMContentLoaded', async () => {
     } catch (error) {
         console.error("❌ Firebaseログインに失敗しました:", error);
     }
-});
 
-/**
- * 🌟【超重要】HTML側の関数内の return に邪魔されない、最強のフック処理
- * HTML側の元の関数を一旦退避させ、JS側で「実行後」の処理を確実にコントロールします。
- */
-if (typeof window.handleSleepButton === 'function') {
-    // 元の関数をバックアップ
-    const originalHandleSleepButton = window.handleSleepButton;
+    // 5.HTMLの関数をフックするのではなく、ボタンのクリックイベントを直接監視する
+    const sleepBtn = document.getElementById("button");
+    if (sleepBtn) {
+        console.log("🎯 ボタン(id='button')の監視を開始しました。");
 
-    // window.handleSleepButton を新しく作り直す
-    window.handleSleepButton = async function() {
-        // 記録ボタンを押す「直前」の、画面上の状態をキープ
-        const wakeInput = document.getElementById("wakeInput");
-        const preInputValue = wakeInput ? wakeInput.value : "";
-        const btn = document.getElementById("button");
-        
-        // 今のモードが「記録する（finished）」の状態かどうかをチェックしておく
-        const isRecordingMode = btn && btn.textContent === "記録する";
-
-        // 1. HTML側の元の処理（タイマー計算、画面初期化、そして内部でのreturn）を実行
-        originalHandleSleepButton();
-
-        // 2. もしボタンが「記録する」の時に押され、かつ無事に初期化された場合
-        // HTML側が途中で return しても、このJS側の関数は途切れません！
-        if (isRecordingMode && btn && btn.textContent === "就寝する" && preInputValue !== "") {
-            console.log("📝 記録完了を検知。Firestoreへの保存を開始します...");
-
-            // 画面に表示された「〇〇時間〇〇分」から数字を逆算して抽出
-            const sleepResultText = document.getElementById("sleepResult").textContent;
-            let totalMinutes = 0;
+        sleepBtn.addEventListener("click", () => {
+            // モードを判定するために、クリックされた瞬間のボタンのテキストを即座に取得
+            const currentBtnText = sleepBtn.textContent.trim();
             
-            if (sleepResultText && sleepResultText.includes("時間")) {
-                const match = sleepResultText.match(/(\d+)時間(\d+)分/);
-                if (match) {
-                    const h = parseInt(match[1], 10);
-                    const m = parseInt(match[2], 10);
-                    totalMinutes = (h * 60) + m;
+            // HTML側でクリアされる前に、入力された起床時間を事前にキープ
+            const wakeInput = document.getElementById("wakeInput");
+            const preInputValue = wakeInput ? wakeInput.value : "";
+
+            console.log(`クリック検知 - 現在のボタン: "${currentBtnText}", 入力値: "${preInputValue}"`);
+
+            // ボタンが「記録する」の状態で押されたときだけ、保存処理を発動させる
+            if (currentBtnText === "記録する") {
+                if (preInputValue === "") {
+                    console.log("⚠️ 起床時間が空欄のため、保存処理をスキップします。");
+                    return;
                 }
-            }
 
-            const hours = Math.floor(totalMinutes / 60);
-            const minutes = totalMinutes % 60;
-            const bedTimeResult = document.getElementById("bedTimeResult").textContent;
+                // HTML側のタイマー計算処理（画面の書き換え）が完了するのを150ミリ秒だけ待つ
+                setTimeout(async () => {
+                    console.log("📝 記録完了を検知。Firestoreへの保存を開始します...");
 
-            try {
-                // 保存用データオブジェクトの作成
-                const sleepDataObj = {
-                    sleep: {
-                        hour: hours,         
-                        minute: minutes,
-                        waketime: preInputValue, // クリアされる前にキープした値
-                        bedtime: bedTimeResult   // 逆算された就寝時刻
+                    // HTML側が計算して画面に出力した「〇〇時間〇〇分」から数字を逆算
+                    const sleepResultText = document.getElementById("sleepResult").textContent;
+                    let totalMinutes = 0;
+                    
+                    if (sleepResultText && sleepResultText.includes("時間")) {
+                        const match = sleepResultText.match(/(\d+)時間(\d+)分/);
+                        if (match) {
+                            const h = parseInt(match[1], 10);
+                            const m = parseInt(match[2], 10);
+                            totalMinutes = (h * 60) + m;
+                        }
                     }
-                };
 
-                // Firestoreへ自動保存
-                await saveDailyData(targetDate, sleepDataObj);
-                
-                // コメント（アラート）を表示
-                alert(`✅ ${targetDate} の睡眠データを保存しました！`);
+                    const hours = Math.floor(totalMinutes / 60);
+                    const minutes = totalMinutes % 60;
+                    const bedTimeResult = document.getElementById("bedTimeResult").textContent;
 
-                // ホーム画面に戻る
-                window.location.href = `index.html?date=${targetDate}`;
+                    try {
+                        const sleepDataObj = {
+                            sleep: {
+                                hour: hours,         
+                                minute: minutes,
+                                waketime: preInputValue, // バックアップしておいた起床時間
+                                bedtime: bedTimeResult   // 逆算された就寝時刻
+                            }
+                        };
 
-            } catch (error) {
-                console.error("❌ 睡眠データの自動保存に失敗しました:", error);
-                alert("データベースの保存に失敗しました。");
+                        // Firestoreへ自動保存
+                        await saveDailyData(targetDate, sleepDataObj);
+                        console.log("✅ Firestoreへの保存が正常に完了しました。");
+                        
+                        // コメント（アラート）を表示
+                        alert(`✅ ${targetDate} の睡眠データを保存しました！`);
+
+                        // ホーム画面に戻る
+                        window.location.href = `index.html?date=${targetDate}`;
+
+                    } catch (error) {
+                        console.error("❌ 睡眠データの自動保存に失敗しました:", error);
+                        alert("データベースの保存に失敗しました。");
+                    }
+                }, 150);
             }
-        }
-    };
-}
+        });
+    } else {
+        console.error("❌ HTML側に id='button' の要素が見つかりません。インスペクターを確認してください。");
+    }
+});
 
 /**
  * グラフを即時書き換える共通処理
@@ -117,7 +120,7 @@ function updateLocalChart(totalHours) {
         const chartInstance = Chart.getChart(ctx);
         if (chartInstance) {
             const selectedDateObj = new Date(targetDate);
-            const dayOfWeek = selectedDateObj.getDay(); // 0:日 〜 6:土
+            const dayOfWeek = selectedDateObj.getDay(); 
 
             chartInstance.data.datasets[0].data[dayOfWeek] = Math.round(totalHours * 10) / 10;
             chartInstance.update();

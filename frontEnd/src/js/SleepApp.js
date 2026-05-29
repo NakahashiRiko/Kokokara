@@ -21,14 +21,14 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }, 100);
 
-    // 2.左上の「＜」ボタンの戻り先を動的にセット
+    // 2. 左上の「＜」ボタンの戻り先を動的にセット（ディレクトリ構造に合わせて調整してください）
     const backBtn = document.querySelector('.back-button');
     if (backBtn) {
-        // 元の index.html へのパスに修正（環境に合わせて調整してください）
-        backBtn.setAttribute('href', `index.html?date=${targetDate}`);
+        // 同一ディレクトリにある想定の一般的な相対パスに変更
+        backBtn.setAttribute('href', `frontEnd/src/index.html?date=${targetDate}`);
     }
 
-    // 3.Firebase匿名ログインを実行
+    // 3. Firebase匿名ログインを実行
     try {
         const user = await loginAnonymously();
         if (user) {
@@ -43,20 +43,25 @@ document.addEventListener('DOMContentLoaded', async () => {
 });
 
 /**
- * HTML側の「記録処理（currentStatus === 'finished'）」の後に 
- * Firestoreへ自動保存を割り込ませるためのフック
+ * [改良版] HTML側の「記録処理」で値が初期化される前に、
+ * 入力された起床時間を先回りして回収・保存するフック処理
  */
 const originalHandleSleepButton = window.handleSleepButton;
 
 window.handleSleepButton = async function() {
-    // 1. まずHTML側の元のボタン処理（タイマー開始・停止・計算）を実行
+    // 【重要】HTML側の処理が走る「前」の、入力欄の値を事前にキープする
+    const wakeInput = document.getElementById("wakeInput");
+    const preInputValue = wakeInput ? wakeInput.value : "";
+
+    // 1. HTML側の元のボタン処理（タイマー開始・停止・計算・そして初期化）を実行
     if (typeof originalHandleSleepButton === 'function') {
         originalHandleSleepButton();
     }
 
-    // 2. HTML側のステータスが "idle" に戻った瞬間（＝記録処理が正常に完了した時）にFirestoreに保存する
-    if (window.currentStatus === "idle") {
-        const wakeInput = document.getElementById("wakeInput");
+    // 2. 記録処理（currentStatus === 'finished' だった状態）が正常に完了したか判定
+    // 元のHTMLコードにより、処理完了後はidleに戻り、かつ入力欄がクリア（またはアラート）されます
+    if (window.currentStatus === "idle" && preInputValue !== "") {
+        
         const bedTimeResult = document.getElementById("bedTimeResult").textContent;
         
         // HTML内のグローバル変数から計算済みの値を取得
@@ -69,15 +74,15 @@ window.handleSleepButton = async function() {
                 sleep: {
                     hour: hours,         
                     minute: minutes,
-                    waketime: wakeInput.value || "", // 記録直後は空になっている可能性があるので直前の値か空文字
-                    bedtime: bedTimeResult          // 逆算された就寝時刻を保存
+                    waketime: preInputValue, // 先ほどキープしておいた起床時間を使用！
+                    bedtime: bedTimeResult   // 逆算された就寝時刻を保存
                 }
             };
 
             await saveDailyData(targetDate, sleepDataObj);
             alert(`✅ ${targetDate} の睡眠データを保存しました！`);
 
-            // 保存が成功したらホーム画面に戻る
+            // 保存が成功したらホーム画面に戻る（パスを安全な形に修正）
             window.location.href = `index.html?date=${targetDate}`;
 
         } catch (error) {
@@ -97,7 +102,6 @@ async function loadExistingSleepData() {
 
             // 1. 起床時間と就寝時間のテキスト復元
             if (sleep.waketime) {
-                // 起床時間インプットの復元（過去データ確認用）
                 const wakeInput = document.getElementById("wakeInput");
                 if (wakeInput) wakeInput.value = sleep.waketime;
             }

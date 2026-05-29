@@ -35,7 +35,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 });
 
 /**
- * 🌟【機能①】HTML側の元の updatePage を横からキャッチして、
+ * HTML側の元の updatePage を横からキャッチして、
  * 計算処理が終わった直後にFirestoreへ保存する仕組み（フック）
  */
 // HTML側の元の関数を変数に退避させる
@@ -56,10 +56,7 @@ window.updatePage = async function() {
     // 3. Firestoreへデータを自動保存（main.jsのデータ構造に統一）
     try {
         const walkDataObj = {
-            walk: {
-                steps: step,          // main.js側で読み込むプロパティ名
-                walkTarget: target    // main.js側で読み込むプロパティ名
-            }
+            walk: step
         };
 
         await saveDailyData(targetDate, walkDataObj);
@@ -76,7 +73,7 @@ window.updatePage = async function() {
 };
 
 /**
- * 🌟【機能②】Firestoreからデータを読み込んでフォームに復元する関数
+ * Firestoreからデータを読み込んでフォームに復元する関数
  */
 async function loadExistingWalkData() {
     try {

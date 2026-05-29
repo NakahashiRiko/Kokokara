@@ -52,7 +52,8 @@ function updateCardContents(data) {
     // 3. 歩数カードの書き換え
     const stepsValue = document.querySelector('.card.steps .value');
     if (stepsValue) {
-        if (data && data.walk !== undefined) {
+        // data.walk が存在し、かつそれが「オブジェクト」ではなく「数値」や「文字列」として扱える場合
+        if (data && data.walk !== undefined && data.walk !== null) {
             stepsValue.textContent = `${Number(data.walk).toLocaleString()}歩`;
         } else {
             stepsValue.textContent = "0歩";

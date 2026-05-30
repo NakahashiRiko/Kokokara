@@ -286,8 +286,20 @@ const finishBtn = document.getElementById('save_records_btn');
 
 //記録保存ボタンがクリックされたときの動作（ここで全体の指揮をとる）
 finishBtn.addEventListener('click', () => {
+    //-------------------------[機能7]ボタンを押すとその時点で記入済みの内容をdisabledにする-------------------------//
+    //朝昼夕の食事の内容をロックする関数を呼び出す。引数に食事の種類を入れる。朝昼夕でそれぞれ呼び出す。
+    lockMeal('breakfast');//朝食の内容をロックする。
+    lockMeal('lunch');//昼食の内容をロックする。
+    lockMeal('dinner');//夕食の内容をロックする。
+});
 
-    //-------------------------[機能7]食事回数と不足栄養素を合体させてコメント文を生成-------------------------//
+//-------------------------[機能8]コメント生成ボタンの動作-------------------------//
+//記録保存ボタンをHTMLから取得
+const commentBtn = document.getElementById('create_comment_btn');
+
+//コメント生成ボタンがクリックされた時の動作
+commentBtn.addEventListener('click', () => {
+    //-------------------------[機能9]食事回数と不足栄養素を合体させてコメント文を生成-------------------------//
     let todayMealCount = countMeals();//食事回数のカウントをする関数を呼び出す。これで食事回数が取得できた。
     let lackNutrientsArray = lackNutrients();//不足栄養素を求める関数を呼び出す。これで不足栄養素の配列が取得できた。
     let commentText = document.getElementById('comment');//コメント文を表示するフィールドを取得
@@ -298,10 +310,4 @@ finishBtn.addEventListener('click', () => {
     } else {
         commentText.textContent = `本日の食事は${todayMealCount}回でした。栄養素はパーフェクトです！明日もこの調子でいきましょう！`;
     }
-
-    //-------------------------[機能8]ボタンを押すとその時点で記入済みの内容をdisabledにする-------------------------//
-    //朝昼夕の食事の内容をロックする関数を呼び出す。引数に食事の種類を入れる。朝昼夕でそれぞれ呼び出す。
-    lockMeal('breakfast');//朝食の内容をロックする。
-    lockMeal('lunch');//昼食の内容をロックする。
-    lockMeal('dinner');//夕食の内容をロックする。
 });

@@ -9,7 +9,7 @@ const targetDate = urlParams.get('date') || new Date().toISOString().split('T')[
 document.addEventListener('DOMContentLoaded', () => {
     const dateDisplay = document.getElementById('date');
     if (dateDisplay) {
-        dateDisplay.textContent = `選択された日付: ${targetDate.replace(/-/g, '/')}`;
+        dateDisplay.textContent = `日付: ${targetDate.replace(/-/g, '/')}`;
     }
 });
 
@@ -258,7 +258,7 @@ function checkUnfilledFields(mealType, mealName){
         if(time == ""){
             unfilledFields.push("時刻");
         }
-        
+
         //献立が未記入の場合。
         if(menu == ""){
             unfilledFields.push("献立");
@@ -287,36 +287,21 @@ const finishBtn = document.getElementById('save_records_btn');
 //記録保存ボタンがクリックされたときの動作（ここで全体の指揮をとる）
 finishBtn.addEventListener('click', () => {
 
-    //-------------------------[機能7]食事回数を表示-------------------------//
-    //食事回数のカウントをする関数を呼び出す。これで食事回数が取得できた。
-    let todayMealCount = countMeals();
-
-    //食事回数を表示するテキストを取得する。
-    let mealCountText = document.getElementById('meal_count');
-    //食事回数を更新し表示する。
-    mealCountText.textContent = `本日の食事回数: ${todayMealCount}回`;
-
-    //-------------------------[機能8]不足栄養素を表示-------------------------//
+    //-------------------------[機能7]食事回数と不足栄養素を合体させてコメント文を生成-------------------------//
+    let todayMealCount = countMeals();//食事回数のカウントをする関数を呼び出す。これで食事回数が取得できた。
     let lackNutrientsArray = lackNutrients();//不足栄養素を求める関数を呼び出す。これで不足栄養素の配列が取得できた。
+    let commentText = document.getElementById('comment');//コメント文を表示するフィールドを取得
 
-    //不足栄養素を表示するテキストを取得する。
-    let lackNutrientsText = document.getElementById('lack_nutrients');
-
-    if(lackNutrientsArray.length > 0){//不足栄養素がある場合。
-        //不足栄養素を更新し表示する。配列を文字列に変換して表示する。.join(', ')で配列の要素をカンマ区切りの文字列に変換する。
-        lackNutrientsText.textContent = `本日の不足栄養素: ${lackNutrientsArray.join(', ')}`;
+    //栄養素が不足しているか、完璧かで1行のメッセージを出し分ける
+    if(lackNutrientsArray.length > 0){
+        commentText.textContent = `本日の食事は${todayMealCount}回でした。${lackNutrientsArray.join('・')}が不足気味なので、明日は摂取できるようにしましょう！`;
+    } else {
+        commentText.textContent = `本日の食事は${todayMealCount}回でした。栄養素はパーフェクトです！明日もこの調子でいきましょう！`;
     }
 
-    else{//不足栄養素がない場合。
-        //不足栄養素がないことを表示する。
-        lackNutrientsText.textContent = `本日の不足栄養素: なし`;
-    }
-
-    //-------------------------[機能9]ボタンを押すとその時点で記入済みの内容をdisabledにする-------------------------//
+    //-------------------------[機能8]ボタンを押すとその時点で記入済みの内容をdisabledにする-------------------------//
     //朝昼夕の食事の内容をロックする関数を呼び出す。引数に食事の種類を入れる。朝昼夕でそれぞれ呼び出す。
     lockMeal('breakfast');//朝食の内容をロックする。
     lockMeal('lunch');//昼食の内容をロックする。
     lockMeal('dinner');//夕食の内容をロックする。
-
-    //-------------------------[機能10]栄養素とかdisabled化などの処理はここから-------------------------//
 });

@@ -2,9 +2,14 @@
 import { saveDailyData, getDailyData } from '../services/healthService.js';
 import { loginAnonymously } from '../services/authService.js';
 
-// URLから日付を自動キャッチ（なければ日本時間の本日の日付）
+// URLから日付を自動キャッチ（HTML側と基準を合わせる）
 const urlParams = new URLSearchParams(window.location.search);
-const targetDate = urlParams.get('date') || new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().split('T')[0];
+let targetDate = urlParams.get('date');
+
+if (!targetDate) {
+    const now = new Date();
+    targetDate = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+}
 
 // 画面が読み込まれた時の初期化処理
 document.addEventListener('DOMContentLoaded', async () => {
@@ -13,11 +18,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     setTimeout(() => {
         const todayDateEl = document.getElementById("todayDate");
         if (todayDateEl) {
-            todayDateEl.textContent = `対象日: ${targetDate.replace(/-/g, '/')}`;
+            // 表示を整える処理はHTML側で行っているため、ここではFirestoreとの日付同期確認のみ
+            console.log("📅 選択中データ対象日:", targetDate);
         }
     }, 100);
 
-    // 2. 左上の「＜」ボタンの戻り先をセット
+    // 2. 左上の「＜」ボタンの戻り先をセット（パスの修正：frontEnd/src/ を削除）
     const backBtn = document.querySelector('.back-button');
     if (backBtn) {
         backBtn.setAttribute('href', `frontEnd/src/index.html?date=${targetDate}`);
@@ -36,6 +42,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         console.error("❌ Firebaseログインに失敗しました:", error);
     }
 });
+//ここまで変更
 
 /**
  * タイミングのズレを完全に無くすため、HTML側の計算直後にデータを受け取って即実行します。
@@ -79,7 +86,7 @@ window.saveToFirestoreViaJS = async function(passedWakeTime, passedBedTime) {
 
         // アラートを表示して、カレンダー（ホーム）へ日付付きで戻る
         alert(`✅ ${targetDate} の睡眠データを保存しました！`);
-        window.location.href = `index.html?date=${targetDate}`;
+        window.location.href = `frontEnd/src/index.html?date=${targetDate}`;
 
     } catch (error) {
         console.error("❌ 睡眠データの自動保存に失敗しました:", error);

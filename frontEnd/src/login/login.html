@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>目標を設定しよう！</title>
+  <link rel="stylesheet" href="login.css">
+</head>
+<body>
+
+  <div class="container">
+    <h1>目標を設定しよう！</h1>
+
+    <form id="goal-form">
+      <div class="section">
+        <h2>歩数</h2>
+        <div class="input-row">
+          <label for="steps">一日の目標：</label>
+          <input type="number" id="steps" min="0" placeholder="0" required>
+          <span>歩</span>
+        </div>
+      </div>
+
+      <div class="section">
+        <h2>食事</h2>
+        
+        <div class="input-row time-row">
+          <label>朝食時間：</label>
+          <input type="number" id="breakfast-hour" min="0" max="23" placeholder="00" required>
+          <span class="colon">:</span>
+          <input type="number" id="breakfast-minute" min="0" max="59" placeholder="00" required>
+        </div>
+
+        <div class="input-row time-row">
+          <label>昼食時間：</label>
+          <input type="number" id="lunch-hour" min="0" max="23" placeholder="00" required>
+          <span class="colon">:</span>
+          <input type="number" id="lunch-minute" min="0" max="59" placeholder="00" required>
+        </div>
+
+        <div class="input-row time-row">
+          <label>夕食時間：</label>
+          <input type="number" id="dinner-hour" min="0" max="23" placeholder="00" required>
+          <span class="colon">:</span>
+          <input type="number" id="dinner-minute" min="0" max="59" placeholder="00" required>
+        </div>
+      </div>
+
+      <div class="button-container">
+        <button type="submit" class="btn-guest">ゲストで参加</button>
+      </div>
+    </form>
+  </div>
+
+  <script src="login.js"></script>
+</body>
+</html>

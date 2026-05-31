@@ -1,0 +1,110 @@
+/* 全体のリセットと背景 */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-family: "Helvetica Neue", Arial, "Hiragino Kaku Gothic ProN", sans-serif;
+}
+
+body {
+  background-color: #ffffff;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  padding: 20px;
+}
+
+/* メインコンテナ */
+.container {
+  width: 100%;
+  max-width: 500px;
+  text-align: left;
+}
+
+/* タイトル */
+h1 {
+  text-align: center;
+  font-size: 2.5rem;
+  margin-bottom: 40px;
+  color: #000000;
+  font-weight: normal;
+}
+
+/* セクション（歩数・食事） */
+.section {
+  margin-bottom: 35px;
+}
+
+h2 {
+  font-size: 1.5rem;
+  font-weight: normal;
+  margin-bottom: 15px;
+  color: #000000;
+}
+
+/* 入力行のスタイル */
+.input-row {
+  display: flex;
+  align-items: center;
+  font-size: 1.4rem;
+  margin-bottom: 15px;
+  color: #000000;
+}
+
+.input-row label {
+  white-space: nowrap;
+}
+
+/* 入力フォーム共通（画像に合わせた角丸とグレーの枠線） */
+input[type="number"] {
+  width: 90px;
+  height: 45px;
+  font-size: 1.3rem;
+  text-align: center;
+  border: 2px solid #a0a0a0;
+  border-radius: 15px;
+  margin: 0 8px;
+  outline: none;
+  appearance: none;
+  -moz-appearance: textfield; /* 上下矢印を消す(Firefox) */
+}
+
+/* 上下矢印を消す(Chrome, Safari) */
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* 時間入力欄のコロン */
+.colon {
+  font-weight: bold;
+  margin: 0 2px;
+}
+
+/* ボタンの配置とデザイン（水色のカプセル型） */
+.button-container {
+  display: flex;
+  justify-content: center;
+  margin-top: 40px;
+}
+
+.btn-guest {
+  background-color: #9cd6f7; /* 画像に近い爽やかな水色 */
+  color: #000000;
+  font-size: 2rem;
+  padding: 12px 45px;
+  border: 2px solid #a0a0a0;
+  border-radius: 50px; /* カプセル型 */
+  cursor: pointer;
+  transition: background-color 0.2s, transform 0.1s;
+}
+
+.btn-guest:hover {
+  background-color: #82c6ee;
+}
+
+.btn-guest:active {
+  transform: scale(0.98); /* クリックしたときに少し沈む */
+}

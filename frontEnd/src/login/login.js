@@ -29,7 +29,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // テスト確認用のログ（開発ツールで確認できます）
     console.log('保存されたデータ:', guestData);
 
-    // 次のメイン画面へ遷移（例として main.html にしています）
+    // 次のメイン画面へ遷移
     window.location.href = '../index.html';
   });
 });

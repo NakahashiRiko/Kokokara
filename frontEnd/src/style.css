@@ -41,9 +41,35 @@ body {
     font-size: 52px;
     font-weight: 900;        /* 文字を最高に太く */
     margin-right: 60px;      /* メモ欄との間のスキマ */
-    color: #333;
     letter-spacing: 6px;    /* 文字と文字の間隔を少し広げておしゃれに */
     line-height: 1;          /* 上下の無駄な余白をカット */
+
+    /* 💡 ポイント1：文字を綺麗なグラデーションにする（緑から青緑への爽やかなグラデ） */
+    background: linear-gradient(135deg, #1b5e20 0%, #388e3c 50%, #00796b 100%);
+    -webkit-background-clip: text; /* 古いChrome/Safari用 */
+    background-clip: text;         /* ✨標準コード（これを足すとエディタのエラーが消えます） */
+    -webkit-text-fill-color: transparent; /* 文字の中身を透明にしてグラデーションをくり抜く */
+    
+    /* 💡 ポイント2：文字の下におしゃれな装飾ラインを引くための準備 */
+    position: relative;
+    padding-bottom: 8px;        /* 文字と下線の間のスキマ */
+}
+
+/* 💡 ポイント3：タイトルの下に引く、おしゃれなデザイン下線（線の左側だけ丸く、右側に向けて細くなる） */
+/* タイトルの下に引くデザイン下線（文字幅ぴったり版） */
+.title::after {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    
+    /* 💡 変更ポイント：幅を 60px から「100%（文字の端から端まで）」に変更 */
+    width: 100%; 
+    height: 4px;                /* 線の太さ */
+    
+    /* 💡 右端に向けて自然に消えていく、なだらかなグラデーションに変更 */
+    background: linear-gradient(90deg, #1b5e20 0%, #86ff7b 70%, transparent 100%);
+    border-radius: 2px;
 }
 
 /* メモ入力欄を乗せる土台（横いっぱいに広げる） */

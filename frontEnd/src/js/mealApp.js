@@ -56,7 +56,7 @@ document.getElementById('finish_today_btn').addEventListener('click', async () =
         await saveDailyData(targetDate, mealData);
         alert(`✅ ${targetDate} の食事記録を保存しました！`);
 
-        window.location.href = `index.html?date=${targetDate}`;//パラメータをつける
+        window.location.href = `frontEnd/src/index.html?date=${targetDate}`;//パラメータをつける
         
         // 保存後、自動でホーム画面に戻る場合は以下を有効にしてください
         // window.location.href = 'index.html';

@@ -14,7 +14,7 @@
 body {
     margin: 0;
     font-family: sans-serif;
-    background: #e9e9e9;
+    background: white;
 }
 
 header {
@@ -56,7 +56,7 @@ header {
 
 .right {
     width: 50%;
-    background: white;
+    background: #dcdcdc;
     padding: 20px;
     border-radius: 10px;
 }
@@ -73,8 +73,10 @@ header {
 
 .status-display {
     font-size: 26px;
-    color: #444;
-    background: #fff;
+
+    color: black;
+    background: #dcdcdc;
+
     padding: 15px;
     border-radius: 10px;
     margin-bottom: 20px;
@@ -134,8 +136,9 @@ button.wake-mode {
 
 <header>
 
-    <a href="index.html" class="back-button">＜</a>
-
+    <a href="frontEnd/src/index.html" class="back-button">
+        ＜
+    </a>
     <div class="title">睡眠</div>
 
 </header>
@@ -440,8 +443,9 @@ function handleSleepButton() {
         // グラフ更新
         // =====================
 
-        const selected =
-        new Date(selectedDate);
+        const paramsForChart = new URLSearchParams(window.location.search);
+        const dateStrForChart = paramsForChart.get("date") || new DataTransferItemList().toISOStrubg().split('T')[0];
+        const selected = new Date(dateStrForChart);
 
         const today =
         selected.getDay();
@@ -466,7 +470,10 @@ function handleSleepButton() {
         document.getElementById("statusDisplay").textContent =
         "記録が完了しました。";
 
-        wakeInput.value = "";
+        if (typeof window.saveToFirestoreViaJS === 'function') {
+            window.saveToFirestoreViaJS(wakeInput.value, document.getElementById("bedTimeResult").textContent);
+        }
+
     }
 }
 

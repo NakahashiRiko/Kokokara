@@ -340,14 +340,6 @@ function handleSleepButton() {
         document.getElementById("sleepResult").textContent =
         `${String(hours).padStart(2,'0')}時間${String(minutes).padStart(2,'0')}分`;
 
-
-
-        const selected = new Date(selectedDate);
-        const today = selected.getDay();
-        sleepData[today] = savedDiffMinutes / 60;
-        sleepChart.update();
-        calculateAverage();
-
         currentStatus = "finished";
 
         button.textContent = "記録する";
@@ -465,7 +457,6 @@ function handleSleepButton() {
 
         calculateAverage();
 
-
         // =====================
         // 初期化
         // =====================
@@ -525,5 +516,6 @@ function calculateAverage() {
 
 </script>
 
+<script type="module" src="frontEnd/src/js/SleepApp.js"></script>
 </body>
 </html>

@@ -478,29 +478,25 @@ canvas{
         function updatePage(){
     let inputValue =
         document.getElementById("stepInput").value;
+        let currentTarget = target;
     /* 未入力チェック */
     if(inputValue === ""){
         alert("今日の歩数を入力してください。");
         return;
     }
-    let step =
-        Number(inputValue);
-            localStorage.setItem(
-                selectedKey,
-                step
-            );
-            stepData[selectedKey] =
-                step;
+    let currentStep = Number(inputValue);
+    localStorage.setItem(selectedKey,currentStep);
+    stepData[selectedKey] = currentStep;
             /* 平均更新 */
             updateAverage();
             createChart();
             /* コメント */
             let diff =
-                step - target;
+                currentStep - currentTarget;
             if(diff >= 0){
                 document.getElementById("comment").innerText =
                     "今日の歩数は" +
-                    step +
+                    currentStep +
                     "歩です。"
                     +
                     "目標より" +
@@ -512,7 +508,7 @@ canvas{
             else{
                 document.getElementById("comment").innerText =
                     "今日の歩数は" +
-                    step +
+                    currentStep +
                     "歩です。"
                     +
                     "目標まであと" +
@@ -527,12 +523,23 @@ canvas{
             .getElementById("saveButton")
             .addEventListener(
                 "click",
-                updatePage
+                () => {
+                updatePage();
+                const finalTarget = target;
+                const finalCurrentStep = Number(document.getElementById("stepInput").value) || 0;
+                if (typeof window.updateWalkFirestore === 'function') {
+                    window.updateWalkFirestore(finalStep, finalTarget);
+                    }
+                }
+                
             );
         /* 初回表示 */
         updateAverage();
         createChart();
-        updatePage();
+
+        if(document.getElementById("stepInput").value !=="0"){
+            updatePage();
+        }
     </script>
     <script type="module" src="frontEnd/src/js/walk.js"></script>
 </body>

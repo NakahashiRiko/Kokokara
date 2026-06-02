@@ -24,11 +24,49 @@ body {
 
 /* タイトル */
 h1 {
+  font-size: 2.8rem;
+  color: #000000;            /* 文字をくっきり黒に */
+  font-weight: bold;
   text-align: center;
-  font-size: 2.5rem;
-  margin-bottom: 40px;
-  color: #000000;
-  font-weight: normal;
+  
+  display: inline-block;     /* 下線を文字幅ぴったりにする */
+  margin: 0 auto 40px auto;  /* 画面の中央に配置 */
+  
+  position: relative;
+  /* 💡 文字の上下の余白のバランスを整える */
+  padding: 5px 10px 12px 10px;
+}
+
+/* 💡 マーカー風に文字の真ん中に被せるアンダーライン */
+h1::after {
+  content: "";
+  position: absolute;
+  
+  /* 💡 基準をbottom（下端）に変更しました。
+     この数値を調整することで、上下の位置を自由にコントロールできます */
+  bottom: 20px; 
+
+  /* 💡 ここがポイント！
+     マイナスの値にすることで、文字の左端よりもさらに左から線が始まります */
+  left: -15px; 
+  
+  /* 💡 左に飛び出させた分（15px）と、右側にも少し余裕を持たせるために、
+     全体の横幅を「文字幅（100%）＋30px」に広げます */
+  width: calc(100% + 30px);
+  
+  height: 15px;              /* 💡 マーカーらしい、しっかりとした太さ */
+  
+  /* 右端に向けて自然に消えていく、なだらかなグラデーション */
+  background: linear-gradient(90deg, #1b5e20 0%, #86ff7b 70%, transparent 100%);
+  
+  /* 💡 両端をペン先のように少し丸める */
+  border-radius: 20px;
+
+  /* 💡 線を文字の後ろ側に配置（これで文字が隠れません） */
+  z-index: -1;
+  
+  /* 💡 ほんの少し不透明度を下げることで、より蛍光ペンらしい質感になります */
+  opacity: 0.9; 
 }
 
 /* セクション（歩数・食事） */

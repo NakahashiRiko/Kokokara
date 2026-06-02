@@ -179,89 +179,116 @@ if (finishTodayBtn) {
 
 
 // ------------------------------------------------------------------
-// 付属のユーティリティ関数
+// [機能2] 食事回数のカウント
 // ------------------------------------------------------------------
-function lockMeal(mealType) {
-    const menuInput = document.getElementById(`${mealType}_menu`);
-    if (menuInput) menuInput.disabled = true;
+function checkMeal(mealType){
+    let timeInput = document.getElementById(`${mealType}_really_time`);
+    let menuInput = document.getElementById(`${mealType}_menu`);
+    let nutrientsInput = document.querySelectorAll(`#${mealType}_nutrients input[type="checkbox"]:checked`);
 
-    const timeInput = document.getElementById(`${mealType}_really_time`);
-    if (timeInput) timeInput.disabled = true;
-
-    const nutrients = ['carbo', 'protein', 'fat', 'vitamin', 'mineral'];
-    nutrients.forEach(nutrient => {
-        const checkbox = document.getElementById(`${nutrient}_${mealType}`);
-        if (checkbox) checkbox.disabled = true;
-    });
+    // 上3つの項目が全て記入されてる状態であったら食事をしたと見なす
+    if((timeInput && timeInput.value != "") && (menuInput && menuInput.value != "") && (nutrientsInput.length > 0)){
+        return true;
+    }
+    else{
+        return false;
+    }
 }
 
-function countMeals() {
-    let mealCount = 0;
-    if (document.getElementById('breakfast_menu') && document.getElementById('breakfast_menu').value !== "") mealCount++;
-    if (document.getElementById('lunch_menu') && document.getElementById('lunch_menu').value !== "") mealCount++;
-    if (document.getElementById('dinner_menu') && document.getElementById('dinner_menu').value !== "") mealCount++;
-    return mealCount;
+function countMeals(){
+    let count = 0;
+    if(checkMeal('breakfast')) count++;
+    if(checkMeal('lunch'))     count++;
+    if(checkMeal('dinner'))    count++;
+    return count;
 }
 
-function lackNutrients() {
-    const nutrientsList = ['炭水化物', 'タンパク質', '脂質', 'ビタミン', 'ミネラル'];
-    const idPrefixes = ['carbo', 'protein', 'fat', 'vitamin', 'mineral'];
+
+// ------------------------------------------------------------------
+// [機能3] 不足栄養素を見つける
+// ------------------------------------------------------------------
+function lackNutrients(){
+    let lackNutrientsArray = ["炭水化物", "タンパク質", "脂質", "ビタミン", "ミネラル"];
     const types = ['breakfast', 'lunch', 'dinner'];
-    const checkStatus = [false, false, false, false, false];
 
     types.forEach(type => {
-        idPrefixes.forEach((prefix, index) => {
-            const checkbox = document.getElementById(`${prefix}_${type}`);
-            if (checkbox && checkbox.checked) {
-                checkStatus[index] = true;
+        let checkedBoxes = document.querySelectorAll(`#${type}_nutrients input[type="checkbox"]:checked`);
+        checkedBoxes.forEach(box => {
+            let index = lackNutrientsArray.indexOf(box.value);
+            if(index !== -1){
+                lackNutrientsArray.splice(index, 1);
             }
         });
     });
 
-    const result = [];
-    checkStatus.forEach((status, index) => {
-        if (!status) {
-            result.push(nutrientsList[index]);
+    return lackNutrientsArray;
+}
+
+
+// ------------------------------------------------------------------
+// [機能4 / 機能7] 記録済みの内容をロックする（※未記入の部分はロックしない）
+// ------------------------------------------------------------------
+function lockMeal(mealType) {
+    // 1. 食事開始時刻をロック（入力がある場合のみ）
+    const timeInput = document.getElementById(`${mealType}_really_time`);
+    if (timeInput && timeInput.value !== "") {
+        timeInput.disabled = true;
+    }
+
+    // 2. 献立をロック（入力がある場合のみ）
+    const menuInput = document.getElementById(`${mealType}_menu`);
+    if (menuInput && menuInput.value !== "") {
+        menuInput.disabled = true;
+    }
+
+    // 3. 栄養素をロック（1つでもチェックがついている場合のみ、その食事の全ボックスをロック）
+    const checkedNutrients = document.querySelectorAll(`#${mealType}_nutrients input[type="checkbox"]:checked`);
+    if (checkedNutrients.length > 0) {
+        const allNutrientsInput = document.querySelectorAll(`#${mealType}_nutrients input[type="checkbox"]`);
+        allNutrientsInput.forEach(box => {
+            box.disabled = true; 
+        });
+    }
+}
+
+
+// ------------------------------------------------------------------
+// [機能5] 未記入欄があれば警告する
+// ------------------------------------------------------------------
+function checkUnfilledFields(mealType, mealName){
+    let time = document.getElementById(`${mealType}_really_time`).value;
+    let menu = document.getElementById(`${mealType}_menu`).value;
+    let nutrients = document.querySelectorAll(`#${mealType}_nutrients input[type="checkbox"]:checked`);
+
+    // その食事の記録欄が全て未記入の場合
+    if(time == "" && menu == "" && nutrients.length == 0){
+        let confirmCheck = confirm(`⚠️${mealName}の記録がされていません⚠️\n${mealName}を摂取していないならば\nOK\nを押してください。そのままで構いません。\n摂取したのであれば\nキャンセル\nを押して記入してください。`);
+        if(confirmCheck){
+            return false; // 摂取していないのでエラーなし扱いにする
         }
-    });
-    return result;
+        else{
+            return true; // 記入を促すためにエラーありにする
+        }
+    }
+    // 一部だけ未記入（記入漏れ）の場合
+    else{
+        let unfilledFields = [];
+        if(time == "") unfilledFields.push("時刻");
+        if(menu == "") unfilledFields.push("献立");
+        if(nutrients.length == 0) unfilledFields.push("栄養素");
+
+        if(unfilledFields.length > 0){
+            alert(`⚠️記入漏れ⚠️\n${mealName}の\n${unfilledFields.join('と')}\nが記入されていません。`);
+            return true;
+        }
+        return false;
+    }
 }
 
-function checkUnfilledFields(mealType, mealLabel) {
-    let unfilledFields = [];
-    
-    // 献立のチェック
-    const menuEl = document.getElementById(`${mealType}_menu`);
-    if (menuEl && menuEl.value === "") {
-        unfilledFields.push("献立");
-    }
 
-    // 時間のチェック (really_time に合わせました)
-    const timeEl = document.getElementById(`${mealType}_really_time`);
-    if (timeEl && timeEl.value === "") {
-        unfilledFields.push("時間");
-    }
-
-    // 栄養素のチェック
-    const nutrients = ['carbo', 'protein', 'fat', 'vitamin', 'mineral'];
-    let anyChecked = false;
-    nutrients.forEach(nutrient => {
-        const checkbox = document.getElementById(`${nutrient}_${mealType}`);
-        if (checkbox && checkbox.checked) anyChecked = true;
-    });
-
-    if (!anyChecked) {
-        unfilledFields.push("栄養素");
-    }
-
-    if (unfilledFields.length > 0) {
-        alert(`${mealLabel}の${unfilledFields.join('と')}が記入されていません。`);
-        return true; // エラーあり
-    }
-    return false; // エラーなし
-}
-
-// コメント生成ボタンの動作
+// ------------------------------------------------------------------
+// [機能8] コメント生成ボタンの動作（[機能9] を統合）
+// ------------------------------------------------------------------
 const commentBtn = document.getElementById('create_comment_btn');
 if (commentBtn) {
     commentBtn.addEventListener('click', () => {
@@ -271,14 +298,11 @@ if (commentBtn) {
 
         if (!commentText) return;
 
-        if (todayMealCount === 3 && lackNutrientsArray.length === 0) {
-            commentText.textContent = "完璧な食事です！この調子で頑張りましょう！";
-        } else if (todayMealCount < 3 && lackNutrientsArray.length === 0) {
-            commentText.textContent = `食事回数が ${todayMealCount} 回と少ないです。1日3食しっかり食べましょう。栄養素はばっちりです！`;
-        } else if (todayMealCount === 3 && lackNutrientsArray.length > 0) {
-            commentText.textContent = `1日3食食べられて素晴らしいです！不足している栄養素（${lackNutrientsArray.join('、')}）を意識して摂るとさらに良くなります。`;
+        // ご提示いただいたオリジナル仕様の条件分岐メッセージ
+        if(lackNutrientsArray.length > 0){
+            commentText.textContent = `本日の食事は${todayMealCount}回でした。${lackNutrientsArray.join('・')}が不足気味なので、明日は摂取できるようにしましょう！`;
         } else {
-            commentText.textContent = `食事回数が ${todayMealCount} 回と少なく、栄養素（${lackNutrientsArray.join('、')}）も不足しています。意識して食事を摂るようにしましょう。`;
+            commentText.textContent = `本日の食事は${todayMealCount}回でした。栄養素はパーフェクトです！明日もこの調子でいきましょう！`;
         }
     });
 }

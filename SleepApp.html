@@ -409,6 +409,27 @@ function handleSleepButton() {
         `${String(bedHour).padStart(2,'0')}:${String(bedMinute).padStart(2,'0')}`;
 
         // =====================
+        // グラフ更新
+        // =====================
+
+        const paramsForChart = new URLSearchParams(window.location.search);
+        const dateStrForChart = paramsForChart.get("date") || new Date().toISOString().split('T')[0];
+
+        const selected =
+        new Date(selectedDate);
+
+        const today =
+        selected.getDay();
+
+        sleepData[today] =
+        Math.round((savedDiffMinutes / 60) * 10) / 10;
+
+        sleepChart.update();
+
+        calculateAverage();
+
+
+        // =====================
         // コメント
         // =====================
 
@@ -456,6 +477,10 @@ function handleSleepButton() {
 
         document.getElementById("statusDisplay").textContent =
         "記録が完了しました。";
+
+        if (typeof window,saveToFirestoreViaJS === 'function') {
+            window.saveToFirestoreViaJS(wakeInput.value, document.getElementById("bedTimeResult").textContent);
+        }
 
     }
 }

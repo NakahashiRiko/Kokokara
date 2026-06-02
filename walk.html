@@ -288,16 +288,21 @@ canvas{
         }
         /* 平均更新関数 */
         function updateAverage(){
-            let todayDay =
-                today.getDay();
-            let thisSunday =
-                new Date(today);
-            thisSunday.setDate(
-                today.getDate() - todayDay
-            );
-            let sum = 0;
-            let daysCount =
-                todayDay + 1;
+            let selectedDateObj =
+    new Date(year, month - 1, selectedDay);
+
+let selectedWeekDay =
+    selectedDateObj.getDay();
+
+let thisSunday =
+    new Date(selectedDateObj);
+
+thisSunday.setDate(
+    selectedDateObj.getDate() - selectedWeekDay
+);
+
+let daysCount =
+    selectedWeekDay + 1;
             for(let i = 0; i < daysCount; i++){
                 let d =
                     new Date(thisSunday);
@@ -363,9 +368,13 @@ canvas{
         function createChart(){
             let labels = [];
             let graphData = [];
-            let todayDay =
-                today.getDay();
-            for(let i = todayDay; i >= 0; i--){
+            let selectedDateObj =
+    new Date(year, month - 1, selectedDay);
+
+let selectedWeekDay =
+    selectedDateObj.getDay();
+
+for(let i = selectedWeekDay; i >= 0; i--){
                 let d =
                     new Date(
                         year,

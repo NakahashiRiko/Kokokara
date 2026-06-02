@@ -528,7 +528,7 @@ canvas{
                 const finalTarget = target;
                 const finalCurrentStep = Number(document.getElementById("stepInput").value) || 0;
                 if (typeof window.updateWalkFirestore === 'function') {
-                    window.updateWalkFirestore(finalStep, finalTarget);
+                    window.updateWalkFirestore(finalCurrentStep, finalTarget);
                     }
                 }
                 

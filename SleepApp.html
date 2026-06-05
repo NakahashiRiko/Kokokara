@@ -153,9 +153,17 @@ button.wake-mode {
             まだ就寝記録がありません。
         </div>
 
+        <div id="timerDisplay" style="
+            font-size: 40px;
+            margin: 20px 0;
+            color: black;
+            font-weight: bold;">
+            00:00:00
+        </div>
+
         <div class="input-area">
 
-            起床時間：
+            起床時刻：
             <input type="time" id="wakeInput">
 
         </div>
@@ -285,6 +293,8 @@ let currentStatus = "idle";
 
 let savedDiffMinutes = 0;
 
+let timerInterval = null;
+
 // =========================
 // ボタン処理
 // =========================
@@ -307,6 +317,21 @@ function handleSleepButton() {
 
         currentStatus = "sleeping";
 
+        timerInterval = setInterval(() => {
+
+            const now = new Date();
+
+            const diff = Math.floor((now - sleepStartTime) / 1000);
+
+            const h = String(Math.floor(diff / 3600)).padStart(2,'0');
+
+            const m = String(Math.floor((diff % 3600) / 60)).padStart(2,'0');
+
+            const s = String(diff % 60).padStart(2,'0');
+
+            document.getElementById("timerDisplay").textContent = `${h}:${m}:${s}`;
+        }, 1000);
+
         button.textContent = "タイマー終了";
 
         button.classList.add("wake-mode");
@@ -320,6 +345,8 @@ function handleSleepButton() {
     // =====================
 
     else if (currentStatus === "sleeping") {
+
+        clearInterval(timerInterval);
 
         const sleepEndTime = new Date();
 

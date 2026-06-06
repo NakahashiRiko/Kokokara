@@ -29,11 +29,19 @@ function updateCardContents(data) {
     // 1. 食事カードの書き換え
     const mealCardContent = document.querySelector('.card.meal .card-content');
     if (mealCardContent) {
-        if (data && data.meal) {
-            const breakfastStatus = data.meal.breakfast?.menu ? "済" : "未";
-            const lunchStatus = data.meal.lunch?.menu ? "済" : "未";
-            const dinnerStatus = data.meal.dinner?.menu ? "済" : "未";
-            
+        //
+        if (data && data.meal) {//開始時刻・献立・栄養素の全てが入力されてないと食事を「済」にしない。
+            //それぞれの食事で、開始時刻が入力されてるかどうか判定する関数。全て入力されてたらtrueを返す。
+            function isMealComplete(meal) {
+                if(meal.menu != "" && meal.time != "" && meal.nutrients != ""){
+                    return true;
+                }
+                return false;//どれか1つでも入力されてなかったらfalseを返す。
+            }
+            const breakfastStatus = isMealComplete(data.meal.breakfast) ? "済" : "未";
+            const lunchStatus = isMealComplete(data.meal.lunch) ? "済" : "未";
+            const dinnerStatus = isMealComplete(data.meal.dinner) ? "済" : "未";
+
             mealCardContent.innerHTML = `
                 <p>朝：${breakfastStatus}</p>
                 <p>昼：${lunchStatus}</p>

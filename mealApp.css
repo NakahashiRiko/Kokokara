@@ -37,12 +37,22 @@ input{
     line-height: 80px;
 }
 
+/*日付と「コメント生成」ボタンのボックスのデザイン*/
 #subtitle{
     display: flex;/*フレックスボックスの指定。テキストが横並びで表示されるようになる。*/
-    align-items: center;/*テキストを縦方向の中央に揃える。*/
-    gap: 20px;/*テキスト(要素)間の余白を自分で設定。*/
-    font-size: 20px;/*文字サイズの指定*/
-    padding: 0px 20px;/*上下の余白を0px(なし)、左右の余白を40px。*/
+    align-items: center;/*テキストを縦方向の中央に揃える。これにより「コメント生成」ボタンがテキストと同じラインに並ぶ。*/
+    gap: 300px;
+    margin: 0px 60px;
+    font-size: 30px;
+}
+
+/*コメント文が生成されるボックスのデザイン*/
+#comment-box{
+    padding: 10px;
+    margin-bottom: 20px;/*下の余白を20pxに自分で設定。*/
+    border-radius: 30px;/*ボックスの角を丸くする。*/
+    font-size: 40px;/*文字サイズの指定*/
+    background: #d3d3d3;/*灰色の背景色をつける*/
 }
 
 /*朝食の記録欄のデザイン*/
@@ -52,6 +62,7 @@ input{
     border-radius: 30px;/*ボックスの角を丸くする。*/
     background-color: #f7a3d5;/*背景色の指定*/
 }
+
 /*「朝食」テキストのデザイン。*/
 #breakfast-title{
     margin: 0;/*タイトルの上下の余白を消す。*/

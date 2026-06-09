@@ -41,9 +41,19 @@ input{
 #subtitle{
     display: flex;/*フレックスボックスの指定。テキストが横並びで表示されるようになる。*/
     align-items: center;/*テキストを縦方向の中央に揃える。これにより「コメント生成」ボタンがテキストと同じラインに並ぶ。*/
-    gap: 300px;
-    margin: 0px 60px;
-    font-size: 30px;
+    gap: 150px;
+    margin: 0px 50px;
+    font-size: 40px;
+}
+
+/*「コメント生成」ボタンのデザイン*/
+#create_comment_btn{
+    font-size: 40px;/*ボタンのサイズを拡大*/
+    background-color: #d3d3d3;/*背景色の指定*/
+    font-weight: bold;/*文字を太字にする。*/
+    border-radius: 30px;/*ボックスの角を丸くする。*/
+    padding: 20px;/*ボタン内の余白を設定*/
+    cursor: pointer;/*マウスポインタがこのテキストの上に来たとき、クリックできることを示すポインタに変わる。*/
 }
 
 /*コメント文が生成されるボックスのデザイン*/
@@ -53,6 +63,14 @@ input{
     border-radius: 30px;/*ボックスの角を丸くする。*/
     font-size: 40px;/*文字サイズの指定*/
     background: #d3d3d3;/*灰色の背景色をつける*/
+}
+
+/*朝昼夕の食事欄を横一列に並べる。*/
+#all-meal-box{
+    display: flex;
+    justify-content: center;
+    gap: 40px;
+    margin: 0px 40px;
 }
 
 /*朝食の記録欄のデザイン*/
@@ -72,7 +90,7 @@ input{
 
 /*朝食の献立の入力欄の拡大。*/
 #breakfast_menu{
-    width: 70%;
+    width: 85%;
 }
 
 /*昼食の記録欄のデザイン*/
@@ -91,7 +109,7 @@ input{
 
 /*昼食の献立の入力欄の拡大。*/
 #lunch_menu{
-    width: 70%;
+    width: 85%;
 }
 
 /*夕食の記録欄のデザイン*/
@@ -109,7 +127,7 @@ input{
 }
 /*夕食の献立の入力欄の拡大。*/
 #dinner_menu{
-    width: 70%;
+    width: 85%;
 }
 
 /*その他の食事の入力欄の拡大。*/
@@ -125,7 +143,20 @@ input{
     font-size: 20px;/*文字サイズの指定*/
 }
 
-/*「記録を保存」ボタンのデザイン*/
-#finish_today_btn{
-    font-family: "Hiragino Sans", sans-serif;/*フォントをゴシック体に指定。*/
+/*「記録保存」ボタンと「記録確定」ボタンのデザイン。*/
+#save_records_btn, #finish_today_btn{
+    font-size: 40px;/*ボタンのサイズを拡大*/
+    background-color: #f5f5a7;/*背景色の指定。タイトルの背景色と一致させた。*/
+    font-weight: bold;/*文字を太字にする。*/
+    border-radius: 30px;/*ボックスの角を丸くする。*/
+    padding: 20px;/*ボタン内の余白を設定*/
+    cursor: pointer;/*マウスポインタがこのテキストの上に来たとき、クリックできることを示すポインタに変わる。*/
+}
+
+/*「記録保存」ボタンと「記録確定」ボタンのデザイン。boxごとだとボタン自体のデザインは作れない。*/
+#bottom-btns-box{
+    display: flex;/*ボックスなのでboxのデザイン内で書く。*/
+    justify-content: center;/*テキストを縦方向の中央に揃える。これにより「コメント生成」ボタンがテキストと同じラインに並ぶ。*/
+    margin-bottom: 30px;/*下の余白を30px。*/
+    gap: 50px;/*要素(ボタン)同士の間隔を20pxに自分で設定。*/
 }

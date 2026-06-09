@@ -26,6 +26,10 @@ document.addEventListener('DOMContentLoaded', async () => {
             if (savedData && savedData.meal) {
                 console.log("🥗 過去の食事データを自動復元します");
                 restoreMealData(savedData.meal);
+                //画面遷移後も記入済みの内容をロックしておく。ロックする関数を再度呼び出す。
+                lockMeal('breakfast');
+                lockMeal('lunch');
+                lockMeal('dinner');
             }
         }
     } catch (error) {
@@ -33,6 +37,40 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
     //---------------------追加②ここまで---------------------
 });
+
+//ログイン画面から設定された各食事の目標時間をインプットに反映（エラー対策版）
+    const sessionData = sessionStorage.getItem('guestGoalData');
+    if (sessionData) {
+        const guestData = JSON.parse(sessionData);
+        if (guestData.mealTimes) {
+            console.log("ログイン画面から目標食事時間を引き継ぎました:", guestData.mealTimes);
+            
+            // 1桁の時間（"8:0"など）を2桁（"08:00"）に安全に変換する便利な関数
+            const formatTime = (timeStr) => {
+                if (!timeStr || !timeStr.includes(':')) return "";
+                const [hour, minute] = timeStr.split(':');
+                const hh = hour.padStart(2, '0');   // 8 -> 08
+                const mm = minute.padStart(2, '0'); // 0 -> 00
+                return `${hh}:${mm}`;
+            };
+
+            // HTMLにある input 要素を取得
+            const breakfastGoalInput = document.getElementById('breakfast_goal_time');
+            const lunchGoalInput = document.getElementById('lunch_goal_time');
+            const dinnerGoalInput = document.getElementById('dinner_goal_time');
+
+            // 綺麗な2桁形式に変換してから値をセット
+            if (breakfastGoalInput && guestData.mealTimes.breakfast) {
+                breakfastGoalInput.value = formatTime(guestData.mealTimes.breakfast);
+            }
+            if (lunchGoalInput && guestData.mealTimes.lunch) {
+                lunchGoalInput.value = formatTime(guestData.mealTimes.lunch);
+            }
+            if (dinnerGoalInput && guestData.mealTimes.dinner) {
+                dinnerGoalInput.value = formatTime(guestData.mealTimes.dinner);
+            }
+        }
+    }
 
 //---------------------追加③ここから---------------------
 /**

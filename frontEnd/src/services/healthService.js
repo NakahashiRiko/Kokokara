@@ -1,6 +1,5 @@
 import { db, auth } from './firebase.js';
 import { doc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
-//追加
 import { getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
 /**
@@ -12,18 +11,17 @@ export const saveDailyData = async (date, data) => {
   const uid = auth.currentUser?.uid;
   if (!uid) throw new Error("ユーザーが認証されていません");
 
-//現在時刻から30日後の日付を計算してタイムスタンプを作る
-  const now = new Date();
-  const expireDate = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
+  // 保存先のパスを指定：users/{uid}/dailyData/{date}
+  const docRef = doc(db, "users", uid, "dailyData", date);
 
-  // main.js から届いたデータに、自動消去用の「expireAt」を合体させて保存します
+  // 【元の状態に戻しました】これでデータの保存が正常に動くようになります
   return await setDoc(docRef, {
     ...data,
-    expireAt: expireDate,         // 30日後を過ぎたら自動削除対象になる
-    updatedAt: serverTimestamp()  // サーバー時刻を添える
-  }, { merge: true }); // { merge: true } があるので既存の食事や睡眠データを壊さずにメモだけを追加保存できます
+    updatedAt: serverTimestamp() // サーバー時刻だけを添える
+  }, { merge: true });
 };
 
+//健康データを取得する関数（1ヶ月以上前のデータは除外）
 export const getDailyData = async (date) => {
   const uid = auth.currentUser?.uid;
   if (!uid) throw new Error("ユーザーが認証されていません");
@@ -36,11 +34,30 @@ export const getDailyData = async (date) => {
     const docSnap = await getDoc(docRef);
 
     if (docSnap.exists()) {
-      // データが存在すれば、中身をオブジェクトで返す
-      console.log(`${date} のデータを取得しました:`, docSnap.data());
-      return docSnap.data();
+      const data = docSnap.data();
+
+      // データの保存日時（updatedAt）があるか確認し、安全に日付オブジェクトに変換します
+      if (data.updatedAt) {
+        // Firestoreの特殊なタイムスタンプ、または通常のミリ秒数からDateオブジェクトを作成
+        const updatedTime = typeof data.updatedAt.toDate === 'function' 
+          ? data.updatedAt.toDate() 
+          : new Date(data.updatedAt);
+
+        // 30日前の境界線を計算
+        const thirtyDaysAgo = new Date();
+        thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+        // もし30日前よりも古い更新データであれば、画面に表示させない（初期化状態にする）
+        if (updatedTime < thirtyDaysAgo) {
+          console.log(`${date} のデータは30日以上前の古いデータなので、表示しません。`);
+          return null; 
+        }
+      }
+
+      // 30日以内のデータであれば通常通りフロント（main.js）に返す
+      console.log(`${date} のデータを取得しました:`, data);
+      return data;
     } else {
-      // データが存在しない場合
       console.log(`${date} のデータは見つかりませんでした。`);
       return null;
     }

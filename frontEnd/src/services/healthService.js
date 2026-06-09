@@ -12,14 +12,16 @@ export const saveDailyData = async (date, data) => {
   const uid = auth.currentUser?.uid;
   if (!uid) throw new Error("ユーザーが認証されていません");
 
-  // 保存先のパスを指定：users/{uid}/dailyData/{date}
-  const docRef = doc(db, "users", uid, "dailyData", date);
+//現在時刻から30日後の日付を計算してタイムスタンプを作る
+  const now = new Date();
+  const expireDate = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
 
-  //main.js から届いた綺麗な階層データを、そのまま崩さずに丸ごと保存します
+  // main.js から届いたデータに、自動消去用の「expireAt」を合体させて保存します
   return await setDoc(docRef, {
     ...data,
-    updatedAt: serverTimestamp() // サーバー時刻だけを添える
-  }, { merge: true });
+    expireAt: expireDate,         // 30日後を過ぎたら自動削除対象になる
+    updatedAt: serverTimestamp()  // サーバー時刻を添える
+  }, { merge: true }); // { merge: true } があるので既存の食事や睡眠データを壊さずにメモだけを追加保存できます
 };
 
 export const getDailyData = async (date) => {

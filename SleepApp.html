@@ -354,7 +354,7 @@ function handleSleepButton() {
         sleepEndTime - sleepStartTime;
 
         savedDiffMinutes =
-        Math.floor(diffMs / (1000 * 60));
+        Math.floor(diffMs / (1000 ));
 
         const hours =
         Math.floor(savedDiffMinutes / 60);
@@ -394,7 +394,7 @@ function handleSleepButton() {
 
         if (wake === "") {
 
-            alert("起床時間を入力してください");
+            alert("起床時刻を入力してください");
 
             return;
         }
@@ -470,16 +470,39 @@ function handleSleepButton() {
             "あと少し睡眠時間を増やすとより良いです。";
         }
 
+        let bedAdvice = "";
+
+        if (bedHour >= 21 && bedHour < 23) {
+
+            bedAdvice =
+            "理想的な時間帯に就寝できています。";
+        }
+        else if (
+            (bedHour >= 23 && bedHour <= 23) ||
+            (bedHour >= 0 && bedHour < 1)
+        ) {
+
+            bedAdvice = "やや遅めの就寝です。";
+        }
+        else if (bedHour >= 1 && bedHour < 4) {
+
+            bedAdvice = "就寝時刻が遅いため生活リズムに注意しましょう。";
+        }
+        else {
+
+            bedAdvice = "規則正しい生活を心掛けましょう。";
+        }
+
         document.getElementById("comment").textContent =
 
-        `今日の睡眠時間は ${String(hours).padStart(2,'0')}時間${String(minutes).padStart(2,'0')}分です。\n${advice}`;
+        `今日の睡眠時間は ${String(hours).padStart(2,'0')}時間${String(minutes).padStart(2,'0')}分です。\n${advice}\n就寝時刻は ${String(bedHour).padStart(2,'0')}:${String(bedMinute).padStart(2,'0')} です。${bedAdvice}`;
 
         // =====================
         // グラフ更新
         // =====================
 
         const paramsForChart = new URLSearchParams(window.location.search);
-        const dateStrForChart = paramsForChart.get("date") || new DataTransferItemList().toISOStrubg().split('T')[0];
+        const dateStrForChart = paramsForChart.get("date") || new DateTransferItemList().toISOString().split('T')[0];
         const selected = new Date(dateStrForChart);
 
         const today =

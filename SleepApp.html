@@ -354,7 +354,7 @@ function handleSleepButton() {
         sleepEndTime - sleepStartTime;
 
         savedDiffMinutes =
-        Math.floor(diffMs / (1000 ));
+        Math.floor(diffMs / (1000 * 60));
 
         const hours =
         Math.floor(savedDiffMinutes / 60);

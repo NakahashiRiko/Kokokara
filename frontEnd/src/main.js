@@ -22,6 +22,7 @@ function updateNavigationLinks(dateStr) {
     console.log(`🔗 リンクの日付を更新しました: ${dateStr}`);
 }
 
+
 /**
  * Firestoreから取得したデータを画面の各カードに反映させる関数
  */
@@ -87,10 +88,19 @@ function updateCardContents(data) {
             if (radioBtn) radioBtn.checked = false;
         }
     }
+
+    const memoInput = document.querySelector('.memo-input');
+    if (memoInput) {
+        if (data && data.memo !== undefined) {
+            memoInput.value = data.memo; 
+        } else {
+            memoInput.value = ""; 
+        }
+    }
 }
 
 // カレンダー自動生成ロジック
-function renderCalendar() {
+async function renderCalendar() {
     const calendarBody = document.getElementById('calendar-body');
     if (!calendarBody) return;
 
@@ -116,9 +126,26 @@ function renderCalendar() {
                 nextMonthDateCount++;
             } else {
                 const isSelectedDay = (dateCount === currentDate.getDate());
-                const className = isSelectedDay ? 'class="today"' : '';
+                const className = isSelectedDay ? 'today' : '';
                 
-                html += `<td ${className}>${dateCount}</td>`;
+                const mmStr = String(month + 1).padStart(2, '0');
+                const ddStr = String(dateCount).padStart(2, '0');
+                const dateStr = `${year}-${mmStr}-${ddStr}`;
+
+                // main.js の renderCalendar 内の該当部分を以下に差し替え
+                html += `
+                    <td class="${className}" data-date="${dateStr}">
+                        <div class="date-wrapper">
+                            <span class="date-num">${dateCount}</span>
+                            <div class="dot-container">
+                                <div class="dot-marker dot-meal"></div>
+                                <div class="dot-marker dot-sleep"></div>
+                                <div class="dot-marker dot-walk"></div>
+                                <div class="dot-marker dot-condition"></div>
+                            </div>
+                        </div>
+                    </td>
+                `;
                 dateCount++;
             }
         }
@@ -130,6 +157,50 @@ function renderCalendar() {
 
     calendarBody.innerHTML = html;
     setupCalendarCellsEvent();
+
+    // 💡 引数をつけずにシンプルに呼び出し
+    await addDotsToCalendar();
+}
+
+/**
+ * 4項目のデータ有無を個別にチェックし、対応する丸を点灯させる関数
+ */
+async function addDotsToCalendar() {
+    const cells = document.querySelectorAll('#calendar-body td:not(.other-month)');
+    
+    const promises = Array.from(cells).map(async (cell) => {
+        const dateStr = cell.getAttribute('data-date');
+        if (!dateStr) return;
+
+        try {
+            // 💡 一旦すべての丸の点灯（active）をリセット
+            cell.querySelectorAll('.dot-marker').forEach(dot => dot.classList.remove('active'));
+
+            const data = await getDailyData(dateStr);
+            
+            if (data) {
+                // 1. 食事のチェック
+                const hasMeal = data.meal && (data.meal.breakfast?.menu || data.meal.lunch?.menu || data.meal.dinner?.menu);
+                if (hasMeal) cell.querySelector('.dot-meal')?.classList.add('active');
+
+                // 2. 睡眠のチェック
+                const hasSleep = data.sleep && (Number(data.sleep.hour) > 0 || Number(data.sleep.minute) > 0);
+                if (hasSleep) cell.querySelector('.dot-sleep')?.classList.add('active');
+
+                // 3. 歩数のチェック
+                const hasWalk = data.walk !== undefined && data.walk !== null && Number(data.walk) > 0;
+                if (hasWalk) cell.querySelector('.dot-walk')?.classList.add('active');
+
+                // 4. 体調のチェック
+                const hasCondition = data.condition !== undefined && data.condition !== null && data.condition !== "";
+                if (hasCondition) cell.querySelector('.dot-condition')?.classList.add('active');
+            }
+        } catch (error) {
+            console.error(`ドット確認エラー (${dateStr}):`, error);
+        }
+    });
+
+    await Promise.all(promises);
 }
 
 // カレンダーのマス目クリックイベント
@@ -140,11 +211,13 @@ function setupCalendarCellsEvent() {
         
         cell.style.cursor = 'pointer';
         cell.addEventListener('click', () => {
-            const clickedDay = parseInt(cell.textContent, 10);
+            const dateNumEl = cell.querySelector('.date-num');
+            const clickedDay = dateNumEl ? parseInt(dateNumEl.textContent, 10) : NaN;
+            
             if (!isNaN(clickedDay)) {
                 console.log(`カレンダーの ${clickedDay} 日がクリックされました`);
                 currentDate.setDate(clickedDay);
-                updateDateDisplay(); // 画面更新＆データ再取得＆リンク更新
+                updateDateDisplay(); 
             }
         });
     });
@@ -164,12 +237,11 @@ async function updateDateDisplay() {
         dateDisplay.textContent = `${year}/${month}/${date}（${day}）`;
     }
 
-    renderCalendar();
+    await renderCalendar(); // カレンダー描画が終わるのを待つ
 
     const dateStr = `${year}-${month}-${date}`;
     console.log(`📅 ${dateStr} のデータを取得します...`);
 
-    // 💡 重要：日付が変わったら、即座に遷移先のリンクURLも更新する
     updateNavigationLinks(dateStr);
 
     try {
@@ -181,7 +253,7 @@ async function updateDateDisplay() {
 }
 
 /**
- * カレンダーの左右矢印ボタンにクリックイベントを設定する関数
+ * カレンダーの左右矢印ボタンにクリックイベントを設定する関数（月切り替え版）
  */
 function setupCalendarNavigation() {
     const navButtons = document.querySelectorAll('.nav-btn');
@@ -191,20 +263,22 @@ function setupCalendarNavigation() {
         const nextBtn = navButtons[1];
 
         prevBtn.addEventListener('click', () => {
-            currentDate.setDate(currentDate.getDate() - 1);
+            currentDate.setDate(1); // 月を切り替えた時の日付バグを防ぐ安全処理
+            currentDate.setMonth(currentDate.getMonth() - 1);
             updateDateDisplay();
         });
 
         nextBtn.addEventListener('click', () => {
-            currentDate.setDate(currentDate.getDate() + 1);
+            currentDate.setDate(1); // 月を切り替えた時の日付バグを防ぐ安全処理
+            currentDate.setMonth(currentDate.getMonth() + 1);
             updateDateDisplay();
         });
         
-        console.log("✅ カレンダー矢印ボタンの設定が完了しました");
+        console.log("✅ カレンダー矢印ボタンの設定が完了しました（月切り替えモード）");
     }
 }
 
-// アプリの初期化
+// アプリの初期化（修正版）
 async function initApp() {
     try {
         const user = await loginAnonymously();
@@ -224,7 +298,13 @@ async function initApp() {
             }
             
             setupCalendarNavigation(); // ◀︎ ▶︎ ボタンの有効化
-            await updateDateDisplay();  // カレンダー描画、Firestore取得、リンク生成の全初期化
+            await updateDateDisplay(); // カレンダー描画、Firestore取得、リンク生成の全初期化
+
+            // 💡 【超重要・追加】
+            // 他のアプリから「戻る」で帰ってきた時、または画面が写った時に
+            // カレンダーの丸マークを強制的に最新状態に更新する
+            await addDotsToCalendar();
+            console.log("🔄 カレンダーの記録ドットを最新の状態に同期しました");
         }
     } catch (error) {
         console.error("❌ 初期化エラーが発生しました:", error);
@@ -234,7 +314,9 @@ async function initApp() {
 // アプリ起動
 initApp();
 
+// ==========================================================================
 // 体調ボタンの自動保存設定
+// ==========================================================================
 document.addEventListener("DOMContentLoaded", () => {
     for (let i = 1; i <= 5; i++) {
         const radioBtn = document.getElementById(`cond-${i}`);
@@ -249,10 +331,48 @@ document.addEventListener("DOMContentLoaded", () => {
                     const conditionData = { condition: i };
                     await saveDailyData(dateStr, conditionData);
                     console.log(`[Firestore] ${dateStr} の体調を ${i} に保存しました。`);
+                    
+                    await addDotsToCalendar(); // 💡 即座に丸を更新
+
                 } catch (error) {
                     console.error("❌ 体調の保存に失敗しました:", error);
                 }
             });
         }
+    }
+});
+
+// ==========================================================================
+// メモ欄の自動保存設定（💡 重複を一本化して修正）
+// ==========================================================================
+document.addEventListener("DOMContentLoaded", () => {
+    const memoInput = document.querySelector('.memo-input');
+    if (memoInput) {
+        memoInput.addEventListener("change", async () => {
+            const yyyy = currentDate.getFullYear();
+            const mm = String(currentDate.getMonth() + 1).padStart(2, '0');
+            const dd = String(currentDate.getDate()).padStart(2, '0');
+            const dateStr = `${yyyy}-${mm}-${dd}`;
+
+            try {
+                const memoData = { memo: memoInput.value };
+                await saveDailyData(dateStr, memoData);
+                console.log(`[Firestore] ${dateStr} のメモを保存しました。`);
+                
+                await addDotsToCalendar(); // 💡 即座に丸を更新
+
+            } catch (error) {
+                console.error("❌ メモの保存に失敗しました:", error);
+            }
+        });
+    }
+});
+
+// 💡 画面がブラウザのキャッシュから読み込まれた（戻るボタンで戻ってきた）場合も
+// 強制的にカレンダーの丸マークを最新にする魔法のコード
+window.addEventListener('pageshow', async (event) => {
+    if (event.persisted) {
+        console.log("🔄 キャッシュからの復帰を検知。カレンダーを再更新します。");
+        await addDotsToCalendar();
     }
 });

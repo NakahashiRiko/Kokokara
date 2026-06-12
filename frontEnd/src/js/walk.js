@@ -10,9 +10,28 @@ const targetDate = urlParams.get('date') || new Date(Date.now() - new Date().get
 document.addEventListener('DOMContentLoaded', async () => {
     const selectedDateEl = document.getElementById("selectedDate");
     if (selectedDateEl) {
-        selectedDateEl.innerText = targetDate.replace(/-/g, "/");
+        const dateObj = new Date(targetDate);
+
+const week = ["日","月","火","水","木","金","土"];
+
+selectedDateEl.innerText =
+    `${targetDate.replace(/-/g, "/")}（${week[dateObj.getDay()]}）`;
     }
 
+     const sessionData = sessionStorage.getItem('guestGoalData');
+    if (sessionData) {
+        const guestData = JSON.parse(sessionData);
+        if (guestData.targetSteps) {
+            // もしwalk.js側で目標歩数を管理する変数（例: target）があればそこに代入
+            if (typeof target !== 'undefined') {
+                target = Number(guestData.targetSteps);
+            }
+            console.log(`🎯 ログイン画面から目標歩数を引き継ぎました: ${guestData.targetSteps}歩`);
+            
+            
+            document.getElementById("targetStepDisplay").textContent = guestData.targetSteps;
+        }
+    }
     const backBtn = document.querySelector('.back');
     if (backBtn) {
         backBtn.setAttribute('href', `frontEnd/src/index.html?date=${targetDate}`);

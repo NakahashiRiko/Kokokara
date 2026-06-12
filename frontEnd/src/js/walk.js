@@ -80,24 +80,13 @@ async function loadExistingWalkData() {
         if (data && data.walk !== undefined && data.walk !== null) {
             let savedSteps = 0;
             if (typeof data.walk === 'object') {
-                savedSteps = Number(data.walk.steps) || 0;
-            } else {
-                savedSteps = Number(data.walk);
+                savedSteps = Object.values(data.walk).reduce((sum, val) => sum + (typeof val === 'number' ? val : 0), 0);
+            } else if (typeof data.walk === 'number') {
+                savedSteps = data.walk;
             }
-
-            const stepInput = document.getElementById("stepInput");
-            if (stepInput) {
-                stepInput.value = savedSteps;
-            }
-
-            console.log(`✅ Firestoreから歩数（${savedSteps}歩）を取得し、画面に復元しました。`);
-
-            // 既存のHTML側のグラフ更新処理を呼び出す
-            if (typeof window.updatePage === 'function') {
-                window.updatePage();
-            }
+            document.getElementById("walkInput").value = savedSteps;
         }
     } catch (error) {
-        console.error("❌ 既存の歩数データの読み込み・復元に失敗しました:", error);
+        console.error("❌ Firestoreからのデータ読み込みに失敗しました:", error);
     }
 }

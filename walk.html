@@ -100,7 +100,7 @@
         }
 
         input{
-            width:100px;
+            width:96.5px;
             height:50px;
             font-size:30px;
             text-align:center;
@@ -230,9 +230,7 @@
                 >
                 </div>
 
-                <div class="value">
-
-                    <input
+                <div class="value" style="margin-left: -15px;"> <input
                         type="number"
                         id="stepInput"
                         value=""
@@ -592,7 +590,8 @@ if (sessionData) {
 
                             datasets:[
                                 {
-                                    data:graphData
+                                    data:graphData,
+                                    backgroundColor: '#f58f8f'
                                 }
                             ]
                         },
@@ -706,6 +705,13 @@ if (sessionData) {
             updateAverage();
 
             createChart();
+
+            // 歩数記録がない（0歩）のときは専用のコメント文を表示して処理を抜ける
+            if(currentStep === 0){
+                document.getElementById("comment").innerText =
+                    "歩数を入力して「記録する」を押してください。";
+                return;
+            }
 
             let diff =
                 currentStep - currentTarget;

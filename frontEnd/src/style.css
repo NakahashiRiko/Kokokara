@@ -99,7 +99,7 @@ body {
 }
 
 /* ==========================================================================
-   3. メイン構成 ＆ 左側（カレンダー）エリア
+   3. メイン構成 ＆ 左側（カレンダー）エリア（土日カラー＆ドットバグ修正版）
    ========================================================================== */
 /* カレンダー(左)とカード(右)を横並びにするための大枠 */
 .main {
@@ -124,37 +124,107 @@ body {
 
 /* 日付を切り替える ◀︎ と ▶︎ のボタン */
 .date-nav .nav-btn {
-    cursor: pointer;         /* マウスを乗せたら指マークにする */
+    cursor: pointer;         /* マウスを乗せるたら指マークにする */
     border-radius: 6px;
-    /* マウスを乗せた時・外した時のアニメーションを滑らかにする設定 */
     transition: transform 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 /* 矢印ボタンにマウスを乗せたときの演出 */
 .date-nav .nav-btn:hover {
-    transform: scale(1.15);  /* ボタンを1.15倍に少し大きくする */
-    background-color: #e0e0e0; /* 背景を少しだけグレーにする */
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1); /* うっすら影をつけて浮き出させる */
+    transform: scale(1.15);
+    background-color: #e0e0e0;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
 }
 
 /* カレンダーのテーブル（表）本体 */
 .calendar {
     width: 100%;
     border-collapse: collapse; /* 隣り合う枠線を1本にまとめる */
+    table-layout: fixed;       /* すべてのマスの横幅を完全に均等に固定する魔法 */
 }
 
-/* カレンダーの曜日（th）と日付（td）のマス目 */
-.calendar th, .calendar td {
-    border: 1px solid #eee;  /* 薄いグレーの格子線 */
-    text-align: center;      /* 文字を真ん中寄せ */
-    padding: 15px 5px;       /* マス目の上下左右のスキマ */
+/* カレンダーの曜日（th）のマス目 */
+.calendar th {
+    border: 1px solid #eee;
+    text-align: center;
+    padding: 12px 0;           /* 曜日マスはすっきりさせる */
+    font-size: 16px;
+}
+
+/* カレンダーの日付（td）のマス目 */
+.calendar tbody td {
+    border: 1px solid #eee;   /* 薄いグレーの格子線 */
+    text-align: center;       /* 文字を真ん中寄せ */
+    padding: 0;               /* 💡 型崩れ防止：tdのパディングを0にして内側のwrapperに任せる */
+    height: 55px;             /* 高さを55pxでスマートに固定 */
+    background-color: #fff;   /* 基本の背景色は白 */
+}
+
+/* 日曜日の設定（1番目の列：th と td） */
+.calendar th:nth-child(1) {
+    color: #e53935;           /* 曜日の文字：赤 */
+}
+.calendar tbody td:nth-child(1) {
+    color: #e53935;           /* 日付の文字：赤 */
+    background-color: #ffebee; /* マスの背景：淡い赤（ピンク） */
+}
+
+/* 土曜日の設定（7番目の列：th と td） */
+.calendar th:nth-child(7) {
+    color: #1e88e5;           /* 曜日の文字：青 */
+}
+.calendar tbody td:nth-child(7) {
+    color: #1e88e5;           /* 日付の文字：青 */
+    background-color: #e3f2fd; /* マスの背景：淡い青（ライトブルー） */
+}
+
+/* 数字と丸を縦に綺麗に並べるためのボックス設定 */
+.calendar tbody td .date-wrapper {
+    display: flex;
+    flex-direction: column;   /* 縦に並べる */
+    align-items: center;      /* 左右の真ん中に寄せる */
+    justify-content: center;  /* 上下の真ん中に寄せる */
+    width: 100%;
+    height: 100%;
+}
+
+/* 日付の数字自体のスタイル */
+.date-num {
+    font-size: 18px;
+    line-height: 1;
+    margin-bottom: 4px;       /* 数字と丸の間のスキマ */
+}
+
+/* データが入った時に表示させる丸（ドット）のベース設定 */
+.dot-marker {
+    width: 8px;               /* 丸の横幅 */
+    height: 8px;              /* 丸の縦幅 */
+    background-color: transparent; /* 最初は透明 */
+    border-radius: 50%;       /* 正円にする */
+    transition: background-color 0.2s ease;
+}
+
+/* 💡 【重要・修正】JavaScriptで「データあり」となった日の丸の色を最優先化 */
+.calendar tbody td.has-data .dot-marker {
+    background-color: #388e3c !important; /* !important を付与して透明を上書き */
 }
 
 /* 今日の日付のマス目を目立たせる設定 */
 .today {
-    background-color: #e3f2fd; /* 爽やかな水色にする */
+    background-color: #e89dffd0 !important; /* 紫系のお好みの色を維持 */
     font-weight: bold;
-    color: #1976d2;          /* 文字を濃い青にする */
+    color: #2d2d2d !important;            /* 文字色を維持 */
+}
+
+/* 💡 【修正】今日の日付かつデータもある日の丸の色を最優先化 */
+.calendar tbody td.today.has-data .dot-marker {
+    background-color: #2d2d2d !important; /* 今日の文字色と同じ色でクッキリ出す */
+}
+
+/* 他月（先月・来月）の日付の文字 */
+.other-month {
+    color: #ccc !important;
+    background-color: #fafafa !important; /* 他月のマスは土日でもグレーを優先 */
 }
 
 /* ==========================================================================

@@ -7,6 +7,7 @@ body{
 
 /*inputタグ全てを選択*/
 input{
+    font-size: 17px;/*入力欄のサイズを拡大*/
     font-family: "Hiragino Sans", sans-serif;/*フォントをゴシック体に指定。*/
 }
 
@@ -14,7 +15,7 @@ input{
 #title-box{
     /*margin: 0;/*タイトルの上下の余白を消す。この枠の外側の余白を消す。*/
     background-color: #f5f5a7;/*背景色の指定*/
-    height: 80px;/*高さの指定*/
+    height: 100px;/*高さの指定*/
     padding-left: 20px;/*タイトルの左側の余白を20pxに自分で設定。marginと違いこの枠の内側に余白ができる*/
     display: flex;/*フレックスボックスの指定。テキストが横並びで表示されるようになる。*/
     align-items: center;/*テキストを縦方向の中央に揃える。*/
@@ -23,7 +24,7 @@ input{
 /*画面左上の「＜」テキストのデザイン。HTMLではただのテキストだがCSSでボタンとして機能するようにする*/
 #back_app_btn{
     color: #7b807c;
-    font-size: 40px;/*文字サイズの指定*/
+    font-size: 60px;/*文字サイズの指定*/
     margin-right: 20px;/*テキストの右側の余白を20pxに自分で設定。*/
     font-weight: bold;/*文字を太字にする。*/
     cursor: pointer;/*マウスポインタがこのテキストの上に来たとき、クリックできることを示すポインタに変わる。*/
@@ -32,7 +33,7 @@ input{
 /*画面上部のタイトルテキストのデザイン*/
 #app_title{
     margin: 0px;/*タイトルの左側の余白を0pxに自分で設定。*/
-    font-size: 40px;/*文字サイズの指定*/
+    font-size: 50px;/*文字サイズの指定*/
     font-weight: bold;/*文字を太字にする。*/
     line-height: 80px;
 }
@@ -42,7 +43,7 @@ input{
     display: flex;/*フレックスボックスの指定。テキストが横並びで表示されるようになる。*/
     align-items: center;/*テキストを縦方向の中央に揃える。これにより「コメント生成」ボタンがテキストと同じラインに並ぶ。*/
     gap: 150px;
-    margin: 0px 50px;
+    margin: 0px 80px;
     font-size: 40px;
 }
 

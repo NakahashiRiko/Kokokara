@@ -12,7 +12,12 @@ const targetDate = urlParams.get('date') || new Date().toISOString().split('T')[
 document.addEventListener('DOMContentLoaded', async () => {
     const dateDisplay = document.getElementById('date');
     if (dateDisplay) {
-        dateDisplay.textContent = `日付: ${targetDate.replace(/-/g, '/')}`;
+        const dateObj = new Date(targetDate);
+        
+        //曜日リスト
+        const days = ['日', '月', '火', '水', '木', '金', '土'];
+        const dayOfWeek = days[dateObj.getDay()];
+        dateDisplay.textContent = `${targetDate.replace(/-/g, '/')}(${dayOfWeek})`;
     }
 
     //---------------------追加②ここから---------------------
@@ -107,6 +112,9 @@ function restoreMealData(meal) {
 
     const otherInput = document.getElementById('other_meals_input');
     if (otherInput && meal.other) otherInput.value = meal.other;
+
+    const commentText = document.getElementById('comment');
+    if (commentText && meal.comment) commentText.textContent = meal.comment;
 }
 //---------------------追加③ここまで---------------------
 
@@ -142,6 +150,11 @@ function createMealDataObject() {
 
     const otherInput = document.getElementById('other_meals_input');
     if (otherInput) mealDataObj.meal.other = otherInput.value;
+
+    const commentText = document.getElementById('comment');
+    if (commentText && commentText.textContent !== "「コメント生成」を押すとコメントが表示されます。「記録確定」の直前に押すようにしてください。") {
+        mealDataObj.meal.comment = commentText.textContent;
+    }
     
     return mealDataObj;
 }

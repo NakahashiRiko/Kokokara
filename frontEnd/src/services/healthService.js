@@ -47,10 +47,10 @@ export const getDailyData = async (date) => {
         const thirtyDaysAgo = new Date();
         thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
-        // もし30日前よりも古い更新データであれば、画面に表示させない（初期化状態にする）
+        // もし30日前よりも古い更新データであれば、画面に表示させない（古いデータは除外）
         if (updatedTime < thirtyDaysAgo) {
-          console.log(`${date} のデータは30日以上前の古いデータなので、表示しません。`);
-          return null; 
+          console.log(`⚠️ ${date} のデータは30日以上前の古いデータのため除外します。`);
+          return null; // 古いデータは存在しないものとして扱う
         }
       }
 

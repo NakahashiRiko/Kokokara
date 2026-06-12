@@ -22,6 +22,7 @@ function updateNavigationLinks(dateStr) {
     console.log(`🔗 リンクの日付を更新しました: ${dateStr}`);
 }
 
+
 /**
  * Firestoreから取得したデータを画面の各カードに反映させる関数
  */
@@ -29,11 +30,19 @@ function updateCardContents(data) {
     // 1. 食事カードの書き換え
     const mealCardContent = document.querySelector('.card.meal .card-content');
     if (mealCardContent) {
-        if (data && data.meal) {
-            const breakfastStatus = data.meal.breakfast?.menu ? "済" : "未";
-            const lunchStatus = data.meal.lunch?.menu ? "済" : "未";
-            const dinnerStatus = data.meal.dinner?.menu ? "済" : "未";
-            
+        //
+        if (data && data.meal) {//開始時刻・献立・栄養素の全てが入力されてないと食事を「済」にしない。
+            //それぞれの食事で、開始時刻が入力されてるかどうか判定する関数。全て入力されてたらtrueを返す。
+            function isMealComplete(meal) {
+                if(meal.menu != "" && meal.time != "" && meal.nutrients != ""){
+                    return true;
+                }
+                return false;//どれか1つでも入力されてなかったらfalseを返す。
+            }
+            const breakfastStatus = isMealComplete(data.meal.breakfast) ? "済" : "未";
+            const lunchStatus = isMealComplete(data.meal.lunch) ? "済" : "未";
+            const dinnerStatus = isMealComplete(data.meal.dinner) ? "済" : "未";
+
             mealCardContent.innerHTML = `
                 <p>朝：${breakfastStatus}</p>
                 <p>昼：${lunchStatus}</p>
@@ -123,11 +132,17 @@ async function renderCalendar() {
                 const ddStr = String(dateCount).padStart(2, '0');
                 const dateStr = `${year}-${mmStr}-${ddStr}`;
 
+                // main.js の renderCalendar 内の該当部分を以下に差し替え
                 html += `
                     <td class="${className}" data-date="${dateStr}">
                         <div class="date-wrapper">
                             <span class="date-num">${dateCount}</span>
-                            <div class="dot-marker"></div>
+                            <div class="dot-container">
+                                <div class="dot-marker dot-meal"></div>
+                                <div class="dot-marker dot-sleep"></div>
+                                <div class="dot-marker dot-walk"></div>
+                                <div class="dot-marker dot-condition"></div>
+                            </div>
                         </div>
                     </td>
                 `;
@@ -148,7 +163,7 @@ async function renderCalendar() {
 }
 
 /**
- * 表示されている月のデータ有無を確認し、入力済みなら丸マークのクラスを付与する関数
+ * 4項目のデータ有無を個別にチェックし、対応する丸を点灯させる関数
  */
 async function addDotsToCalendar() {
     const cells = document.querySelectorAll('#calendar-body td:not(.other-month)');
@@ -158,20 +173,27 @@ async function addDotsToCalendar() {
         if (!dateStr) return;
 
         try {
-            // 💡 一度クラスを消去（データが消された時に丸を消すため）
-            cell.classList.remove('has-data');
+            // 💡 一旦すべての丸の点灯（active）をリセット
+            cell.querySelectorAll('.dot-marker').forEach(dot => dot.classList.remove('active'));
 
             const data = await getDailyData(dateStr);
             
-            // 💡 判定ロジックをより厳密化（文字数チェックや数値変換に対応）
-            const hasMeal = data && data.meal && (data.meal.breakfast?.menu || data.meal.lunch?.menu || data.meal.dinner?.menu);
-            const hasSleep = data && data.sleep && (Number(data.sleep.hour) > 0 || Number(data.sleep.minute) > 0);
-            const hasWalk = data && data.walk !== undefined && data.walk !== null && Number(data.walk) > 0;
-            const hasCondition = data && data.condition !== undefined && data.condition !== null && data.condition !== "";
-            const hasMemo = data && data.memo !== undefined && data.memo !== null && data.memo.trim() !== ""; 
+            if (data) {
+                // 1. 食事のチェック
+                const hasMeal = data.meal && (data.meal.breakfast?.menu || data.meal.lunch?.menu || data.meal.dinner?.menu);
+                if (hasMeal) cell.querySelector('.dot-meal')?.classList.add('active');
 
-            if (hasMeal || hasSleep || hasWalk || hasCondition || hasMemo) {
-                cell.classList.add('has-data');
+                // 2. 睡眠のチェック
+                const hasSleep = data.sleep && (Number(data.sleep.hour) > 0 || Number(data.sleep.minute) > 0);
+                if (hasSleep) cell.querySelector('.dot-sleep')?.classList.add('active');
+
+                // 3. 歩数のチェック
+                const hasWalk = data.walk !== undefined && data.walk !== null && Number(data.walk) > 0;
+                if (hasWalk) cell.querySelector('.dot-walk')?.classList.add('active');
+
+                // 4. 体調のチェック
+                const hasCondition = data.condition !== undefined && data.condition !== null && data.condition !== "";
+                if (hasCondition) cell.querySelector('.dot-condition')?.classList.add('active');
             }
         } catch (error) {
             console.error(`ドット確認エラー (${dateStr}):`, error);
@@ -256,13 +278,14 @@ function setupCalendarNavigation() {
     }
 }
 
-// アプリの初期化
+// アプリの初期化（修正版）
 async function initApp() {
     try {
         const user = await loginAnonymously();
         if (user) {
             console.log("🔥 Firebase接続成功！ UID:", user.uid);
 
+            // 他のアプリから戻ってきたときにパラメータがあれば日付を復元する
             const urlParams = new URLSearchParams(window.location.search);
             const paramDate = urlParams.get('date');
 
@@ -274,8 +297,14 @@ async function initApp() {
                 }
             }
             
-            setupCalendarNavigation(); 
-            await updateDateDisplay();  
+            setupCalendarNavigation(); // ◀︎ ▶︎ ボタンの有効化
+            await updateDateDisplay(); // カレンダー描画、Firestore取得、リンク生成の全初期化
+
+            // 💡 【超重要・追加】
+            // 他のアプリから「戻る」で帰ってきた時、または画面が写った時に
+            // カレンダーの丸マークを強制的に最新状態に更新する
+            await addDotsToCalendar();
+            console.log("🔄 カレンダーの記録ドットを最新の状態に同期しました");
         }
     } catch (error) {
         console.error("❌ 初期化エラーが発生しました:", error);
@@ -336,5 +365,14 @@ document.addEventListener("DOMContentLoaded", () => {
                 console.error("❌ メモの保存に失敗しました:", error);
             }
         });
+    }
+});
+
+// 💡 画面がブラウザのキャッシュから読み込まれた（戻るボタンで戻ってきた）場合も
+// 強制的にカレンダーの丸マークを最新にする魔法のコード
+window.addEventListener('pageshow', async (event) => {
+    if (event.persisted) {
+        console.log("🔄 キャッシュからの復帰を検知。カレンダーを再更新します。");
+        await addDotsToCalendar();
     }
 });

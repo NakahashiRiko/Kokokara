@@ -152,7 +152,7 @@ function createMealDataObject() {
     if (otherInput) mealDataObj.meal.other = otherInput.value;
 
     const commentText = document.getElementById('comment');
-    if (commentText && commentText.textContent !== "「コメント生成」を押すとコメントが表示されます。「記録確定」の直前に押すようにしてください。") {
+    if (commentText && commentText.textContent !== "「コメント生成」を押すとコメントが表示されます。「記録終了」の直前に押すようにしてください。") {
         mealDataObj.meal.comment = commentText.textContent;
     }
     
@@ -160,7 +160,7 @@ function createMealDataObject() {
 }
 //---------------------追加④ここまで---------------------
 
-// 「記録確定」ボタンが押されたときの保存イベント
+// 「記録終了」ボタンが押されたときの保存イベント
 document.getElementById('finish_today_btn').addEventListener('click', async () => {
     //--------------ここから変更して良い。----------------------//
 
@@ -408,11 +408,11 @@ function checkUnfilledFields(mealType, mealName){
     }
 }
 
-//-------------------------[機能6]記録保存ボタンの動作-------------------------//
-//記録保存ボタンをHTMLから取得
+//-------------------------[機能6]一時保存ボタンの動作-------------------------//
+//一時保存ボタンをHTMLから取得
 const finishBtn = document.getElementById('save_records_btn');
 
-//記録保存ボタンがクリックされたときの動作（ここで全体の指揮をとる）
+//一時保存ボタンがクリックされたときの動作（ここで全体の指揮をとる）
 finishBtn.addEventListener('click', async () => {
     
     //-------------------------[機能7]ボタンを押すとその時点で記入済みの内容をdisabledにする-------------------------//
@@ -432,7 +432,7 @@ finishBtn.addEventListener('click', async () => {
 });
 
 //-------------------------[機能8]コメント生成ボタンの動作-------------------------//
-//記録保存ボタンをHTMLから取得
+//コメント生成ボタンをHTMLから取得
 const commentBtn = document.getElementById('create_comment_btn');
 
 //コメント生成ボタンがクリックされた時の動作

@@ -27,12 +27,15 @@
             <p>
                 <button id="create_comment_btn">コメント生成</button>
             </p>
+
+            <!--記録保存ボタンの左横に表示されるテキスト。吹き出しにしてユーザビリティを向上-->
+            <p id="create_comment_btn_text">記録を終了する<br>直前にタップ!!</p>
         </div>
 
         <div id="comment-box">
             <!--コメント文が表示されるフィールド。-->
             <!--「コメント生成」を押すとコメントが表示されます。「記録確定」の直前に押すようにしてください。-->
-            <p id="comment">「コメント生成」を押すとコメントが表示されます。「記録確定」の直前に押すようにしてください。</p>
+            <p id="comment">「コメント生成」を押すとコメントが表示されます。</p>
         </div>
 
         <!--3食すべてを囲むタグ。朝昼夕の食事欄を横一列に並べるために作成。-->
@@ -119,13 +122,22 @@
                 <input id="other_meals_input" type="text">
             </p>
         </div>
+
+        <div id="bottom-text-box">
+            <!--記録保存ボタンの左横に表示されるテキスト。吹き出しにしてユーザビリティを向上-->
+            <p id="save_records_btn_text">戻る前に<br>タップ!!</p>
+
+            <!--記録確定ボタンの右横に表示されるテキスト。吹き出しにしてユーザビリティを向上-->
+            <p id="finish_today_btn_text">記録が完了<br>したらタップ!!</p>
+        </div>
+        
         
         <div id="bottom-btns-box">
             <!--記録を保存ボタン。画面右下に表示させるようにする。現段階での入力の蹴りがついたら押してもらう。ここで現時点での食事回数、不足栄養素を表示する。-->
-            <button id="save_records_btn">記録保存</button>
+            <button id="save_records_btn">一時保存</button>
 
             <!--確定ボタン。画面右下に表示させるようにする。その日の入力が完了したらこれを押すようにしてもらう。-->
-            <button id="finish_today_btn">記録確定</button>
+            <button id="finish_today_btn">記録終了</button>
         </div>
         
         <script type="module" src="frontEnd/src/js/mealApp.js"></script>

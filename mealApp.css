@@ -189,26 +189,6 @@ input{
     width: 70%;
 }
 
-/*「一時保存」ボタンと「記録終了」ボタンのデザイン。*/
-#save_records_btn, #finish_today_btn{
-    font-size: 40px;/*ボタンのサイズを拡大*/
-    background-color: #f5f5a7;/*背景色の指定。タイトルの背景色と一致させた。*/
-    font-weight: bold;/*文字を太字にする。*/
-    border-radius: 30px;/*ボックスの角を丸くする。*/
-    padding: 20px;/*ボタン内の余白を設定*/
-    cursor: pointer;/*マウスポインタがこのテキストの上に来たとき、クリックできることを示すポインタに変わる。*/
-}
-
-/*「一時保存」ボタンと「記録終了」ボタンのデザイン。boxごとだとボタン自体のデザインは作れない。*/
-#bottom-btns-box{
-    display: flex;/*ボックスなのでboxのデザイン内で書く。*/
-    justify-content: center;/*テキストを縦方向の中央に揃える。これにより「コメント生成」ボタンがテキストと同じラインに並ぶ。*/
-    margin-bottom: 30px;/*下の余白を30px。*/
-    margin-right: 30px;
-    gap: 40px;/*要素(ボタン)同士の間隔を20pxに自分で設定。*/
-    font-size: 35px;
-}
-
 /*吹き出しデザインの引用
 https://saruwakakun.com/html-css/reference/speech-bubble#section5
 */
@@ -226,7 +206,7 @@ https://saruwakakun.com/html-css/reference/speech-bubble#section5
     position: relative;
     /* ボタンのすぐ左横に配置されるように調整 */
     padding: 30px 60px;
-    background: #fff0c6; /* ふきだしの色 */
+    background: #f5f5a7; /* ふきだしの色 */
     border-radius: 60px;
     font-weight: bold;
     color: #555;
@@ -242,7 +222,7 @@ https://saruwakakun.com/html-css/reference/speech-bubble#section5
     width: 30px;/*丸の(横)幅*/
     height: 30px;/*丸の(縦)幅、高さのこと*/
     bottom: -40px;/*丸のy座標。数値が大きいほど上に行く*/
-    background: #fff0c6;
+    background: #f5f5a7;
     border-radius: 50%;
 }
 
@@ -254,7 +234,7 @@ https://saruwakakun.com/html-css/reference/speech-bubble#section5
     width: 50px;
     height: 50px;
     bottom: -20px;
-    background: #fff0c6;
+    background: #f5f5a7;
     border-radius: 50%;
 }
 
@@ -267,7 +247,7 @@ https://saruwakakun.com/html-css/reference/speech-bubble#section5
     position: relative;
     /* ボタンのすぐ左横に配置されるように調整 */
     padding: 30px 40px;
-    background: #fff0c6; /* ふきだしの色 */
+    background: #ffbb00; /* ふきだしの色 */
     border-radius: 60px;
     font-weight: bold;
     color: #555;
@@ -283,7 +263,7 @@ https://saruwakakun.com/html-css/reference/speech-bubble#section5
     width: 30px;
     height: 30px;
     bottom: -40px;
-    background: #fff0c6;
+    background: #ffbb00;
     border-radius: 50%;
 }
 
@@ -295,11 +275,42 @@ https://saruwakakun.com/html-css/reference/speech-bubble#section5
     width: 50px;
     height: 50px;
     bottom: -20px;
-    background: #fff0c6;
+    background: #ffbb00;
     border-radius: 50%;
 }
 
 #finish_today_btn_text p{
     margin: 0;
     padding: 0;
+}
+
+/*「一時保存」ボタンのデザイン。*/
+#save_records_btn{
+    font-size: 40px;/*ボタンのサイズを拡大*/
+    background-color: #f5f5a7;/*背景色の指定。タイトルの背景色と一致させた。*/
+    font-weight: bold;/*文字を太字にする。*/
+    border-radius: 30px;/*ボックスの角を丸くする。*/
+    padding: 20px;/*ボタン内の余白を設定*/
+    cursor: pointer;/*マウスポインタがこのテキストの上に来たとき、クリックできることを示すポインタに変わる。*/
+}
+
+/*「記録終了」ボタンのデザイン。*/
+#finish_today_btn{
+    font-size: 40px;/*ボタンのサイズを拡大*/
+    background-color: #ffbb00;/*背景色の指定。タイトルの背景色と一致させた。*/
+    font-weight: bold;/*文字を太字にする。*/
+    border-radius: 30px;/*ボックスの角を丸くする。*/
+    padding: 20px;/*ボタン内の余白を設定*/
+    cursor: pointer;/*マウスポインタがこのテキストの上に来たとき、クリックできることを示すポインタに変わる。*/
+}
+
+
+/*「一時保存」ボタンと「記録終了」ボタンのデザイン。boxごとだとボタン自体のデザインは作れない。*/
+#bottom-btns-box{
+    display: flex;/*ボックスなのでboxのデザイン内で書く。*/
+    justify-content: center;/*テキストを縦方向の中央に揃える。これにより「コメント生成」ボタンがテキストと同じラインに並ぶ。*/
+    margin-bottom: 30px;/*下の余白を30px。*/
+    margin-right: 30px;
+    gap: 40px;/*要素(ボタン)同士の間隔を20pxに自分で設定。*/
+    font-size: 35px;
 }

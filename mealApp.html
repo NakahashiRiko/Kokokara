@@ -15,7 +15,7 @@
         <div id="title-box">
             <p id="back_app_btn">＜</p>
             <!--食事アプリの画面左上に表示されるテキスト-->
-            <p id="app_title">食事記録アプリ</p> 
+            <p id="app_title">食事</p> 
         </div>
 
         <div id="subtitle">
@@ -27,12 +27,15 @@
             <p>
                 <button id="create_comment_btn">コメント生成</button>
             </p>
+
+            <!--記録保存ボタンの左横に表示されるテキスト。吹き出しにしてユーザビリティを向上-->
+            <p id="create_comment_btn_text">記録を終了する<br>直前にタップ!!</p>
         </div>
 
         <div id="comment-box">
             <!--コメント文が表示されるフィールド。-->
             <!--「コメント生成」を押すとコメントが表示されます。「記録確定」の直前に押すようにしてください。-->
-            <p id="comment">「コメント生成」を押すとコメントが表示されます。「記録確定」の直前に押すようにしてください。</p>
+            <p id="comment">「コメント生成」を押すとコメントが表示されます。</p>
         </div>
 
         <!--3食すべてを囲むタグ。朝昼夕の食事欄を横一列に並べるために作成。-->
@@ -45,7 +48,7 @@
                 <!--食事の目標開始時刻の記録。設定して確定したらそれ以降は触れないようにする。ここではとりあえず固定(開いた時にこの値が最初に表示されてる)にしておいた。-->
                 <!--disabledをつけるとこの入力フィールドは触れなくなる。-->
                 目標時刻: <input id="breakfast_goal_time" type="time" value="" disabled>
-                時刻: <input id="breakfast_really_time" type="time"> <!--実際の食事の開始時刻の記録。ボタンを押すと時刻を選択できる。-->
+                時刻: <input id="breakfast_real_time" type="time"> <!--実際の食事の開始時刻の記録。ボタンを押すと時刻を選択できる。-->
 
                 <!--食事の献立の記録。-->
                 <p>献立
@@ -69,7 +72,7 @@
                 <p id="lunch-title">昼食</p>
 
                 目標時刻: <input id="lunch_goal_time" type="time" value="" disabled>
-                時刻: <input id="lunch_really_time" type="time"> <!--実際の食事の開始時刻の記録。ボタンを押すと時刻を選択できる。-->
+                時刻: <input id="lunch_real_time" type="time"> <!--実際の食事の開始時刻の記録。ボタンを押すと時刻を選択できる。-->
         
                 <!--食事の献立の記録。-->
                 <p>献立 
@@ -93,7 +96,7 @@
                 <p id="dinner-title">夕食</p>
 
                 目標時刻: <input id="dinner_goal_time" type = "time" value = "" disabled>
-                時刻: <input id="dinner_really_time" type = "time"> <!--実際の食事の開始時刻の記録。ボタンを押すと時刻を選択できる。-->
+                時刻: <input id="dinner_real_time" type = "time"> <!--実際の食事の開始時刻の記録。ボタンを押すと時刻を選択できる。-->
         
                 <!--食事の献立の記録。-->
                 <p>献立 
@@ -119,13 +122,22 @@
                 <input id="other_meals_input" type="text">
             </p>
         </div>
+
+        <div id="bottom-text-box">
+            <!--記録保存ボタンの左横に表示されるテキスト。吹き出しにしてユーザビリティを向上-->
+            <p id="save_records_btn_text">戻る前に<br>タップ!!</p>
+
+            <!--記録確定ボタンの右横に表示されるテキスト。吹き出しにしてユーザビリティを向上-->
+            <p id="finish_today_btn_text">記録が完了<br>したらタップ!!</p>
+        </div>
+        
         
         <div id="bottom-btns-box">
             <!--記録を保存ボタン。画面右下に表示させるようにする。現段階での入力の蹴りがついたら押してもらう。ここで現時点での食事回数、不足栄養素を表示する。-->
-            <button id="save_records_btn">記録保存</button>
+            <button id="save_records_btn">一時保存</button>
 
             <!--確定ボタン。画面右下に表示させるようにする。その日の入力が完了したらこれを押すようにしてもらう。-->
-            <button id="finish_today_btn">記録確定</button>
+            <button id="finish_today_btn">記録終了</button>
         </div>
         
         <script type="module" src="frontEnd/src/js/mealApp.js"></script>

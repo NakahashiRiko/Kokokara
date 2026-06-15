@@ -12,7 +12,12 @@ const targetDate = urlParams.get('date') || new Date().toISOString().split('T')[
 document.addEventListener('DOMContentLoaded', async () => {
     const dateDisplay = document.getElementById('date');
     if (dateDisplay) {
-        dateDisplay.textContent = `日付: ${targetDate.replace(/-/g, '/')}`;
+        const dateObj = new Date(targetDate);
+        
+        //曜日リスト
+        const days = ['日', '月', '火', '水', '木', '金', '土'];
+        const dayOfWeek = days[dateObj.getDay()];
+        dateDisplay.textContent = `${targetDate.replace(/-/g, '/')}(${dayOfWeek})`;
     }
 
     //---------------------追加②ここから---------------------
@@ -89,7 +94,7 @@ function restoreMealData(meal) {
         if (menuInput && mealTime.menu) menuInput.value = mealTime.menu;
 
         // 2. 時間の復元
-        const timeInput = document.getElementById(`${type}_really_time`);
+        const timeInput = document.getElementById(`${type}_real_time`);
         if (timeInput && mealTime.time) {
             timeInput.value = mealTime.time;
         }
@@ -107,6 +112,9 @@ function restoreMealData(meal) {
 
     const otherInput = document.getElementById('other_meals_input');
     if (otherInput && meal.other) otherInput.value = meal.other;
+
+    const commentText = document.getElementById('comment');
+    if (commentText && meal.comment) commentText.textContent = meal.comment;
 }
 //---------------------追加③ここまで---------------------
 
@@ -121,7 +129,7 @@ function createMealDataObject() {
 
     types.forEach(type => {
         const menuValue = document.getElementById(`${type}_menu`) ? document.getElementById(`${type}_menu`).value : "";
-        const timeElement = document.getElementById(`${type}_really_time`);
+        const timeElement = document.getElementById(`${type}_real_time`);
         const timeValue = timeElement ? timeElement.value : "";
 
         const selectedNutrients = [];
@@ -142,12 +150,17 @@ function createMealDataObject() {
 
     const otherInput = document.getElementById('other_meals_input');
     if (otherInput) mealDataObj.meal.other = otherInput.value;
+
+    const commentText = document.getElementById('comment');
+    if (commentText && commentText.textContent !== "「コメント生成」を押すとコメントが表示されます。「記録終了」の直前に押すようにしてください。") {
+        mealDataObj.meal.comment = commentText.textContent;
+    }
     
     return mealDataObj;
 }
 //---------------------追加④ここまで---------------------
 
-// 「記録確定」ボタンが押されたときの保存イベント
+// 「記録終了」ボタンが押されたときの保存イベント
 document.getElementById('finish_today_btn').addEventListener('click', async () => {
     //--------------ここから変更して良い。----------------------//
 
@@ -205,7 +218,7 @@ backAppBtn.addEventListener('click', () => {
 //id名が食事ごとに違うが似ているので引数名mealTypeでカバーする。
 function checkMeal(mealType){
     //食事開始時刻が入力されているかを取得
-    let timeInput = document.getElementById(`${mealType}_really_time`);
+    let timeInput = document.getElementById(`${mealType}_real_time`);
 
     //献立が入力されているかを取得
     let menuInput = document.getElementById(`${mealType}_menu`);
@@ -313,7 +326,7 @@ function lackNutrients(){
 function lockMeal(mealType){
     //食事開始時刻をロック
     //その食事の食事開始時刻欄を取得。
-    let timeInput = document.getElementById(`${mealType}_really_time`);
+    let timeInput = document.getElementById(`${mealType}_real_time`);
 
     //実際に入力済みであったらその食事の食事開始時刻欄をdisabledにする。
     if(timeInput.value != ""){//入力済みであった場合。
@@ -349,7 +362,7 @@ function lockMeal(mealType){
 //食事に未記入の欄があれば警告する関数。朝昼夕でそれぞれ呼び出す。
 function checkUnfilledFields(mealType, mealName){
     //入力状況を取得。
-    let time = document.getElementById(`${mealType}_really_time`).value;//時刻
+    let time = document.getElementById(`${mealType}_real_time`).value;//時刻
     let menu = document.getElementById(`${mealType}_menu`).value;//献立
     let nutrients = document.querySelectorAll(`#${mealType}_nutrients input[type="checkbox"]:checked`);//栄養素
 
@@ -395,14 +408,45 @@ function checkUnfilledFields(mealType, mealName){
     }
 }
 
-//-------------------------[機能6]記録保存ボタンの動作-------------------------//
-//記録保存ボタンをHTMLから取得
+//-------------------------[機能6]目標時刻と実際の食事時刻を比較して差を求める-------------------------//
+function compareTimes(mealType){
+    //目標時刻を取得
+    let goalTimeInput = document.getElementById(`${mealType}_goal_time`);
+    //実際の食事時刻を取得
+    let realTimeInput = document.getElementById(`${mealType}_real_time`);
+
+    //食事がそもそも記入されない際は例外処理
+    if(realTimeInput.value == ""){
+        return -1;
+    }
+
+    //時刻を文字列から数値に変換する。入力は00:00の形式で文字列となっている。
+    let goalTime = goalTimeInput.value.split(":");//00:00を「:」で分割する。配列になって格納される。
+    let realTime = realTimeInput.value.split(":");
+    //目標時刻
+    let goalHour = Number(goalTime[0]);//Numberをつけると数値型に変換される
+    let goalMinute = Number(goalTime[1]);
+    //実際の時刻
+    let realHour = Number(realTime[0]);
+    let realMinute = Number(realTime[1]);
+
+    //時刻を分単位で計算。00:00を0として何分離れているかを計算する。
+    let goalTimeValue = goalHour * 60 + goalMinute;//目標時刻
+    let realTimeValue = realHour * 60 + realMinute;//実際の時刻
+
+    //目標と実際の時刻の差を求める。早くても遅くても差は同じとするので絶対値で求める。
+    let resultTime = Math.abs(goalTimeValue - realTimeValue);
+    return resultTime;
+}
+
+//-------------------------[機能7]一時保存ボタンの動作-------------------------//
+//一時保存ボタンをHTMLから取得
 const finishBtn = document.getElementById('save_records_btn');
 
-//記録保存ボタンがクリックされたときの動作（ここで全体の指揮をとる）
+//一時保存ボタンがクリックされたときの動作（ここで全体の指揮をとる）
 finishBtn.addEventListener('click', async () => {
     
-    //-------------------------[機能7]ボタンを押すとその時点で記入済みの内容をdisabledにする-------------------------//
+    //-------------------------[機能8]ボタンを押すとその時点で記入済みの内容をdisabledにする-------------------------//
     //朝昼夕の食事の内容をロックする関数を呼び出す。引数に食事の種類を入れる。朝昼夕でそれぞれ呼び出す。
     lockMeal('breakfast');//朝食の内容をロックする。
     lockMeal('lunch');//昼食の内容をロックする。
@@ -418,8 +462,8 @@ finishBtn.addEventListener('click', async () => {
     }
 });
 
-//-------------------------[機能8]コメント生成ボタンの動作-------------------------//
-//記録保存ボタンをHTMLから取得
+//-------------------------[機能9]コメント生成ボタンの動作-------------------------//
+//コメント生成ボタンをHTMLから取得
 const commentBtn = document.getElementById('create_comment_btn');
 
 //コメント生成ボタンがクリックされた時の動作
@@ -428,11 +472,40 @@ commentBtn.addEventListener('click', () => {
     let todayMealCount = countMeals();//食事回数のカウントをする関数を呼び出す。これで食事回数が取得できた。
     let lackNutrientsArray = lackNutrients();//不足栄養素を求める関数を呼び出す。これで不足栄養素の配列が取得できた。
     let commentText = document.getElementById('comment');//コメント文を表示するフィールドを取得
+    //コメントの序盤。食事回数を表示
+    commentText.textContent = `本日の食事は${todayMealCount}回でした。`;
 
-    //栄養素が不足しているか、完璧かで1行のメッセージを出し分ける
-    if(lackNutrientsArray.length > 0){
-        commentText.textContent = `本日の食事は${todayMealCount}回でした。${lackNutrientsArray.join('・')}が不足気味なので、明日は摂取できるようにしましょう！`;
-    } else {
-        commentText.textContent = `本日の食事は${todayMealCount}回でした。栄養素はパーフェクトです！明日もこの調子でいきましょう！`;
+    //食事ごとの時刻差を呼び出して求める。
+    let breakfastTimeGap = compareTimes('breakfast');//朝食
+    let lunchTimeGap = compareTimes('lunch');//昼食
+    let dinnerTimeGap = compareTimes('dinner');//夕食
+
+    //時刻差の最大値を求める。
+    let timeGap_max = -1;
+    let timeGap_max_name = "";
+    if(timeGap_max < breakfastTimeGap){
+        timeGap_max = breakfastTimeGap;//更新
+        timeGap_max_name = "朝食";
     }
+    if(timeGap_max < lunchTimeGap){
+        timeGap_max = lunchTimeGap;//更新
+        timeGap_max_name = "昼食";
+    }
+    if(timeGap_max < dinnerTimeGap){
+        timeGap_max = dinnerTimeGap;//更新
+        timeGap_max_name= "夕食";
+    }
+
+    if(timeGap_max >= 0){
+        //時刻差が最大の食事の種類とその大きさをコメントで表示。
+        commentText.textContent += `目標との食事時刻のズレが一番大きかったのは${timeGap_max_name}です。`;
+    }
+
+    //コメントの終盤。栄養素が不足しているか、完璧かで1行のメッセージを出し分ける
+    if(lackNutrientsArray.length > 0){
+        commentText.textContent += `${lackNutrientsArray.join('・')}が不足気味なので、明日は摂取できるようにしましょう！`;
+    } else {
+        commentText.textContent += `栄養素はパーフェクトです！明日もこの調子でいきましょう！`;
+    }
+
 });

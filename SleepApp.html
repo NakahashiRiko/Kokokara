@@ -247,7 +247,7 @@ else {
 // グラフデータ
 // =========================
 
-let sleepData = [0,0,0,0,0,0,0];
+window.sleepData = [0,0,0,0,0,0,0];
 
 // =========================
 // グラフ作成
@@ -255,7 +255,7 @@ let sleepData = [0,0,0,0,0,0,0];
 
 const ctx = document.getElementById('sleepChart');
 
-const sleepChart = new Chart(ctx, {
+window.sleepChart = new Chart(ctx, {
 
     type: 'bar',
 
@@ -264,7 +264,7 @@ const sleepChart = new Chart(ctx, {
 
         datasets: [{
             label: '睡眠時間（h）',
-            data: sleepData,
+            data: window.sleepData,
             backgroundColor: '#7d88e8',
             borderColor: '#7d88e8',
             borderWidth: 1
@@ -494,7 +494,7 @@ function handleSleepButton() {
         // =====================
 
         const paramsForChart = new URLSearchParams(window.location.search);
-        const dateStrForChart = paramsForChart.get("date") || new DateTransferItemList().toISOString().split('T')[0];
+        const dateStrForChart = paramsForChart.get("date") || new Date().toISOString().split('T')[0];
         const selected = new Date(dateStrForChart);
 
         const today =

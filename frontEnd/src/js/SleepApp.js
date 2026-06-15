@@ -36,6 +36,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             console.log("🔥 睡眠画面でのFirebase接続成功！ UID:", user.uid);
             
             // 4. 既存データをFirestoreから読み込んで復元
+            await loadWeekSleepData();
             await loadExistingSleepData();
         }
     } catch (error) {
@@ -98,16 +99,11 @@ window.saveToFirestoreViaJS = async function(passedWakeTime, passedBedTime) {
  * グラフを即時書き換える処理
  */
 function updateLocalChart(totalHours) {
-    const ctx = document.getElementById('sleepChart');
-    if (ctx) {
-        const chartInstance = Chart.getChart(ctx);
-        if (chartInstance) {
-            const selectedDateObj = new Date(targetDate);
-            const dayOfWeek = selectedDateObj.getDay(); 
-
-            chartInstance.data.datasets[0].data[dayOfWeek] = Math.round(totalHours * 10) / 10;
-            chartInstance.update();
-        }
+    if(window.sleepChart){
+        const selectedDateObj = new Date(targetDate);
+        const dayOfWeek = selectedDateObj.getDay();
+        window.sleepData[dayOfWeek] = Math.round(totalHours * 10) / 10;
+        window.sleepChart.update();
     }
 }
 
@@ -162,5 +158,45 @@ async function loadExistingSleepData() {
         }
     } catch (error) {
         console.error("❌ 睡眠データの読み込みに失敗しました:", error);
+    }
+}
+
+async function loadWeekSleepData() {
+
+    const selected = new Date(targetDate);
+
+    const sunday = new Date(selected);
+    sunday.setDate(selected.getDate() - selected.getDay());
+
+    for(let i = 0; i < 7; i++){
+
+        const d = new Date(sunday);
+        d.setDate(sunday.getDate() + i);
+
+        const key =
+            d.getFullYear() + "-" +
+            String(d.getMonth()+1).padStart(2,"0") + "-" +
+            String(d.getDate()).padStart(2,"0");
+
+        const data = await getDailyData(key);
+
+        if(data && data.sleep){
+
+            window.sleepData[i] =
+                data.sleep.hour +
+                (data.sleep.minute / 60);
+        }
+        else{
+
+            window.sleepData[i] = 0;
+        }
+    }
+
+    if(window.sleepChart){
+        window.sleepChart.update();
+    }
+
+    if(typeof calculateAverage === "function"){
+        calculateAverage();
     }
 }

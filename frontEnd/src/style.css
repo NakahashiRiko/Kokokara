@@ -99,7 +99,7 @@ body {
 }
 
 /* ==========================================================================
-   3. メイン構成 ＆ 左側（カレンダー）エリア（土日カラー＆ドットバグ修正版）
+   3. メイン構成 ＆ 左側（カレンダー）エリア（縦長＆大粒ドット視認性アップ版）
    ========================================================================== */
 /* カレンダー(左)とカード(右)を横並びにするための大枠 */
 .main {
@@ -108,10 +108,10 @@ body {
     padding: 30px;           /* メインエリアの内側の余白 */
 }
 
-/* カレンダーエリア全体の横幅固定 */
+/* カレンダーエリア全体の横幅を大幅に拡大 */
 .left {
-    width: 400px;
-    margin-right: 40px;      /* 右側カードエリアとのスキマ */
+    width: 500px;            /* 💡 【変更】400px ➔ 750px に拡大！ */
+    margin-right: 50px;      /* 右側カードエリアとのスキマを少し広げて調整 */
 }
 
 /* 「◀︎ 2026/05/15 ▶︎」のナビゲーション部分 */
@@ -122,18 +122,40 @@ body {
     margin-bottom: 20px;
 }
 
-/* 日付を切り替える ◀︎ と ▶︎ のボタン */
+/* 日付を切り替える ◀︎ と ▶︎ のボタン（左右対称・ズレ完全修正版） */
 .date-nav .nav-btn {
-    cursor: pointer;         /* マウスを乗せるたら指マークにする */
-    border-radius: 6px;
-    transition: transform 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
+    cursor: pointer;         /* マウスを乗せたら指マークにする */
+    
+    font-size: 22px;         /* 💡 矢印のフォントサイズを 22px に微調整 */
+    width: 45px;             /* ボタンの横幅 */
+    height: 45px;            /* ボタンの縦幅（正方形） */
+    
+    /* ボタンを上下左右の真ん中にきれいに配置する */
+    display: inline-flex;    /* 💡 確実に横並びブロックとして扱う */
+    align-items: center;
+    justify-content: center;
+    
+    /* 💡 【超重要】文字のカタチによるズレを強制リセットする魔法の3行 */
+    font-family: "Courier New", Courier, monospace; /* 💡 左右の文字幅を強制的に同じにするフォント */
+    line-height: 1;          /* 💡 上下の余計な隙間をゼロにする */
+    text-align: center;      /* 💡 文字を中央に */
+    
+    /* ボタンのクッキリした縁取り設定 */
+    border: 2px solid #333333; /* カレンダーの枠線に合わせた濃いグレーの縁取り */
+    border-radius: 35%;        /* 綺麗な「正円」のボタンにする */
+    background-color: #ffffff; /* ボタンの中身は白 */
+    color: #333333;            /* 矢印の色 */
+    
+    /* 動きを滑らかにするアニメーション設定 */
+    transition: transform 0.2s ease, background-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
 }
 
-/* 矢印ボタンにマウスを乗せたときの演出 */
+/* 💡 【変更】矢印ボタンにマウスを乗せたときの演出（ホバー時） */
 .date-nav .nav-btn:hover {
-    transform: scale(1.15);
-    background-color: #e0e0e0;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    transform: scale(1.1);   /* ほんの少しだけピョコッと大きく */
+    background-color: #333333; /* 💡 背景を濃いグレーにして色を反転！ */
+    color: #ffffff;            /* 💡 中の矢印を白にして見やすく */
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15); /* 影を少し強めて浮遊感を出す */
 }
 
 /* カレンダーのテーブル（表）本体 */
@@ -141,28 +163,38 @@ body {
     width: 100%;
     border-collapse: collapse; /* 隣り合う枠線を1本にまとめる */
     table-layout: fixed;       /* すべてのマスの横幅を完全に均等に固定する魔法 */
+    
+    /* 💡 【新設】カレンダーの一番外側をクッキリとした黒い太線で囲む */
+    border: 2.5px solid #c8c8c8; 
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05); /* うっすら影をつけて立体感をプラス */
 }
 
 /* カレンダーの曜日（th）のマス目 */
 .calendar th {
-    border: 1px solid #eee;
+    border: 1px solid #eee;    /* 横の境界線は細いグレーのまま */
+    /* 💡 【変更】曜日の下側（日付との境目）だけをクッキリした黒い太線にする */
+    border-bottom:2.1px solid #c8c8c8; 
+    
     text-align: center;
-    padding: 12px 0;           /* 曜日マスはすっきりさせる */
+    padding: 14px 0;           /* 💡 少しだけ上下の幅を広げて存在感をアップ */
     font-size: 16px;
+    font-weight: bold;
+    background-color: #fcfcfc; /* 💡 曜日エリアにほんのり背景色をつけて区切る */
 }
 
 /* カレンダーの日付（td）のマス目 */
 .calendar tbody td {
     border: 1px solid #eee;   /* 薄いグレーの格子線 */
     text-align: center;       /* 文字を真ん中寄せ */
-    padding: 0;               /* 💡 型崩れ防止：tdのパディングを0にして内側のwrapperに任せる */
-    height: 55px;             /* 高さを55pxでスマートに固定 */
+    padding: 0;               /* 型崩れ防止：tdのパディングを0にして内側のwrapperに任せる */
+    height: 85px;             /* 💡 【変更】高さを 55px ➔ 85px に大幅に引き伸ばし（縦長化） */
     background-color: #fff;   /* 基本の背景色は白 */
 }
 
 /* 日曜日の設定（1番目の列：th と td） */
 .calendar th:nth-child(1) {
     color: #e53935;           /* 曜日の文字：赤 */
+    background-color: #ffebee; /* マスの背景：淡い赤（ピンク） */
 }
 .calendar tbody td:nth-child(1) {
     color: #e53935;           /* 日付の文字：赤 */
@@ -172,6 +204,7 @@ body {
 /* 土曜日の設定（7番目の列：th と td） */
 .calendar th:nth-child(7) {
     color: #1e88e5;           /* 曜日の文字：青 */
+    background-color: #e3f2fd; /* マスの背景：淡い青（ライトブルー） */
 }
 .calendar tbody td:nth-child(7) {
     color: #1e88e5;           /* 日付の文字：青 */
@@ -183,70 +216,71 @@ body {
     display: flex;
     flex-direction: column;   /* 縦に並べる */
     align-items: center;      /* 左右の真ん中に寄せる */
-    justify-content: center;  /* 上下の真ん中に寄せる */
+    justify-content: space-between; /* 💡 【変更】数字と丸を上下の端に程よく離して配置 */
     width: 100%;
     height: 100%;
+    padding: 10px 0;          /* 💡 【新設】マス内の上下に心地よいスキマを作る */
 }
 
 /* 日付の数字自体のスタイル */
 .date-num {
     font-size: 18px;
     line-height: 1;
-    margin-bottom: 4px;       /* 数字と丸の間のスキマ */
 }
 
-/* 💡 【新設】4つの丸を横並びにするためのコンテナ */
+/* 💡 【大幅変更】4つの大粒の丸を「2×2（田の字型）」に並べるコンテナ */
 .dot-container {
-    display: flex;
-    justify-content: center;
-    gap: 3px;                 /* 丸と丸の間のスキマ */
+    display: grid;
+    grid-template-columns: repeat(2, min-content); /* 横に2個 */
+    grid-template-rows: repeat(2, min-content);    /* 縦に2個 */
+    justify-content: center; /* 2×2の塊を左右中央に配置 */
+    align-content: center;   /* 2×2の塊を上下中央に配置 */
+    gap: 6px 8px;            /* 💡 行の間隔を6px、列の間隔を8pxにして綺麗な長方形（または正方形）に */
     width: 100%;
-    height: 8px;              /* 丸の縦幅に合わせる */
-    margin-top: 2px;
+    height: auto;            /* 高さは自動計算に任せる */
+    margin-bottom: 4px;      /* マスの底辺との間の微調整 */
 }
 
-/* 💡 丸マークのベース設定（最初は小さく透明） */
+/* 💡 【サイズアップ】2×2になったことで、さらに丸を大きく（12px ➔ 14px）できます！ */
 .dot-marker {
-    width: 6px;               /* 4個並べるために少しだけ小さく(6px)設定 */
-    height: 6px;
+    width: 14px;              /* 💡 さらに見やすく14pxに拡大 */
+    height: 14px;             /* 💡 さらに見やすく14pxに拡大 */
     border-radius: 50%;
     background-color: transparent; /* データがないときは透明 */
     transition: background-color 0.2s ease, transform 0.2s ease;
 }
-
-/* 💡 データがある項目（active）だけ、それぞれのカードと同じ色を点灯させる */
+/*FFE771 856404 7091FE 0d47a1 F66C6C b71c1c 86FF7B 1b5e20
+/* データがある項目（active）だけ、それぞれのカードと同じ色をクッキリ点灯 */
 .dot-marker.dot-meal.active {
-    background-color: #FFDF3D !important; /* 食事：黄色（見やすいように少し濃いめ） */
-    border: 1px solid #856404;            /* フチをつけてクッキリと */
+    background-color: #FFE771 !important; /* 食事：黄色 */
+    border: 1px solid #947200;            /* 色をクッキリ見せるための細いフチ線 */
 }
 
 .dot-marker.dot-sleep.active {
     background-color: #7091FE !important; /* 睡眠：青色 */
+    border: 1px solid #947200;            /* 色をクッキリ見せるための細いフチ線 */
 }
 
 .dot-marker.dot-walk.active {
     background-color: #F66C6C !important; /* 歩数：赤色 */
+    border: 1px solid #947200;            /* 色をクッキリ見せるための細いフチ線 */
 }
 
 .dot-marker.dot-condition.active {
-    background-color: #4CAF50 !important; /* 体調：緑色 */
-}
-
-/* 💡 「今日」のマスの中の丸が同化して見えなくなるのを防ぐ対策 */
-.today .dot-marker.active {
-    transform: scale(1.1); /* 今日のマスの丸だけ一回り大きくして目立たせる */
+    background-color: #86FF7B !important; /* 体調：緑色 */
+    border: 1px solid #947200;            /* 色をクッキリ見せるための細いフチ線 */
 }
 
 /* 今日の日付のマス目を目立たせる設定 */
 .today {
-    background-color: #e89dffd0 !important; /* 紫系のお好みの色を維持 */
+    background-color: #dddddd !important; /* 紫系のお好みの色を維持 */
     font-weight: bold;
     color: #2d2d2d !important;            /* 文字色を維持 */
 }
 
-/* 💡 【修正】今日の日付かつデータもある日の丸の色を最優先化 */
-.calendar tbody td.today.has-data .dot-marker {
-    background-color: #2d2d2d !important; /* 今日の文字色と同じ色でクッキリ出す */
+/* 今日の日付かつデータもある日の丸の演出 */
+.today .dot-marker.active {
+    transform: scale(1.1);    /* 今日のマスの丸だけさらに存在感を出す */
 }
 
 /* 他月（先月・来月）の日付の文字 */
@@ -356,22 +390,27 @@ body {
     display: none;
 }
 
+/* style.css の「6. 体調カード」セクションの該当箇所を修正 */
+
 /* タイトルと顔アイコンを包む、クリックできるエリアの設定 */
 .face-trigger {
     cursor: pointer;
-    display: block;
+    display: block;      /* 💡 元のシンプルなブロック形式に戻します */
     width: 100%;
     height: 100%;
 }
 
 /* 体調カードの中にある「まるい顔の輪郭」 */
 .face-icon {
-    width: 120px;       /* 80px ➔ 120px に拡大 */
-    height: 120px;      /* 80px ➔ 120px に拡大 */
-    border: 4px solid #1b5e20; /* 枠線も少しだけ太くしてクッキリ */
+    width: 120px;       
+    height: 120px;      
+    border: 4px solid #1b5e20; 
     border-radius: 50%;
     position: relative;
-    margin: 10px auto;  /* カードの真ん中に綺麗に収まるように余白を調整 */
+    
+    /* 💡 【解決策】上下左右の余白をブラウザに自動計算させ、文字に影響を与えず中央配置 */
+    margin: 20px auto 0 auto; /* 上側に20pxの隙間を作り、左右は自動（auto）でど真ん中に固定 */
+    
     transition: background-color 0.3s, transform 0.2s ease, box-shadow 0.2s ease;
 }
 

@@ -253,7 +253,7 @@ async function updateDateDisplay() {
 }
 
 /**
- * カレンダーの左右矢印ボタンにクリックイベントを設定する関数（月切り替え版）
+ * カレンダーの左右矢印ボタンにクリックイベントを設定する関数（月切り替え版・日付維持）
  */
 function setupCalendarNavigation() {
     const navButtons = document.querySelectorAll('.nav-btn');
@@ -262,19 +262,39 @@ function setupCalendarNavigation() {
         const prevBtn = navButtons[0];
         const nextBtn = navButtons[1];
 
+        // 前の月へ
         prevBtn.addEventListener('click', () => {
-            currentDate.setDate(1); // 月を切り替えた時の日付バグを防ぐ安全処理
+            const currentDay = currentDate.getDate(); // 現在の日付（例: 14）を記憶
+            
+            // 1. 一旦、移動先（前月）の末尾の日付を確認する
+            const targetMonthLastDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), 0).getDate();
+            
+            // 2. もし元の「日」が、移動先の「最大日数」を超えていたら、移動先の月末に合わせる
+            //（例: 5月31日にいて、4月へ行く時は「4月30日」にする）
+            const safeDay = Math.min(currentDay, targetMonthLastDate);
+            
+            currentDate.setDate(safeDay); 
             currentDate.setMonth(currentDate.getMonth() - 1);
             updateDateDisplay();
         });
 
+        // 次の月へ
         nextBtn.addEventListener('click', () => {
-            currentDate.setDate(1); // 月を切り替えた時の日付バグを防ぐ安全処理
+            const currentDay = currentDate.getDate(); // 現在の日付（例: 14）を記憶
+            
+            // 1. 一旦、移動先（翌月）の末尾の日付を確認する
+            const targetMonthLastDate = new Date(currentDate.getFullYear(), currentDate.getMonth() + 2, 0).getDate();
+            
+            // 2. もし元の「日」が、移動先の「最大日数」を超えていたら、移動先の月末に合わせる
+            //（例: 8月31日にいて、9月へ行く時は「9月30日」にする）
+            const safeDay = Math.min(currentDay, targetMonthLastDate);
+            
+            currentDate.setDate(safeDay);
             currentDate.setMonth(currentDate.getMonth() + 1);
             updateDateDisplay();
         });
         
-        console.log("✅ カレンダー矢印ボタンの設定が完了しました（月切り替えモード）");
+        console.log("✅ カレンダー矢印ボタンの設定が完了しました（日付維持モード）");
     }
 }
 
@@ -374,5 +394,157 @@ window.addEventListener('pageshow', async (event) => {
     if (event.persisted) {
         console.log("🔄 キャッシュからの復帰を検知。カレンダーを再更新します。");
         await addDotsToCalendar();
+    }
+});
+// ==========================================================================
+// 💡 追加：AIによる1ヶ月データ分析機能
+// ==========================================================================
+
+/**
+ * 指定された年月の1日〜31日までのデータをFirestoreから集めて集計する関数
+ * @param {string} yearMonth "2026-05" のような形式
+ */
+async function fetchMonthlySummary(yearMonth) {
+    let totalSteps = 0;
+    let stepCountDays = 0;
+    let totalSleepMinutes = 0;
+    let sleepCountDays = 0;
+    let conditionScores = [];
+
+    // 1. 先に31日分のプロミス（リクエスト）の配列を作成する
+    const days = Array.from({ length: 31 }, (_, i) => i + 1);
+    
+    const promises = days.map(async (day) => {
+        const ddStr = String(day).padStart(2, '0');
+        const dateStr = `${yearMonth}-${ddStr}`;
+        try {
+            return await getDailyData(dateStr);
+        } catch (e) {
+            console.error(`データ取得エラー (${dateStr}):`, e);
+            return null;
+        }
+    });
+
+    // 2. すべての日のデータを一斉に（並列で）取得する
+    const allDaysData = await Promise.all(promises);
+
+    // 3. 取得した結果をまとめて集計する
+    allDaysData.forEach((data) => {
+        if (data) {
+            // 歩数の集計
+            if (data.walk !== undefined && data.walk !== null && Number(data.walk) > 0) {
+                totalSteps += Number(data.walk);
+                stepCountDays++;
+            }
+            // 睡眠時間の集計
+            if (data.sleep) {
+                const h = Number(data.sleep.hour) || 0;
+                const m = Number(data.sleep.minute) || 0;
+                if (h > 0 || m > 0) {
+                    totalSleepMinutes += (h * 60 + m);
+                    sleepCountDays++;
+                }
+            }
+            // 体調の集計
+            if (data.condition) {
+                conditionScores.push(Number(data.condition));
+            }
+        }
+    });
+
+    // 統計データの作成
+    const avgSteps = stepCountDays > 0 ? Math.round(totalSteps / stepCountDays) : 0;
+    const avgSleepMin = sleepCountDays > 0 ? Math.round(totalSleepMinutes / sleepCountDays) : 0;
+    const avgSleepStr = `${Math.floor(avgSleepMin / 60)}時間${avgSleepMin % 60}分`;
+    const avgCondition = conditionScores.length > 0 ? (conditionScores.reduce((a, b) => a + b, 0) / conditionScores.length).toFixed(1) : "記録なし";
+
+    return {
+        targetMonth: yearMonth,
+        recordedDays: conditionScores.length,
+        averageSteps: `${avgSteps}歩`,
+        averageSleep: avgSleepStr,
+        averageCondition: `${avgCondition} (5点満点)`
+    };
+}
+
+
+/**
+ * ク劳ド関数（Cloud Functions）を叩いてAI分析コメントをもらう関数
+ */
+async function getAIAnalysis() {
+    const yyyy = currentDate.getFullYear();
+    const mm = String(currentDate.getMonth() + 1).padStart(2, '0');
+    const yearMonth = `${yyyy}-${mm}`;
+
+    // 1. 今月のデータを集計する
+    const summaryData = await fetchMonthlySummary(yearMonth);
+
+    if (summaryData.recordedDays === 0) {
+        return `${yyyy}年${mm}月はまだ健康データが記録されていないようです。カレンダーに記録をつけてみましょう！`;
+    }
+
+    // 💡 変更点：APIキーを消去し、宛先をCloud FunctionsのURLにする
+    // ※以下はエミュレータまたはデプロイ後のURLに置き換えてください
+    const url = `https://<YOUR_REGION>-<YOUR_PROJECT_ID>.cloudfunctions.net/generateHealthAdvice`;
+
+    // 3. Cloud Functionsへリクエストを送信
+    const response = await fetch(url, {
+        method: "POST",
+        headers: { 
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            // 集計したデータをそのまま関数に丸投げする
+            summary: summaryData
+        })
+    });
+
+    if (!response.ok) {
+        throw new Error(`サーバーエラー: ${response.status}`);
+    }
+
+    const result = await response.json();
+    return result.advice; // サーバーから返ってきたテキストを返す
+}
+
+// ==========================================================================
+// 💡 画面上のボタンと連動させる設定
+// ==========================================================================
+document.addEventListener("DOMContentLoaded", () => {
+    const analyzeBtn = document.getElementById('analyze-btn');
+    const commentEl = document.getElementById('ai-comment');
+
+    if (analyzeBtn && commentEl) {
+        analyzeBtn.addEventListener('click', async () => {
+            analyzeBtn.disabled = true; // 連打防止
+            commentEl.innerHTML = "<span style='color: #666;'>AIが今月のデータを集計して分析中... 🏃‍♂️💨</span>";
+            
+            try {
+                const advice = await getAIAnalysis();
+                commentEl.textContent = advice;
+            } catch (error) {
+                // --- ここからエラー表示の拡張 ---
+                console.error("AI分析エラー詳細:", error);
+
+                // エラーオブジェクトからメッセージを抽出
+                let errorMessage = error.message || "原因不明のエラー";
+                
+                // 画面の表示を分かりやすく書き換える
+                commentEl.innerHTML = `
+                    <div style="color: #d32f2f; background: #ffebee; padding: 10px; border-radius: 4px; border: 1px solid #ffcdd2;">
+                        <strong>ごめんなさい、分析に失敗しました。</strong><br>
+                        <span style="font-size: 0.9em; color: #555;">
+                            エラー内容: <code style="background: #fff; padding: 2px 4px; border-radius: 3px; font-family: monospace;">${errorMessage}</code>
+                        </span>
+                        <p style="font-size: 0.85em; margin: 8px 0 0 0; color: #666;">
+                            ※「APIエラー: 400」や「403」が出る場合は、.env 内の API キーが正しいか確認してください。
+                        </p>
+                    </div>
+                `;
+                // --- ここまで ---
+            } finally {
+                analyzeBtn.disabled = false;
+            }
+        });
     }
 });

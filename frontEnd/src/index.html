@@ -31,10 +31,16 @@
                             <th>日</th><th>月</th><th>火</th><th>水</th><th>木</th><th>金</th><th>土</th>
                         </tr>
                     </thead>
-                    <tbody>
-                        <tbody id="calendar-body"></tbody>
-                    </tbody>
+                    <tbody id="calendar-body"></tbody>
                 </table>
+
+                <div class="ai-container" style="margin: 20px; padding: 15px; border: 1px solid #ddd; border-radius: 8px; background: #fafafa;">
+                    <h3>🌙 今月の健康AIアドバイス</h3>
+                    <p id="ai-comment" style="line-height: 1.6; color: #333;">「分析する」ボタンを押すと、今月の記録からAIがアドバイスを生成します。</p>
+                    <button id="analyze-btn" style="padding: 8px 16px; background: #4CAF50; color: white; border: none; border-radius: 4px; cursor: pointer;">
+                        今月のデータを分析する
+                    </button>
+                </div>
             </aside>
 
             <!-- 8. 右側エリア（ライフログカード） -->
@@ -107,6 +113,7 @@
         </main>
     </div>
 
+    <script type="module" src="https://www.gstatic.com/firebasejs/10.8.0/firebase-vertexai.js"></script>
     <script type="module" src="./main.js"></script>
 </body>
 </html>

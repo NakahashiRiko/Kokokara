@@ -622,3 +622,147 @@ body {
     color: #999;
     border-color: #eee;
 }
+
+/* ==========================================
+   追加：画面下部のAIアドバイスエリアのスタイル
+   ========================================== */
+
+/* 1. アプリ全体を縦並びのレイアウトに設定 */
+.app {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh; /* 画面の縦いっぱいに広げる */
+}
+
+/* 2. メインエリア（カレンダーとカード）を画面の残りの高さに広げる */
+.main {
+    flex: 1; 
+}
+
+/* 3. 下部エリア全体の幅と余白の設定 */
+.bottom-area {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 0 20px 20px 20px; /* 左右と下に余白を作る */
+}
+
+/* 4. AIアドバイスを囲むボックスの見た目（枠線や背景） */
+.bottom-area .ai-container {
+    padding: 20px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    background: #fafafa;
+}
+
+/* 5. コメント文の行間と文字色の設定 */
+.bottom-area #ai-comment {
+    line-height: 1.6;
+    color: #333;
+    margin-bottom: 15px;
+}
+
+/* 6. 「分析する」ボタンの見た目 */
+.bottom-area #analyze-btn {
+    display: block;
+    width: 100%;
+    max-width: 400px;         /* PC画面でも間伸びしない最大幅 */
+    margin: 20px auto;        /* 💡 ボタンを中央寄せにする */
+    padding: 16px 24px;       /* 💡 ボタン内の余白を広げて肉厚に */
+    font-size: 20px;          /* 💡 文字を大きく */
+    font-weight: bold;        /* 💡 太字にする */
+    background: #00e823;      /* 💡 認識性の高いブルーに変更（お好みで #4CAF50 の緑でもOK） */
+    color: white;
+    border: none;
+    border-radius: 8px;       /* 💡 角丸を少し滑らかに */
+    cursor: pointer;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* 💡 立体感のある影を追加 */
+    transition: background 0.2s, transform 0.1s, box-shadow 0.2s;
+}
+
+/* 7. ボタンにマウスを乗せたときに少し暗くする演出 */
+.bottom-area #analyze-btn:hover {
+    background: #36b400;      /* 💡 マウスホバー時に少し濃い青に */
+    transform: translateY(-2px); /* 💡 ほんの少し上にピョコッと浮く演出 */
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15); /* 💡 浮いた分、影を強く */
+}
+
+/* 💡 ボタンがクリックされて分析中のとき（無効化状態）の見た目も追加 */
+.bottom-area #analyze-btn:disabled {
+    background: #cccccc;
+    color: #666666;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+/* ==========================================================================
+   10. AI分析中の画面全体ロック設定（誤操作・連打防止）
+   ========================================================================== */
+
+/* 💡 分析ボタンが無効化（disabled）されている間、アプリ内の他のボタンや入力をすべてフリーズさせる */
+.app:has(#analyze-btn:disabled) {
+    /* 1. カレンダーの日付マスをクリックできなくする */
+    & .calendar tbody td {
+        pointer-events: none !important;
+        cursor: default !important;
+    }
+
+    /* 2. 右側の4つのカード（食事・睡眠・歩数・体調）をすべてクリック不可にする */
+    & .right .card-link, 
+    & .card.condition,
+    & .face-trigger {
+        pointer-events: none !important;
+        cursor: default !important;
+        opacity: 0.6; /* 💡 動かないことを伝えるために少し薄くする */
+    }
+
+    /* 3. カレンダーの月切り替えボタン（◀︎ ▶︎）をフリーズ */
+    & .date-nav .nav-btn {
+        pointer-events: none !important;
+        cursor: default !important;
+        opacity: 0.4;
+    }
+
+    /* 4. メモ入力欄をフリーズさせ、グレーアウトする */
+    & .memo-input {
+        pointer-events: none !important;
+        background-color: #f0f0f0 !important;
+        color: #999 !important;
+        border-color: #eee !important;
+    }
+}
+
+/* 💡 ただし、エラーが起きて分析ボタンが復活した時は、自動的にロックが全解除されます */
+
+/* ==========================================================================
+   11. ロック解除ボタンの見た目
+   ========================================================================== */
+#unlock-btn {
+    display: block;
+    width: 100%;
+    max-width: 400px;
+    margin: 15px auto 0 auto;  /* コメント文の下に隙間を作って中央寄せ */
+    padding: 12px 20px;
+    font-size: 18px;
+    font-weight: bold;
+    color: #fff;
+    background-color: #28a745; /* 💡 安心感のあるグリーン */
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    animation: fadeIn 0.3s ease; /* ニュッと現れるアニメーション */
+    transition: background-color 0.2s, transform 0.1s;
+}
+
+/* マウスを乗せたとき */
+#unlock-btn:hover {
+    background-color: #218838;
+    transform: translateY(-1px);
+}
+
+/* ボタンがパッと現れるアニメーション */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}

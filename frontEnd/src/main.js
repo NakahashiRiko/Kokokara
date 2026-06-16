@@ -469,82 +469,132 @@ async function fetchMonthlySummary(yearMonth) {
 
 
 /**
- * ク劳ド関数（Cloud Functions）を叩いてAI分析コメントをもらう関数
+ * 【手元テスト用】Cloud Functionsを使わず、ブラウザから直接Gemini APIを叩く関数
  */
 async function getAIAnalysis() {
     const yyyy = currentDate.getFullYear();
     const mm = String(currentDate.getMonth() + 1).padStart(2, '0');
     const yearMonth = `${yyyy}-${mm}`;
 
-    // 1. 今月のデータを集計する
+    // 1. 今月のデータを集計（既存の関数をそのまま使用）
     const summaryData = await fetchMonthlySummary(yearMonth);
 
     if (summaryData.recordedDays === 0) {
         return `${yyyy}年${mm}月はまだ健康データが記録されていないようです。カレンダーに記録をつけてみましょう！`;
     }
 
-    // 💡 変更点：APIキーを消去し、宛先をCloud FunctionsのURLにする
-    // ※以下はエミュレータまたはデプロイ後のURLに置き換えてください
-    const url = `https://<YOUR_REGION>-<YOUR_PROJECT_ID>.cloudfunctions.net/generateHealthAdvice`;
+    // 🔑 【あなたのAPIキー】ここにGoogle AI Studioで取得したキーを貼り付けてください
+    const API_KEY = "AQ.Ab8RN6JJxc2QXj3TlGMuR-chfsqEqGhBfI984uOW3OWOl7jRcw"; 
+    
+    // Gemini 2.5 Flash を呼び出すURL
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${API_KEY}`;
 
-    // 3. Cloud Functionsへリクエストを送信
+    // 2. AIに渡すプロンプト（命令文）の作成
+    const promptText = `
+以下の健康データは、ユーザーの1ヶ月間のライフログを集計したものです。
+このデータを分析し、親しみやすく、かつ具体的でモチベーションが上がるような健康アドバイス（コメント）を200文字〜300文字程度で生成してください。
+
+【対象月】: ${summaryData.targetMonth}
+【記録日数】: ${summaryData.recordedDays} 日
+【平均歩数】: ${summaryData.averageSteps}
+【平均睡眠時間】: ${summaryData.averageSleep}
+【平均体調スコア】: ${summaryData.averageCondition} (5点満点)
+
+### 制約事項
+- ユーザーに寄り添う優しいトーンで話しかけてください。
+- 歩数、睡眠、体調の数値に具体的に触れて褒めたり、改善のアドバイスをしてください。
+- 明日からできる小さなアクションを提案してください。
+`;
+
+    // 3. GoogleのAPIへ直接リクエストを送信
     const response = await fetch(url, {
         method: "POST",
-        headers: { 
+        headers: {
             "Content-Type": "application/json"
         },
         body: JSON.stringify({
-            // 集計したデータをそのまま関数に丸投げする
-            summary: summaryData
+            contents: [{
+                parts: [{ text: promptText }]
+            }]
         })
     });
 
     if (!response.ok) {
-        throw new Error(`サーバーエラー: ${response.status}`);
+        throw new Error(`Gemini APIエラー: ${response.status}`);
     }
 
     const result = await response.json();
-    return result.advice; // サーバーから返ってきたテキストを返す
+    
+    // 4. 生成されたテキストを抽出して返す
+    try {
+        return result.candidates[0].content.parts[0].text;
+    } catch (e) {
+        throw new Error("AIの返答データ構造の解析に失敗しました。");
+    }
 }
 
 // ==========================================================================
-// 💡 画面上のボタンと連動させる設定
+// 💡 画面上のボタンと連動させる設定（コメント出力後、ユーザーの確認でロック解除版）
 // ==========================================================================
 document.addEventListener("DOMContentLoaded", () => {
     const analyzeBtn = document.getElementById('analyze-btn');
     const commentEl = document.getElementById('ai-comment');
 
     if (analyzeBtn && commentEl) {
+        commentEl.style.fontSize = "20px"; 
+        commentEl.style.lineHeight = "1.6"; 
+
+        // 💡 解除ボタンを動的に作るためのコンテナを準備
+        const container = commentEl.parentElement;
+        
+        // 💡 解除ボタンのHTML要素を作成（最初は非表示）
+        const unlockBtn = document.createElement('button');
+        unlockBtn.id = 'unlock-btn';
+        unlockBtn.textContent = '確認しました（画面のロックを解除） 🔓';
+        unlockBtn.style.display = 'none'; // 最初は隠しておく
+        container.appendChild(unlockBtn);
+
+        // --- ① 「分析する」ボタンを押したときの処理 ---
         analyzeBtn.addEventListener('click', async () => {
-            analyzeBtn.disabled = true; // 連打防止
-            commentEl.innerHTML = "<span style='color: #666;'>AIが今月のデータを集計して分析中... 🏃‍♂️💨</span>";
+            analyzeBtn.disabled = true; // 分析ボタンと画面全体をロック
+            unlockBtn.style.display = 'none'; // 解除ボタンは隠す
+            commentEl.innerHTML = "<span style='color: #666; font-size: 18px;'>AIが今月のデータを集計して分析中... 🏃‍♂️💨</span>";
             
             try {
                 const advice = await getAIAnalysis();
                 commentEl.textContent = advice;
-            } catch (error) {
-                // --- ここからエラー表示の拡張 ---
-                console.error("AI分析エラー詳細:", error);
+                
+                // ✨ 成功したら「解除ボタン」をニュッと表示させる
+                unlockBtn.style.display = 'block';
+                console.log("✅ AI分析完了。ユーザーの確認ボタンを表示しました。");
 
-                // エラーオブジェクトからメッセージを抽出
+            } catch (error) {
+                console.error("AI分析エラー詳細:", error);
                 let errorMessage = error.message || "原因不明のエラー";
                 
-                // 画面の表示を分かりやすく書き換える
                 commentEl.innerHTML = `
-                    <div style="color: #d32f2f; background: #ffebee; padding: 10px; border-radius: 4px; border: 1px solid #ffcdd2;">
+                    <div style="color: #d32f2f; background: #ffebee; padding: 10px; border-radius: 4px; border: 1px solid #ffcdd2; font-size: 16px;">
                         <strong>ごめんなさい、分析に失敗しました。</strong><br>
                         <span style="font-size: 0.9em; color: #555;">
                             エラー内容: <code style="background: #fff; padding: 2px 4px; border-radius: 3px; font-family: monospace;">${errorMessage}</code>
                         </span>
-                        <p style="font-size: 0.85em; margin: 8px 0 0 0; color: #666;">
-                            ※「APIエラー: 400」や「403」が出る場合は、.env 内の API キーが正しいか確認してください。
-                        </p>
                     </div>
                 `;
-                // --- ここまで ---
-            } finally {
+
+                // ⚠️ エラーで失敗した時だけは自動で元の状態（ボタン押せる）に戻す
                 analyzeBtn.disabled = false;
             }
+        });
+
+        // --- ② 新しく作った「解除ボタン」を押したときの処理 ---
+        unlockBtn.addEventListener('click', () => {
+            // ✨ 分析ボタンの無効化を解除 ➔ これによりCSSの画面ロックも自動で全解除されます！
+            analyzeBtn.disabled = false; 
+            
+            // 自分自身（解除ボタン）は用が済んだので再び隠す
+            unlockBtn.style.display = 'none'; 
+            
+            console.log("🔓 ユーザーが確認したため、画面のロックを解除しました。");
         });
     }
 });

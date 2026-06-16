@@ -34,13 +34,6 @@
                     <tbody id="calendar-body"></tbody>
                 </table>
 
-                <div class="ai-container" style="margin: 20px; padding: 15px; border: 1px solid #ddd; border-radius: 8px; background: #fafafa;">
-                    <h3>🌙 今月の健康AIアドバイス</h3>
-                    <p id="ai-comment" style="line-height: 1.6; color: #333;">「分析する」ボタンを押すと、今月の記録からAIがアドバイスを生成します。</p>
-                    <button id="analyze-btn" style="padding: 8px 16px; background: #4CAF50; color: white; border: none; border-radius: 4px; cursor: pointer;">
-                        今月のデータを分析する
-                    </button>
-                </div>
             </aside>
 
             <!-- 8. 右側エリア（ライフログカード） -->
@@ -111,6 +104,15 @@
                 </div>
             </section>
         </main>
+
+        <footer class="bottom-area">
+            <div class="ai-container">
+                <h3>🌙 今月の健康AIアドバイス</h3>
+                <p id="ai-comment">「分析する」ボタンを押すと、今月の記録からAIがアドバイスを生成します。</p>
+                <button id="analyze-btn">今月のデータを分析する</button>
+            </div>
+        </footer>
+        
     </div>
 
     <script type="module" src="https://www.gstatic.com/firebasejs/10.8.0/firebase-vertexai.js"></script>

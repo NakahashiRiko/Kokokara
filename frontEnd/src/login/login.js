@@ -8,10 +8,11 @@ document.addEventListener('DOMContentLoaded', () => {
     // 入力された値を取得
     const steps = document.getElementById('steps').value;
     
-    const breakfast = `${document.getElementById('breakfast-hour').value}:${document.getElementById('breakfast-minute').value}`;
-    const lunch = `${document.getElementById('lunch-hour').value}:${document.getElementById('lunch-minute').value}`;
-    const dinner = `${document.getElementById('dinner-hour').value}:${document.getElementById('dinner-minute').value}`;
-
+    // ★修正：type="time" に変更したため、1つのIDから直接「08:00」のような文字列が取得できます
+    const breakfast = document.getElementById('breakfast-time').value;
+    const lunch = document.getElementById('lunch-time').value;
+    const dinner = document.getElementById('dinner-time').value;
+    
     // まとめたデータ（オブジェクト）
     const guestData = {
       role: 'guest',

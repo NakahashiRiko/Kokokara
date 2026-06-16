@@ -7,6 +7,7 @@ body{
 
 /*inputタグ全てを選択*/
 input{
+    font-size: 17px;/*入力欄のサイズを拡大*/
     font-family: "Hiragino Sans", sans-serif;/*フォントをゴシック体に指定。*/
 }
 
@@ -14,7 +15,7 @@ input{
 #title-box{
     /*margin: 0;/*タイトルの上下の余白を消す。この枠の外側の余白を消す。*/
     background-color: #f5f5a7;/*背景色の指定*/
-    height: 80px;/*高さの指定*/
+    height: 100px;/*高さの指定*/
     padding-left: 20px;/*タイトルの左側の余白を20pxに自分で設定。marginと違いこの枠の内側に余白ができる*/
     display: flex;/*フレックスボックスの指定。テキストが横並びで表示されるようになる。*/
     align-items: center;/*テキストを縦方向の中央に揃える。*/
@@ -23,7 +24,7 @@ input{
 /*画面左上の「＜」テキストのデザイン。HTMLではただのテキストだがCSSでボタンとして機能するようにする*/
 #back_app_btn{
     color: #7b807c;
-    font-size: 40px;/*文字サイズの指定*/
+    font-size: 60px;/*文字サイズの指定*/
     margin-right: 20px;/*テキストの右側の余白を20pxに自分で設定。*/
     font-weight: bold;/*文字を太字にする。*/
     cursor: pointer;/*マウスポインタがこのテキストの上に来たとき、クリックできることを示すポインタに変わる。*/
@@ -32,7 +33,7 @@ input{
 /*画面上部のタイトルテキストのデザイン*/
 #app_title{
     margin: 0px;/*タイトルの左側の余白を0pxに自分で設定。*/
-    font-size: 40px;/*文字サイズの指定*/
+    font-size: 50px;/*文字サイズの指定*/
     font-weight: bold;/*文字を太字にする。*/
     line-height: 80px;
 }
@@ -42,7 +43,7 @@ input{
     display: flex;/*フレックスボックスの指定。テキストが横並びで表示されるようになる。*/
     align-items: center;/*テキストを縦方向の中央に揃える。これにより「コメント生成」ボタンがテキストと同じラインに並ぶ。*/
     gap: 150px;
-    margin: 0px 50px;
+    margin: 0px 80px;
     font-size: 40px;
 }
 
@@ -54,6 +55,49 @@ input{
     border-radius: 30px;/*ボックスの角を丸くする。*/
     padding: 20px;/*ボタン内の余白を設定*/
     cursor: pointer;/*マウスポインタがこのテキストの上に来たとき、クリックできることを示すポインタに変わる。*/
+}
+
+/*「コメント生成」ボタンの左横に表示されるテキスト。吹き出しにしてユーザビリティを向上*/
+#create_comment_btn_text{
+    position: relative;
+    /* ボタンのすぐ左横に配置されるように調整 */
+    padding: 30px 40px;
+    background: #d3d3d3; /* ふきだしの色 */
+    border-radius: 60px;
+    font-weight: bold;
+    color: #555;
+    text-align: center;
+    font-size: 35px;
+    margin: 0px 0px 90px 0px;
+}
+
+/* 泡の小さい丸（一番右、ボタンにくっつく方） */
+#create_comment_btn_text:before{
+    content: "";
+    position: absolute;
+    left: -140px;
+    width: 40px;
+    height: 40px;
+    bottom: 10px;
+    background: #d3d3d3;
+    border-radius: 50%;
+}
+
+/* 泡の中くらいの丸（右から2番目） */
+#create_comment_btn_text:after{
+    content: "";
+    position: absolute;
+    left: -80px;
+    width: 70px;
+    height: 70px;
+    bottom: 20px;
+    background: #d3d3d3;
+    border-radius: 50%;
+}
+
+#create_comment_btn_text p{
+    margin: 0;
+    padding: 0;
 }
 
 /*コメント文が生成されるボックスのデザイン*/
@@ -133,21 +177,115 @@ input{
     width: 100%;
 }
 
-/*その他の食事の入力欄の拡大。*/
-#other_meals_input{
-    margin-top: 20px;/*上の余白を20px。これを入れると次の内容との間に余白ができる。*/
-    margin-bottom: 20px;/*下の余白を20px。これを入れると次の内容との間に余白ができる。*/
-    width: 70%;
-}
-
 /*「その他の食事」テキストのデザイン。*/
 #other_meals-title{
     margin-left: 15px;/*タイトルの左側の余白を15px。これを入れるとタイトルが右側に少し移動する。*/
     font-size: 30px;/*文字サイズの指定*/
 }
 
-/*「記録保存」ボタンと「記録確定」ボタンのデザイン。*/
-#save_records_btn, #finish_today_btn{
+/*その他の食事の入力欄の拡大。*/
+#other_meals_input{
+    margin-top: 20px;/*上の余白を20px。これを入れると次の内容との間に余白ができる。*/
+    width: 70%;
+}
+
+/*吹き出しデザインの引用
+https://saruwakakun.com/html-css/reference/speech-bubble#section5
+*/
+
+#bottom-text-box{
+    position: relative;
+    display: flex;
+    justify-content: center;
+    gap: 500px;
+    margin-bottom: 10px;
+    margin-top: -20px;
+}
+
+#save_records_btn_text{
+    position: relative;
+    /* ボタンのすぐ左横に配置されるように調整 */
+    padding: 30px 60px;
+    background: #f5f5a7; /* ふきだしの色 */
+    border-radius: 60px;
+    font-weight: bold;
+    color: #555;
+    text-align: center;
+    font-size: 40px;
+}
+
+/* 泡の小さい丸(一番右)*/
+#save_records_btn_text:before{
+    content: "";
+    position: absolute;
+    left: 350px;/*左側からみたx座標。数値が大きいほど右にいく。rightでも指定可能だが数値が大きくなると左に行くため直感的にわかりにくい*/
+    width: 30px;/*丸の(横)幅*/
+    height: 30px;/*丸の(縦)幅、高さのこと*/
+    bottom: -40px;/*丸のy座標。数値が大きいほど上に行く*/
+    background: #f5f5a7;
+    border-radius: 50%;
+}
+
+/* 泡の大きい丸(右から2番目)*/
+#save_records_btn_text:after{
+    content: "";
+    position: absolute;
+    left: 290px;
+    width: 50px;
+    height: 50px;
+    bottom: -20px;
+    background: #f5f5a7;
+    border-radius: 50%;
+}
+
+#save_records_btn_text p{
+    margin: 0;
+    padding: 0;
+}
+
+#finish_today_btn_text{
+    position: relative;
+    /* ボタンのすぐ左横に配置されるように調整 */
+    padding: 30px 40px;
+    background: #ffbb00; /* ふきだしの色 */
+    border-radius: 60px;
+    font-weight: bold;
+    color: #555;
+    text-align: center;
+    font-size: 35px;
+}
+
+/* 泡の小さい丸（一番右、ボタンにくっつく方） */
+#finish_today_btn_text:before{
+    content: "";
+    position: absolute;
+    left: -90px;
+    width: 30px;
+    height: 30px;
+    bottom: -40px;
+    background: #ffbb00;
+    border-radius: 50%;
+}
+
+/* 泡の中くらいの丸（右から2番目） */
+#finish_today_btn_text:after{
+    content: "";
+    position: absolute;
+    left: -50px;
+    width: 50px;
+    height: 50px;
+    bottom: -20px;
+    background: #ffbb00;
+    border-radius: 50%;
+}
+
+#finish_today_btn_text p{
+    margin: 0;
+    padding: 0;
+}
+
+/*「一時保存」ボタンのデザイン。*/
+#save_records_btn{
     font-size: 40px;/*ボタンのサイズを拡大*/
     background-color: #f5f5a7;/*背景色の指定。タイトルの背景色と一致させた。*/
     font-weight: bold;/*文字を太字にする。*/
@@ -156,10 +294,23 @@ input{
     cursor: pointer;/*マウスポインタがこのテキストの上に来たとき、クリックできることを示すポインタに変わる。*/
 }
 
-/*「記録保存」ボタンと「記録確定」ボタンのデザイン。boxごとだとボタン自体のデザインは作れない。*/
+/*「記録終了」ボタンのデザイン。*/
+#finish_today_btn{
+    font-size: 40px;/*ボタンのサイズを拡大*/
+    background-color: #ffbb00;/*背景色の指定。タイトルの背景色と一致させた。*/
+    font-weight: bold;/*文字を太字にする。*/
+    border-radius: 30px;/*ボックスの角を丸くする。*/
+    padding: 20px;/*ボタン内の余白を設定*/
+    cursor: pointer;/*マウスポインタがこのテキストの上に来たとき、クリックできることを示すポインタに変わる。*/
+}
+
+
+/*「一時保存」ボタンと「記録終了」ボタンのデザイン。boxごとだとボタン自体のデザインは作れない。*/
 #bottom-btns-box{
     display: flex;/*ボックスなのでboxのデザイン内で書く。*/
     justify-content: center;/*テキストを縦方向の中央に揃える。これにより「コメント生成」ボタンがテキストと同じラインに並ぶ。*/
     margin-bottom: 30px;/*下の余白を30px。*/
-    gap: 50px;/*要素(ボタン)同士の間隔を20pxに自分で設定。*/
+    margin-right: 30px;
+    gap: 40px;/*要素(ボタン)同士の間隔を20pxに自分で設定。*/
+    font-size: 35px;
 }

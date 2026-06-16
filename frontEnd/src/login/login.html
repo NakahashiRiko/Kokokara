@@ -6,9 +6,14 @@
   <title>目標を設定しよう！</title>
   <link rel="stylesheet" href="login.css">
 </head>
+
 <body>
+  <div class="welcome-header">
+    ✨ ココカラアプリへようこそ！ 🏃‍♀️
+  </div>
 
   <div class="container">
+    <div class="form-card">
     <h1>目標を設定しよう！</h1>
 
     <form id="goal-form">
@@ -25,24 +30,18 @@
         <h2>食事</h2>
         
         <div class="input-row time-row">
-          <label>朝食時間：</label>
-          <input type="number" id="breakfast-hour" min="0" max="23" placeholder="00" required>
-          <span class="colon">:</span>
-          <input type="number" id="breakfast-minute" min="0" max="59" placeholder="00" required>
+          <label for="breakfast-time">朝食時間：</label>
+          <input type="time" id="breakfast-time" required>
         </div>
 
         <div class="input-row time-row">
-          <label>昼食時間：</label>
-          <input type="number" id="lunch-hour" min="0" max="23" placeholder="00" required>
-          <span class="colon">:</span>
-          <input type="number" id="lunch-minute" min="0" max="59" placeholder="00" required>
+          <label for="lunch-time">昼食時間：</label>
+          <input type="time" id="lunch-time" required>
         </div>
 
         <div class="input-row time-row">
-          <label>夕食時間：</label>
-          <input type="number" id="dinner-hour" min="0" max="23" placeholder="00" required>
-          <span class="colon">:</span>
-          <input type="number" id="dinner-minute" min="0" max="59" placeholder="00" required>
+          <label for="dinner-time">夕食時間：</label>
+          <input type="time" id="dinner-time" required>
         </div>
       </div>
 
@@ -50,6 +49,7 @@
         <button type="submit" class="btn-guest">ゲストで参加</button>
       </div>
     </form>
+    </div>
   </div>
 
   <script src="login.js"></script>

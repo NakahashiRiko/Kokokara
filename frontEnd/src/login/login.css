@@ -7,7 +7,9 @@
 }
 
 body {
-  background-color: #ffffff;
+  /* ★修正：真っ白から、下に向かってほんのり優しい緑と水色が混ざるグラデーションへ */
+  background: linear-gradient(135deg, #f4f9f4 0%, #eef7fc 100%);
+  
   display: flex;
   justify-content: center;
   align-items: center;
@@ -15,11 +17,19 @@ body {
   padding: 20px;
 }
 
-/* メインコンテナ */
+/* メインコンテナ（追加） */
 .container {
   width: 100%;
-  max-width: 500px;
-  text-align: left;
+  max-width: 550px;    /* 画像の横幅に調整 */
+  position: relative;  /* タイトルとボタンの配置基準にする */
+}
+
+/* 中央の四角い背景（修正） */
+.form-card {
+  width: 100%;
+  background-color: #bbbbbb; /* 濃いめのグレー */
+  border: none;              /* ★ border: 4px solid #000000; から変更 */
+  padding: 70px 50px 50px 50px; /* 上下にタイトルとボタンが乗るため広めに */
 }
 
 /* タイトル */
@@ -29,44 +39,53 @@ h1 {
   font-weight: bold;
   text-align: center;
   
-  display: inline-block;     /* 下線を文字幅ぴったりにする */
-  margin: 0 auto 40px auto;  /* 画面の中央に配置 */
-  
-  position: relative;
-  /* 💡 文字の上下の余白のバランスを整える */
-  padding: 5px 10px 12px 10px;
+  /* ★修正：グレーの枠線の上にぴったり配置する */
+  position: absolute;
+  top: -33px;               /* 上の枠線にまたがるように上に引き上げる */
+  left: 50%;
+  transform: translateX(-50%);
+
+  /* ★修正：上半分（50%まで）は画面の背景グラデーション、下半分はグレーにします */
+  background: linear-gradient(
+    to bottom,
+    #f4f9f4 50%,  /* 上から50%までは、画面の背景色 */
+    #bbbbbb 50%   /* 50%を過ぎたら、即座にグレー */
+  );
+
+  padding: 0 15px;          /* 文字左右の余白 */
+  white-space: nowrap;
+  z-index: 10;
+
+  /* ★追加：文字のまわりに2px分のくっきりとした白い縁取りをつけます */
+  text-shadow: 
+    1px  1px 0 #ffffff,
+   -1px  1px 0 #ffffff,
+    1px -1px 0 #ffffff,
+   -1px -1px 0 #ffffff,
+    1px  0px 0 #ffffff,
+   -1px  0px 0 #ffffff,
+    0px  1px 0 #ffffff,
+    0px -1px 0 #ffffff;
 }
 
-/* 💡 マーカー風に文字の真ん中に被せるアンダーライン */
+/* マーカー風アンダーライン（文字幅に合わせるよう修正） */
 h1::after {
   content: "";
   position: absolute;
-  
-  /* 💡 基準をbottom（下端）に変更しました。
-     この数値を調整することで、上下の位置を自由にコントロールできます */
-  bottom: 20px; 
-
-  /* 💡 ここがポイント！
-     マイナスの値にすることで、文字の左端よりもさらに左から線が始まります */
-  left: -15px; 
-  
-  /* 💡 左に飛び出させた分（15px）と、右側にも少し余裕を持たせるために、
-     全体の横幅を「文字幅（100%）＋30px」に広げます */
-  width: calc(100% + 30px);
-  
-  height: 15px;              /* 💡 マーカーらしい、しっかりとした太さ */
-  
-  /* 右端に向けて自然に消えていく、なだらかなグラデーション */
+  bottom: 8px; 
+  left: 10px; 
+  width: calc(100% - 20px);
+  height: 14px;
   background: linear-gradient(90deg, #1b5e20 0%, #86ff7b 70%, transparent 100%);
-  
-  /* 💡 両端をペン先のように少し丸める */
   border-radius: 20px;
-
-  /* 💡 線を文字の後ろ側に配置（これで文字が隠れません） */
   z-index: -1;
-  
-  /* 💡 ほんの少し不透明度を下げることで、より蛍光ペンらしい質感になります */
   opacity: 0.9; 
+
+  /* ★修正：影（シャドウ）を複数重ねて、上・下・左の3方向だけに2pxの白線をつけます（右側はゼロ） */
+  box-shadow: 
+    0 -1px 0 0 #ffffff,  /* 上側の白線 */
+    0  1px 0 0 #ffffff,  /* 下側の白線 */
+   -1px  0 0 0 #ffffff;  /* 左側の白線 */
 }
 
 /* セクション（歩数・食事） */
@@ -92,20 +111,50 @@ h2 {
 
 .input-row label {
   white-space: nowrap;
+  width: 120px; /* ★追加：ラベルの横幅を固定して入力欄の位置を揃える */
+  text-align: right;
 }
 
-/* 入力フォーム共通（画像に合わせた角丸とグレーの枠線） */
-input[type="number"] {
-  width: 90px;
-  height: 45px;
-  font-size: 1.3rem;
+/* ==========================================================================
+   入力フォーム共通（中央揃えの強化）
+   ========================================================================== */
+input[type="number"],
+input[type="time"] {
+  height: 42px;
+  font-size: 1.2rem;
   text-align: center;
-  border: 2px solid #a0a0a0;
-  border-radius: 15px;
-  margin: 0 8px;
+  background-color: #ffffff; /* ★修正：白色の背景 */
+  color: #888888;            /* ★修正：グレーの文字色 */
+  border: none;              /* ★修正：枠線はなし */
+  border-radius: 10px;       /* ★修正：綺麗なカプセル型 */
+  margin: 0 12px;
   outline: none;
   appearance: none;
-  -moz-appearance: textfield; /* 上下矢印を消す(Firefox) */
+}
+
+/* ★追加：ChromeやEdgeの type="time" の中身も強制的に中央揃えにする */
+input[type="time"]::-webkit-datetime-edit {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+}
+
+/* ★追加：歩数用のnumberと、時間用のtimeで横幅を個別に最適化 */
+input[type="number"] {
+  width: 90px;
+  appearance: textfield; /* Firefox含むモダンブラウザで矢印を消す記述 */
+}
+
+input[type="time"] {
+  width: 140px; /* 「00:00」が綺麗に収まるサイズ */
+  padding: 0;
+  background-color: #ffffff;
+}
+
+/* ★追加：iOSやChromeなどで表示される標準の時計アイコン（カレンダーアイコン）を消す */
+input[type="time"]::-webkit-calendar-picker-indicator {
+  display: none;
+  -webkit-appearance: none;
 }
 
 /* 上下矢印を消す(Chrome, Safari) */
@@ -115,27 +164,36 @@ input[type="number"]::-webkit-inner-spin-button {
   margin: 0;
 }
 
-/* 時間入力欄のコロン */
-.colon {
-  font-weight: bold;
-  margin: 0 2px;
+/* 上下矢印を消す(Firefox) */
+@-moz-document url-prefix() {
+  input[type="number"] {
+    appearance: textfield;
+  }
 }
 
-/* ボタンの配置とデザイン（水色のカプセル型） */
+/* ボタンの配置（修正） */
 .button-container {
   display: flex;
   justify-content: center;
-  margin-top: 40px;
+  
+  /* ★修正：下の枠線の上にぴったり配置する */
+  position: absolute;
+  bottom: -32px;            /* 下の枠線に半分重なるように下げる */
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10;
 }
 
 .btn-guest {
-  background-color: #9cd6f7; /* 画像に近い爽やかな水色 */
+  background-color: #9cd6f7; 
   color: #000000;
-  font-size: 2rem;
-  padding: 12px 45px;
-  border: 2px solid #a0a0a0;
-  border-radius: 50px; /* カプセル型 */
+  font-size: 1.8rem;
+  padding: 12px 50px;
+  border: 3px solid #7cbade; /* ★修正：画像に合わせた枠線 */
+  border-radius: 50px;       /* ★修正：完全なカプセル型 */
   cursor: pointer;
+  white-space: nowrap;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15); 
   transition: background-color 0.2s, transform 0.1s;
 }
 
@@ -145,4 +203,20 @@ input[type="number"]::-webkit-inner-spin-button {
 
 .btn-guest:active {
   transform: scale(0.98); /* クリックしたときに少し沈む */
+}
+
+/* ==========================================================================
+   画面上部のウェルカムメッセージ
+   ========================================================================== */
+.welcome-header {
+  position: absolute;
+  top: 40px;         /* 画面の一番上からの位置（お好みで調整してください） */
+  left: 50%;
+  transform: translateX(-50%); /* 画面の横方向の中央に配置 */
+  
+  font-size: 4rem;   /* 大きすぎず小さすぎないサイズ */
+  font-weight: bold;
+  color: #1b5e20;      /* タイトルのマーカー色と合わせた深めのグリーン */
+  white-space: nowrap; /* 画面が狭くなっても途中で改行させない */
+  text-align: center;
 }

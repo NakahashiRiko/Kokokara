@@ -253,7 +253,7 @@ async function updateDateDisplay() {
 }
 
 /**
- * カレンダーの左右矢印ボタンにクリックイベントを設定する関数（月切り替え版）
+ * カレンダーの左右矢印ボタンにクリックイベントを設定する関数（月切り替え版・日付維持）
  */
 function setupCalendarNavigation() {
     const navButtons = document.querySelectorAll('.nav-btn');
@@ -262,19 +262,39 @@ function setupCalendarNavigation() {
         const prevBtn = navButtons[0];
         const nextBtn = navButtons[1];
 
+        // 前の月へ
         prevBtn.addEventListener('click', () => {
-            currentDate.setDate(1); // 月を切り替えた時の日付バグを防ぐ安全処理
+            const currentDay = currentDate.getDate(); // 現在の日付（例: 14）を記憶
+            
+            // 1. 一旦、移動先（前月）の末尾の日付を確認する
+            const targetMonthLastDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), 0).getDate();
+            
+            // 2. もし元の「日」が、移動先の「最大日数」を超えていたら、移動先の月末に合わせる
+            //（例: 5月31日にいて、4月へ行く時は「4月30日」にする）
+            const safeDay = Math.min(currentDay, targetMonthLastDate);
+            
+            currentDate.setDate(safeDay); 
             currentDate.setMonth(currentDate.getMonth() - 1);
             updateDateDisplay();
         });
 
+        // 次の月へ
         nextBtn.addEventListener('click', () => {
-            currentDate.setDate(1); // 月を切り替えた時の日付バグを防ぐ安全処理
+            const currentDay = currentDate.getDate(); // 現在の日付（例: 14）を記憶
+            
+            // 1. 一旦、移動先（翌月）の末尾の日付を確認する
+            const targetMonthLastDate = new Date(currentDate.getFullYear(), currentDate.getMonth() + 2, 0).getDate();
+            
+            // 2. もし元の「日」が、移動先の「最大日数」を超えていたら、移動先の月末に合わせる
+            //（例: 8月31日にいて、9月へ行く時は「9月30日」にする）
+            const safeDay = Math.min(currentDay, targetMonthLastDate);
+            
+            currentDate.setDate(safeDay);
             currentDate.setMonth(currentDate.getMonth() + 1);
             updateDateDisplay();
         });
         
-        console.log("✅ カレンダー矢印ボタンの設定が完了しました（月切り替えモード）");
+        console.log("✅ カレンダー矢印ボタンの設定が完了しました（日付維持モード）");
     }
 }
 
@@ -374,5 +394,207 @@ window.addEventListener('pageshow', async (event) => {
     if (event.persisted) {
         console.log("🔄 キャッシュからの復帰を検知。カレンダーを再更新します。");
         await addDotsToCalendar();
+    }
+});
+// ==========================================================================
+// 💡 追加：AIによる1ヶ月データ分析機能
+// ==========================================================================
+
+/**
+ * 指定された年月の1日〜31日までのデータをFirestoreから集めて集計する関数
+ * @param {string} yearMonth "2026-05" のような形式
+ */
+async function fetchMonthlySummary(yearMonth) {
+    let totalSteps = 0;
+    let stepCountDays = 0;
+    let totalSleepMinutes = 0;
+    let sleepCountDays = 0;
+    let conditionScores = [];
+
+    // 1. 先に31日分のプロミス（リクエスト）の配列を作成する
+    const days = Array.from({ length: 31 }, (_, i) => i + 1);
+    
+    const promises = days.map(async (day) => {
+        const ddStr = String(day).padStart(2, '0');
+        const dateStr = `${yearMonth}-${ddStr}`;
+        try {
+            return await getDailyData(dateStr);
+        } catch (e) {
+            console.error(`データ取得エラー (${dateStr}):`, e);
+            return null;
+        }
+    });
+
+    // 2. すべての日のデータを一斉に（並列で）取得する
+    const allDaysData = await Promise.all(promises);
+
+    // 3. 取得した結果をまとめて集計する
+    allDaysData.forEach((data) => {
+        if (data) {
+            // 歩数の集計
+            if (data.walk !== undefined && data.walk !== null && Number(data.walk) > 0) {
+                totalSteps += Number(data.walk);
+                stepCountDays++;
+            }
+            // 睡眠時間の集計
+            if (data.sleep) {
+                const h = Number(data.sleep.hour) || 0;
+                const m = Number(data.sleep.minute) || 0;
+                if (h > 0 || m > 0) {
+                    totalSleepMinutes += (h * 60 + m);
+                    sleepCountDays++;
+                }
+            }
+            // 体調の集計
+            if (data.condition) {
+                conditionScores.push(Number(data.condition));
+            }
+        }
+    });
+
+    // 統計データの作成
+    const avgSteps = stepCountDays > 0 ? Math.round(totalSteps / stepCountDays) : 0;
+    const avgSleepMin = sleepCountDays > 0 ? Math.round(totalSleepMinutes / sleepCountDays) : 0;
+    const avgSleepStr = `${Math.floor(avgSleepMin / 60)}時間${avgSleepMin % 60}分`;
+    const avgCondition = conditionScores.length > 0 ? (conditionScores.reduce((a, b) => a + b, 0) / conditionScores.length).toFixed(1) : "記録なし";
+
+    return {
+        targetMonth: yearMonth,
+        recordedDays: conditionScores.length,
+        averageSteps: `${avgSteps}歩`,
+        averageSleep: avgSleepStr,
+        averageCondition: `${avgCondition} (5点満点)`
+    };
+}
+
+
+/**
+ * 【手元テスト用】Cloud Functionsを使わず、ブラウザから直接Gemini APIを叩く関数
+ */
+async function getAIAnalysis() {
+    const yyyy = currentDate.getFullYear();
+    const mm = String(currentDate.getMonth() + 1).padStart(2, '0');
+    const yearMonth = `${yyyy}-${mm}`;
+
+    // 1. 今月のデータを集計（既存の関数をそのまま使用）
+    const summaryData = await fetchMonthlySummary(yearMonth);
+
+    if (summaryData.recordedDays === 0) {
+        return `${yyyy}年${mm}月はまだ健康データが記録されていないようです。カレンダーに記録をつけてみましょう！`;
+    }
+
+    // 🔑 【あなたのAPIキー】ここにGoogle AI Studioで取得したキーを貼り付けてください
+    const API_KEY = "AQ.Ab8RN6JJxc2QXj3TlGMuR-chfsqEqGhBfI984uOW3OWOl7jRcw"; 
+    
+    // Gemini 2.5 Flash を呼び出すURL
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${API_KEY}`;
+
+    // 2. AIに渡すプロンプト（命令文）の作成
+    const promptText = `
+以下の健康データは、ユーザーの1ヶ月間のライフログを集計したものです。
+このデータを分析し、親しみやすく、かつ具体的でモチベーションが上がるような健康アドバイス（コメント）を200文字〜300文字程度で生成してください。
+
+【対象月】: ${summaryData.targetMonth}
+【記録日数】: ${summaryData.recordedDays} 日
+【平均歩数】: ${summaryData.averageSteps}
+【平均睡眠時間】: ${summaryData.averageSleep}
+【平均体調スコア】: ${summaryData.averageCondition} (5点満点)
+
+### 制約事項
+- ユーザーに寄り添う優しいトーンで話しかけてください。
+- 歩数、睡眠、体調の数値に具体的に触れて褒めたり、改善のアドバイスをしてください。
+- 明日からできる小さなアクションを提案してください。
+`;
+
+    // 3. GoogleのAPIへ直接リクエストを送信
+    const response = await fetch(url, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            contents: [{
+                parts: [{ text: promptText }]
+            }]
+        })
+    });
+
+    if (!response.ok) {
+        throw new Error(`Gemini APIエラー: ${response.status}`);
+    }
+
+    const result = await response.json();
+    
+    // 4. 生成されたテキストを抽出して返す
+    try {
+        return result.candidates[0].content.parts[0].text;
+    } catch (e) {
+        throw new Error("AIの返答データ構造の解析に失敗しました。");
+    }
+}
+
+// ==========================================================================
+// 💡 画面上のボタンと連動させる設定（コメント出力後、ユーザーの確認でロック解除版）
+// ==========================================================================
+document.addEventListener("DOMContentLoaded", () => {
+    const analyzeBtn = document.getElementById('analyze-btn');
+    const commentEl = document.getElementById('ai-comment');
+
+    if (analyzeBtn && commentEl) {
+        commentEl.style.fontSize = "20px"; 
+        commentEl.style.lineHeight = "1.6"; 
+
+        // 💡 解除ボタンを動的に作るためのコンテナを準備
+        const container = commentEl.parentElement;
+        
+        // 💡 解除ボタンのHTML要素を作成（最初は非表示）
+        const unlockBtn = document.createElement('button');
+        unlockBtn.id = 'unlock-btn';
+        unlockBtn.textContent = '確認しました（画面のロックを解除） 🔓';
+        unlockBtn.style.display = 'none'; // 最初は隠しておく
+        container.appendChild(unlockBtn);
+
+        // --- ① 「分析する」ボタンを押したときの処理 ---
+        analyzeBtn.addEventListener('click', async () => {
+            analyzeBtn.disabled = true; // 分析ボタンと画面全体をロック
+            unlockBtn.style.display = 'none'; // 解除ボタンは隠す
+            commentEl.innerHTML = "<span style='color: #666; font-size: 18px;'>AIが今月のデータを集計して分析中... 🏃‍♂️💨</span>";
+            
+            try {
+                const advice = await getAIAnalysis();
+                commentEl.textContent = advice;
+                
+                // ✨ 成功したら「解除ボタン」をニュッと表示させる
+                unlockBtn.style.display = 'block';
+                console.log("✅ AI分析完了。ユーザーの確認ボタンを表示しました。");
+
+            } catch (error) {
+                console.error("AI分析エラー詳細:", error);
+                let errorMessage = error.message || "原因不明のエラー";
+                
+                commentEl.innerHTML = `
+                    <div style="color: #d32f2f; background: #ffebee; padding: 10px; border-radius: 4px; border: 1px solid #ffcdd2; font-size: 16px;">
+                        <strong>ごめんなさい、分析に失敗しました。</strong><br>
+                        <span style="font-size: 0.9em; color: #555;">
+                            エラー内容: <code style="background: #fff; padding: 2px 4px; border-radius: 3px; font-family: monospace;">${errorMessage}</code>
+                        </span>
+                    </div>
+                `;
+
+                // ⚠️ エラーで失敗した時だけは自動で元の状態（ボタン押せる）に戻す
+                analyzeBtn.disabled = false;
+            }
+        });
+
+        // --- ② 新しく作った「解除ボタン」を押したときの処理 ---
+        unlockBtn.addEventListener('click', () => {
+            // ✨ 分析ボタンの無効化を解除 ➔ これによりCSSの画面ロックも自動で全解除されます！
+            analyzeBtn.disabled = false; 
+            
+            // 自分自身（解除ボタン）は用が済んだので再び隠す
+            unlockBtn.style.display = 'none'; 
+            
+            console.log("🔓 ユーザーが確認したため、画面のロックを解除しました。");
+        });
     }
 });

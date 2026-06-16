@@ -1,78 +1,90 @@
+/**
+ * ==========================================================================
+ * ココカラ - ライフログアプリ スタイルシート
+ * ==========================================================================
+ * [目次]
+ * 1. リセット ＆ ベース設定 (Reset & Base)
+ * 2. ヘッダーエリア (Header - Title & Memo)
+ * 3. メインレイアウト (Main Layout)
+ * 4. 左側：カレンダーセクション (Left - Calendar)
+ * 5. 右側：ライフログカード共通 (Right - Base Cards)
+ * 6. 右側：体調カード ＆ 顔アイコン (Condition Card - Face)
+ * 7. 右側：体調吹き出しポップアップ (Condition Card - Popup)
+ * 8. 下部：AIアドバイスエリア (Bottom - AI Advice)
+ * 9. アプリ状態管理：画面ロック演出 (App States - UI Lock)
+ * 10. アニメーション設定 (Animations)
+ * ==========================================================================
+ */
+
 /* ==========================================================================
-   1. リセット・全体設定（画面全体の土台づくり）
+   1. リセット ＆ ベース設定
    ========================================================================== */
 * {
     margin: 0;
     padding: 0;
-    box-sizing: border-box; /* padding（内側の余白）を足しても全体の幅が変わらないように設定 */
+    box-sizing: border-box; /* paddingを足しても全体の幅が変わらないように設定 */
 }
 
 body {
     font-family: "Hiragino Kaku Gothic ProN", "Meiryo", sans-serif;
-    background-color: #f0f0f0; /* アプリの外側の背景色（薄いグレー） */
+    background-color: #f0f0f0; /* アプリ外側の背景色（薄いグレー） */
     display: flex;
     justify-content: center;   /* アプリ全体を画面の左右中央に寄せる */
     padding: 20px;
+    min-height: 100vh;         /* 画面の縦いっぱいに広げる */
 }
 
-/* アプリケーションの一番外側の白い大きな枠（1280px固定） */
+/* アプリケーションの一番外側の白い大きな枠 */
 .app {
     width: 1280px;
     background-color: #fff;
     min-height: 800px;
-    box-shadow: 0 0 10px rgba(0,0,0,0.1); /* 外枠のうっすらとした影 */
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); /* 外枠のうっすらとした影 */
     display: flex;
-    flex-direction: column;    /* ヘッダー(上)とメイン(下)を縦に並べる */
+    flex-direction: column;    /* コンテンツを縦に並べる */
 }
 
+
 /* ==========================================================================
-   2. 上部エリア（ヘッダー・メモ入力欄）
+   2. ヘッダーエリア（タイトル ＆ メモ入力欄）
    ========================================================================== */
-/* タイトルとメモ欄を横並びにするヘッダー外枠 */
 .top {
     display: flex;
-    align-items: center;     /* 縦方向の真ん中で綺麗に揃える */
-    padding: 20px 50px;      /* ヘッダー内の余白（上下20px、左右50px） */
+    align-items: center;       /* 縦方向の真ん中で揃える */
+    padding: 20px 50px;        /* 内側の余白 */
     border-bottom: 2px solid #eee; /* 下側の区切り線 */
 }
 
 /* 「ココカラ」のロゴタイトル */
 .title {
     font-size: 52px;
-    font-weight: 900;        /* 文字を最高に太く */
-    margin-right: 60px;      /* メモ欄との間のスキマ */
-    letter-spacing: 6px;    /* 文字と文字の間隔を少し広げておしゃれに */
-    line-height: 1;          /* 上下の無駄な余白をカット */
-
-    /* 💡 ポイント1：文字を綺麗なグラデーションにする（緑から青緑への爽やかなグラデ） */
-    background: linear-gradient(135deg, #1b5e20 0%, #388e3c 50%, #00796b 100%);
-    -webkit-background-clip: text; /* 古いChrome/Safari用 */
-    background-clip: text;         /* ✨標準コード（これを足すとエディタのエラーが消えます） */
-    -webkit-text-fill-color: transparent; /* 文字の中身を透明にしてグラデーションをくり抜く */
-    
-    /* 💡 ポイント2：文字の下におしゃれな装飾ラインを引くための準備 */
+    font-weight: 900;
+    margin-right: 60px;        /* メモ欄との間のスキマ */
+    letter-spacing: 6px;       /* 文字間隔を少し広げておしゃれに */
+    line-height: 1;
     position: relative;
-    padding-bottom: 8px;        /* 文字と下線の間のスキマ */
+    padding-bottom: 8px;
+
+    /* 文字のグラデーション演出 */
+    background: linear-gradient(135deg, #1b5e20 0%, #388e3c 50%, #00796b 100%);
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent; /* 文字の中身を透明にしてグラデーションをくり抜く */
 }
 
-/* 💡 ポイント3：タイトルの下に引く、おしゃれなデザイン下線（線の左側だけ丸く、右側に向けて細くなる） */
-/* タイトルの下に引くデザイン下線（文字幅ぴったり版） */
+/* タイトルの下に引くデザイン下線（右端に向けて自然に消えていく） */
 .title::after {
     content: "";
     position: absolute;
     bottom: 0;
     left: 0;
-    
-    /* 💡 変更ポイント：幅を 60px から「100%（文字の端から端まで）」に変更 */
     width: 100%; 
-    height: 4px;                /* 線の太さ */
-    
-    /* 💡 右端に向けて自然に消えていく、なだらかなグラデーションに変更 */
+    height: 4px;
     background: linear-gradient(90deg, #1b5e20 0%, #86ff7b 70%, transparent 100%);
     border-radius: 2px;
 }
 
-/* メモ入力欄を乗せる土台（横いっぱいに広げる） */
+/* メモ入力欄の土台（横いっぱいに広げる） */
 .memo-area {
     flex-grow: 1;
 }
@@ -83,234 +95,216 @@ body {
     height: 120px;
     padding: 15px 20px;
     font-size: 20px;
-    line-height: 1.6;        /* 改行したときに見やすい行間 */
+    line-height: 1.6;
     border: 2px solid #ddd;
-    border-radius: 12px;     /* 角を丸くする */
+    border-radius: 12px;
     background-color: #fafafa;
-    resize: vertical;        /* ユーザーがマウスで縦方向にだけサイズを伸ばせるようにする */
-    font-family: inherit;    /* 入力文字のフォントをアプリ全体と合わせる */
+    resize: vertical;          /* 縦方向にだけサイズ変更を許可 */
+    font-family: inherit;      /* フォントをアプリ全体と統一 */
+    transition: border-color 0.2s, background-color 0.2s;
 }
 
-/* メモ帳をクリックして文字を入力している最中の見た目 */
 .memo-input:focus {
-    outline: none;           /* ブラウザ標準の青い枠線を消す */
-    border-color: #aaa;      /* 枠線を少し濃いグレーにする */
-    background-color: #fff;  /* 背景を真っ白にして見やすくする */
+    outline: none;             /* 標準の青い枠線を消す */
+    border-color: #aaa;        /* 枠線を少し濃いグレーに */
+    background-color: #fff;    /* 背景を真っ白にして見やすく */
 }
+
 
 /* ==========================================================================
-   3. メイン構成 ＆ 左側（カレンダー）エリア（縦長＆大粒ドット視認性アップ版）
+   3. メインレイアウト
    ========================================================================== */
-/* カレンダー(左)とカード(右)を横並びにするための大枠 */
 .main {
     display: flex;
-    flex-grow: 1;
-    padding: 30px;           /* メインエリアの内側の余白 */
+    flex: 1;                   /* 画面の残りの高さをすべて使い切る */
+    padding: 30px;
 }
 
-/* カレンダーエリア全体の横幅を大幅に拡大 */
+
+/* ==========================================================================
+   4. 左側：カレンダーセクション
+   ========================================================================== */
 .left {
-    width: 500px;            /* 💡 【変更】400px ➔ 750px に拡大！ */
-    margin-right: 50px;      /* 右側カードエリアとのスキマを少し広げて調整 */
+    width: 500px;              /* 横幅をしっかり確保 */
+    margin-right: 50px;        /* 右側カードエリアとの間隔 */
 }
 
-/* 「◀︎ 2026/05/15 ▶︎」のナビゲーション部分 */
+/* 日付ナビゲーション（◀︎ 2026/05/15 ▶︎） */
 .date-nav {
     display: flex;
     align-items: center;
-    justify-content: space-between; /* 左右のボタンを両端にパッと振り分ける */
+    justify-content: space-between;
     margin-bottom: 20px;
 }
 
-/* 日付を切り替える ◀︎ と ▶︎ のボタン（左右対称・ズレ完全修正版） */
+/* 月切り替えボタン（左右対称・ズレ完全修正版） */
 .date-nav .nav-btn {
-    cursor: pointer;         /* マウスを乗せたら指マークにする */
-    
-    font-size: 22px;         /* 💡 矢印のフォントサイズを 22px に微調整 */
-    width: 45px;             /* ボタンの横幅 */
-    height: 45px;            /* ボタンの縦幅（正方形） */
-    
-    /* ボタンを上下左右の真ん中にきれいに配置する */
-    display: inline-flex;    /* 💡 確実に横並びブロックとして扱う */
+    cursor: pointer;
+    font-size: 22px;
+    width: 45px;
+    height: 45px;
+    display: inline-flex;
     align-items: center;
     justify-content: center;
     
-    /* 💡 【超重要】文字のカタチによるズレを強制リセットする魔法の3行 */
-    font-family: "Courier New", Courier, monospace; /* 💡 左右の文字幅を強制的に同じにするフォント */
-    line-height: 1;          /* 💡 上下の余計な隙間をゼロにする */
-    text-align: center;      /* 💡 文字を中央に */
+    /* 文字の形状によるズレを強制リセットする等幅フォント指定 */
+    font-family: "Courier New", Courier, monospace;
+    line-height: 1;
+    text-align: center;
     
-    /* ボタンのクッキリした縁取り設定 */
-    border: 2px solid #333333; /* カレンダーの枠線に合わせた濃いグレーの縁取り */
-    border-radius: 35%;        /* 綺麗な「正円」のボタンにする */
-    background-color: #ffffff; /* ボタンの中身は白 */
-    color: #333333;            /* 矢印の色 */
+    border: 2px solid #333333;
+    border-radius: 35%;
+    background-color: #ffffff;
+    color: #333333;
     
-    /* 動きを滑らかにするアニメーション設定 */
     transition: transform 0.2s ease, background-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
 }
 
-/* 💡 【変更】矢印ボタンにマウスを乗せたときの演出（ホバー時） */
 .date-nav .nav-btn:hover {
-    transform: scale(1.1);   /* ほんの少しだけピョコッと大きく */
-    background-color: #333333; /* 💡 背景を濃いグレーにして色を反転！ */
-    color: #ffffff;            /* 💡 中の矢印を白にして見やすく */
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15); /* 影を少し強めて浮遊感を出す */
+    transform: scale(1.1);
+    background-color: #333333; /* 背景色と文字色を反転 */
+    color: #ffffff;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
 }
 
-/* カレンダーのテーブル（表）本体 */
+/* カレンダーテーブル（表）本体 */
 .calendar {
     width: 100%;
     border-collapse: collapse; /* 隣り合う枠線を1本にまとめる */
-    table-layout: fixed;       /* すべてのマスの横幅を完全に均等に固定する魔法 */
-    
-    /* 💡 【新設】カレンダーの一番外側をクッキリとした黒い太線で囲む */
+    table-layout: fixed;       /* マスの横幅を完全に均等固定 */
     border: 2.5px solid #c8c8c8; 
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05); /* うっすら影をつけて立体感をプラス */
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
 }
 
-/* カレンダーの曜日（th）のマス目 */
+/* 曜日（th）のスタイル */
 .calendar th {
-    border: 1px solid #eee;    /* 横の境界線は細いグレーのまま */
-    /* 💡 【変更】曜日の下側（日付との境目）だけをクッキリした黒い太線にする */
-    border-bottom:2.1px solid #c8c8c8; 
-    
+    border: 1px solid #eee;
+    border-bottom: 2.1px solid #c8c8c8; /* 日付との境目を太線化 */
     text-align: center;
-    padding: 14px 0;           /* 💡 少しだけ上下の幅を広げて存在感をアップ */
+    padding: 14px 0;
     font-size: 16px;
     font-weight: bold;
-    background-color: #fcfcfc; /* 💡 曜日エリアにほんのり背景色をつけて区切る */
+    background-color: #fcfcfc;
 }
 
-/* カレンダーの日付（td）のマス目 */
+/* 日付（td）のスタイル */
 .calendar tbody td {
-    border: 1px solid #eee;   /* 薄いグレーの格子線 */
-    text-align: center;       /* 文字を真ん中寄せ */
-    padding: 0;               /* 型崩れ防止：tdのパディングを0にして内側のwrapperに任せる */
-    height: 85px;             /* 💡 【変更】高さを 55px ➔ 85px に大幅に引き伸ばし（縦長化） */
-    background-color: #fff;   /* 基本の背景色は白 */
+    border: 1px solid #eee;
+    text-align: center;
+    padding: 0;
+    height: 85px;              /* 高さを引き伸ばして縦長化 */
+    background-color: #fff;
 }
 
-/* 日曜日の設定（1番目の列：th と td） */
-.calendar th:nth-child(1) {
-    color: #e53935;           /* 曜日の文字：赤 */
-    background-color: #ffebee; /* マスの背景：淡い赤（ピンク） */
+/* 土日のカラー設定（列全体の背景と文字） */
+.calendar th:nth-child(1), .calendar tbody td:nth-child(1) {
+    color: #e53935;            /* 日曜：赤 */
+    background-color: #ffebee;
 }
-.calendar tbody td:nth-child(1) {
-    color: #e53935;           /* 日付の文字：赤 */
-    background-color: #ffebee; /* マスの背景：淡い赤（ピンク） */
-}
-
-/* 土曜日の設定（7番目の列：th と td） */
-.calendar th:nth-child(7) {
-    color: #1e88e5;           /* 曜日の文字：青 */
-    background-color: #e3f2fd; /* マスの背景：淡い青（ライトブルー） */
-}
-.calendar tbody td:nth-child(7) {
-    color: #1e88e5;           /* 日付の文字：青 */
-    background-color: #e3f2fd; /* マスの背景：淡い青（ライトブルー） */
+.calendar th:nth-child(7), .calendar tbody td:nth-child(7) {
+    color: #1e88e5;            /* 土曜：青 */
+    background-color: #e3f2fd;
 }
 
-/* 数字と丸を縦に綺麗に並べるためのボックス設定 */
+/* マス内のコンテンツ配置用ラッパー */
 .calendar tbody td .date-wrapper {
     display: flex;
-    flex-direction: column;   /* 縦に並べる */
-    align-items: center;      /* 左右の真ん中に寄せる */
-    justify-content: space-between; /* 💡 【変更】数字と丸を上下の端に程よく離して配置 */
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between; /* 数字と丸を上下に程よく離す */
     width: 100%;
     height: 100%;
-    padding: 10px 0;          /* 💡 【新設】マス内の上下に心地よいスキマを作る */
+    padding: 10px 0;
 }
 
-/* 日付の数字自体のスタイル */
 .date-num {
     font-size: 18px;
     line-height: 1;
 }
 
-/* 💡 【大幅変更】4つの大粒の丸を「2×2（田の字型）」に並べるコンテナ */
+/* 4つのドットマーカーを並べるコンテナ（2×2 田の字型） */
 .dot-container {
     display: grid;
-    grid-template-columns: repeat(2, min-content); /* 横に2個 */
-    grid-template-rows: repeat(2, min-content);    /* 縦に2個 */
-    justify-content: center; /* 2×2の塊を左右中央に配置 */
-    align-content: center;   /* 2×2の塊を上下中央に配置 */
-    gap: 6px 8px;            /* 💡 行の間隔を6px、列の間隔を8pxにして綺麗な長方形（または正方形）に */
+    grid-template-columns: repeat(2, min-content);
+    grid-template-rows: repeat(2, min-content);
+    justify-content: center;
+    align-content: center;
+    gap: 6px 8px;              /* 縦横の間隔を美しく微調整 */
     width: 100%;
-    height: auto;            /* 高さは自動計算に任せる */
-    margin-bottom: 4px;      /* マスの底辺との間の微調整 */
+    height: auto;
+    margin-bottom: 4px;
 }
 
-/* 💡 【サイズアップ】2×2になったことで、さらに丸を大きく（12px ➔ 14px）できます！ */
+/* ドットの共通デザイン（14pxの大粒サイズ） */
 .dot-marker {
-    width: 14px;              /* 💡 さらに見やすく14pxに拡大 */
-    height: 14px;             /* 💡 さらに見やすく14pxに拡大 */
+    width: 14px;
+    height: 14px;
     border-radius: 50%;
-    background-color: transparent; /* データがないときは透明 */
+    background-color: transparent; /* データがないときは非表示（透明） */
     transition: background-color 0.2s ease, transform 0.2s ease;
 }
-/*FFE771 856404 7091FE 0d47a1 F66C6C b71c1c 86FF7B 1b5e20
-/* データがある項目（active）だけ、それぞれのカードと同じ色をクッキリ点灯 */
-.dot-marker.dot-meal.active {
-    background-color: #FFE771 !important; /* 食事：黄色 */
-    border: 1px solid #947200;            /* 色をクッキリ見せるための細いフチ線 */
-}
 
-.dot-marker.dot-sleep.active {
-    background-color: #7091FE !important; /* 睡眠：青色 */
-    border: 1px solid #947200;            /* 色をクッキリ見せるための細いフチ線 */
+/* データ存在（active）時のカラー点灯設定 */
+.dot-marker.active {
+    border: 1px solid #947200; /* クッキリ見せるための細いフチ線 */
 }
+.dot-marker.dot-meal.active      { background-color: #FFE771 !important; } /* 食事：黄 */
+.dot-marker.dot-sleep.active     { background-color: #7091FE !important; } /* 睡眠：青 */
+.dot-marker.dot-walk.active      { background-color: #F66C6C !important; } /* 歩数：赤 */
+.dot-marker.dot-condition.active { background-color: #86FF7B !important; } /* 体調：緑 */
 
-.dot-marker.dot-walk.active {
-    background-color: #F66C6C !important; /* 歩数：赤色 */
-    border: 1px solid #947200;            /* 色をクッキリ見せるための細いフチ線 */
-}
-
-.dot-marker.dot-condition.active {
-    background-color: #86FF7B !important; /* 体調：緑色 */
-    border: 1px solid #947200;            /* 色をクッキリ見せるための細いフチ線 */
-}
-
-/* 今日の日付のマス目を目立たせる設定 */
+/* 「今日」の日付マスの強調 */
 .today {
-    background-color: #dddddd !important; /* 紫系のお好みの色を維持 */
+    background-color: #dddddd !important;
     font-weight: bold;
-    color: #2d2d2d !important;            /* 文字色を維持 */
+    color: #2d2d2d !important;
 }
-
-/* 今日の日付かつデータもある日の丸の演出 */
 .today .dot-marker.active {
-    transform: scale(1.1);    /* 今日のマスの丸だけさらに存在感を出す */
+    transform: scale(1.1);     /* 今日のドットはさらに存在感をアップ */
 }
 
-/* 他月（先月・来月）の日付の文字 */
+/* 先月・来月（他月）のマス */
 .other-month {
     color: #ccc !important;
-    background-color: #fafafa !important; /* 他月のマスは土日でもグレーを優先 */
+    background-color: #fafafa !important; /* 土日カラーよりグレーを優先 */
 }
+
 
 /* ==========================================================================
-   4. 右側エリア（基本Grid・共通カード仕様）
+   5. 右側：ライフログカード共通仕様
    ========================================================================== */
-/* 4つのライフログカードを「2列 × 2行」で等間隔に並べる設定 */
+/* 4つのカードを配置するグリッド（2列 × 2行） */
 .right {
-    flex-grow: 1;            /* 残りの右側スペースをすべて使い切る */
+    flex-grow: 1;
     display: grid;
-    grid-template-columns: 1fr 1fr; /* 横に50%ずつ、2等分で並べる */
-    grid-template-rows: 1fr 1fr;    /* 縦に50%ずつ、2等分で並べる */
-    gap: 20px;               /* カードとカードの間のスキマ */
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr 1fr;
+    gap: 20px;
 }
 
-/* 食事・睡眠・歩数・体調の全カード共通のベースデザイン */
-.card {
-    border-radius: 15px;     /* カードの角を丸める */
-    padding: 20px;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.1); /* カードの下側の軽い影 */
+/* カードを包むaタグ（リンク）の最適化 */
+.right > .card-link {
     display: flex;
-    flex-direction: column;  /* カードの中身（タイトルとデータ）を縦に並べる */
+    text-decoration: none;     /* 文字の下線を消す */
+    color: inherit;            /* 文字が青色に変わるのを防ぐ */
+}
+
+.right > .card-link .card {
+    width: 100%;
+    height: 100%;
+    cursor: pointer;
+}
+
+/* 全カード共通のベースデザイン */
+.card {
+    border-radius: 15px;
+    padding: 20px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    display: flex;
+    flex-direction: column;
     font-size: 22px;
     
-    /* カード内の文字デザイン：白文字にして、文字の周りを黒いフチで囲む設定 */
+    /* 白文字化 ＆ 視認性を高めるクッキリとした黒フチ取り（文字シャドウ） */
     color: #ffffff !important;
     text-shadow: 
         -1px -1px 0 #000,  1px -1px 0 #000,
@@ -318,216 +312,182 @@ body {
         -1px  0px 0 #000,  1px  0px 0 #000,
          0px -1px 0 #000,  0px  1px 0 #000;
         
-    /* カードが浮き上がったり、引っ込んだりするアニメーションを滑らかにする */
     transition: transform 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease;
 }
 
-/* カードの中にあるタイトル文字（食事、睡眠、歩数、体調） */
-.card .card-title, .card h2, .card h3 { 
-    font-weight: 900;
-    font-size: 32px;         /* タイトルなので一番大きく */
-    margin-bottom: 15px;     /* タイトルの下のスキマ */
+/* ホバー時のカード浮き上がり演出（リンクカード ＆ 体調カード共通） */
+.right > .card-link:hover .card,
+.card.condition:hover {
+    opacity: 0.9;
+    transform: translateY(-4px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
 }
 
-/* カードの中にあるメインのデータ数値（「朝：済」や「8,500歩」など） */
+/* カード内のタイトル文字 */
+.card .card-title, .card h2, .card h3 { 
+    font-weight: 900;
+    font-size: 32px;
+    margin-bottom: 15px;
+}
+
+/* カード内のメインデータ数値 */
 .card p, .card span {
     font-size: 35px;
     font-weight: bold;
 }
 
-/* 各カードの固有の背景色と文字のフチの中の色 */
-.meal { background-color: #FFE771; color: #856404; }      /* 食事：黄色 */
-.sleep { background-color: #7091FE; color: #0d47a1; }     /* 睡眠：青色 */
-.steps { background-color: #F66C6C; color: #b71c1c; }     /* 歩数：赤色 */
-.condition { background-color: #86FF7B; color: #1b5e20; } /* 体調：緑色 */
+/* 各カードの固有カラー定義（背景色 / 文字フチの内側の色） */
+.meal      { background-color: #FFE771; color: #856404; } /* 食事：黄 */
+.sleep     { background-color: #7091FE; color: #0d47a1; } /* 睡眠：青 */
+.steps     { background-color: #F66C6C; color: #b71c1c; } /* 歩数：赤 */
+.condition { background-color: #86FF7B; color: #1b5e20; } /* 体調：緑 */
+
 
 /* ==========================================================================
-   5. 画面遷移（リンク化カード）の最適化設定
+   6. 右側：体調カード ＆ 顔アイコン
    ========================================================================== */
-/* 食事・睡眠・歩数カードを包んでいる「aタグ（リンク枠）」の設定 */
-.right > .card-link {
-    display: flex;
-    text-decoration: none;   /* 【超重要】文字の下の下線を絶対に消す設定 */
-    color: inherit;          /* リンク文字が勝手に青色になるのを防ぐ */
-}
-
-/* リンク枠の中で、カードが縦横100%いっぱいに引き伸ばされて収まるようにする */
-.right > .card-link .card {
-    width: 100%;
-    height: 100%;
-    cursor: pointer;
-}
-
-/* 食事・睡眠・歩数カードにマウスを乗せたときのホバー演出 */
-.right > .card-link:hover .card {
-    opacity: 0.9;            /* カードをほんの少しだけ透明にする */
-    transform: translateY(-4px); /* カードをごと上に4pxピョコッと浮き上がらせる */
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15); /* 浮いた分、影を強く深くする */
-}
-
-/* ==========================================================================
-   6. 体調カード：本体・顔アイコン描画（HTML/CSS完結版）
-   ========================================================================== */
-/* 体調カード自体の基本設定 */
 .card.condition {
-    position: relative;      /* 吹き出し（ポップアップ）を上に乗せるための基準点にする */
+    position: relative;        /* 吹き出しの配置基準点 */
     outline: none;
 }
 
-/* 体調カードにマウスを乗せたとき（他のカードと全く同じようにカードごと浮かせる） */
-.card.condition:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
-}
-
-/* カードがホバーで浮いたときに、上に乗る吹き出しの位置計算が狂わないように固定する設定 */
 .card.condition .card-content {
-    position: static;
+    position: static;          /* 吹き出しの位置計算が狂うのを防ぐ */
 }
 
-/* 仕掛け用の「開閉チェックボックス」と「5段階ラジオボタン」を画面から完全に隠す */
-.bubble-toggle-input, .cond-radio {
-    display: none;
-}
-
-/* style.css の「6. 体調カード」セクションの該当箇所を修正 */
-
-/* タイトルと顔アイコンを包む、クリックできるエリアの設定 */
+/* クリック判定用のトリガー枠 */
 .face-trigger {
     cursor: pointer;
-    display: block;      /* 💡 元のシンプルなブロック形式に戻します */
+    display: block;
     width: 100%;
     height: 100%;
 }
 
-/* 体調カードの中にある「まるい顔の輪郭」 */
+/* まるい顔の輪郭 */
 .face-icon {
     width: 120px;       
     height: 120px;      
     border: 4px solid #1b5e20; 
     border-radius: 50%;
     position: relative;
-    
-    /* 💡 【解決策】上下左右の余白をブラウザに自動計算させ、文字に影響を与えず中央配置 */
-    margin: 20px auto 0 auto; /* 上側に20pxの隙間を作り、左右は自動（auto）でど真ん中に固定 */
-    
+    margin: 20px auto 0 auto;  /* 文字に影響を与えずど真ん中へ自動配置 */
     transition: background-color 0.3s, transform 0.2s ease, box-shadow 0.2s ease;
 }
 
-/* 顔の中の「目（左右共通）」のパーツ */
-.eye {
-    width: 14px;        /* 10px ➔ 14px に拡大 */
-    height: 14px;       /* 10px ➔ 14px に拡大 */
+/* 顔の中の「目」（左右共通ベース） */
+.face-icon .eye {
+    width: 14px;
+    height: 14px;
     background-color: #1b5e20;
     border-radius: 50%;
     position: absolute;
-    top: 35px;          /* 顔が大きくなった分、少し下に下げる（25px ➔ 35px） */
+    top: 35px;
     transition: all 0.2s;
 }
-.eye-left { left: 30px; }     /* 左側の位置を調整（20px ➔ 30px） */
-.eye-right { right: 30px; }   /* 右側の位置を調整（20px ➔ 30px） */
+.face-icon .eye-left  { left: 30px; }
+.face-icon .eye-right { right: 30px; }
 
-/* 顔の中の「口」のパーツ（標準は笑顔） */
-.mouth {
-    width: 60px;        /* 40px ➔ 60px に横幅を拡大 */
-    height: 30px;       /* 20px ➔ 30px に縦幅を拡大 */
-    border-bottom: 4px solid #1b5e20; /* 口の線も少し太く */
+/* 顔の中の「口」（標準：笑顔） */
+.face-icon .mouth {
+    width: 60px;
+    height: 30px;
+    border-bottom: 4px solid #1b5e20;
     position: absolute;
-    bottom: 25px;       /* 下からの位置を調整（15px ➔ 25px） */
-    left: 28px;         /* 真ん中に来るように調整（17px ➔ 28px） */
+    bottom: 25px;
+    left: 28px;
     transition: all 0.2s;
 }
+
 
 /* ==========================================================================
-   7. 体調カード：吹き出し（ポップアップ）関連
+   7. 右側：体調吹き出しポップアップ
    ========================================================================== */
-/* クリックした時に上にフワッと現れる「今日の体調は？」の吹き出し本体 */
+/* 開閉・選択用のHTMLチェックボックス/ラジオボタンを完全隠蔽 */
+.bubble-toggle-input, .cond-radio {
+    display: none;
+}
+
+/* フワッと現れる吹き出し本体 */
 .popup-bubble {
     position: absolute;
-    bottom: 115%;            /* カードの少し上に配置 */
+    bottom: 115%;              /* カードの少し上に浮かせる */
     left: 50%;
-    transform: translateX(-50%) scale(0.9); /* 真ん中に寄せつつ、最初は少し小さくしておく */
+    transform: translateX(-50%) scale(0.9);
     width: 340px;
-    background-color: #ffffff; /* 吹き出しの中身は真っ白 */
+    background-color: #ffffff;
     border: 2px solid #1b5e20;
     border-radius: 18px;
     padding: 20px;
-    box-shadow: 0 12px 30px rgba(0,0,0,0.15); /* 吹き出し特有の強い浮き出し影 */
-    z-index: 10;             /* カレンダー等より手前に表示させる */
-    opacity: 0;              /* 最初は透明にして非表示にしておく */
-    pointer-events: none;    /* 透明な間はマウスイベントを完全に無視する */
-    transition: transform 0.2s ease, opacity 0.2s ease; /* 開閉時のフワッとしたアニメーション */
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.15);
+    z-index: 10;
+    opacity: 0;                /* 初期状態は非表示 */
+    pointer-events: none;      /* 非表示時はマウスをすり抜けさせる */
+    transition: transform 0.2s ease, opacity 0.2s ease;
 }
 
-/* 吹き出しの下についている「三角形の突起（下矢印）」 */
+/* 吹き出し下部の三角突起 */
 .popup-bubble::after {
     content: "";
     position: absolute;
-    top: 100%;               /* 吹き出しの底辺にくっつける */
+    top: 100%;
     left: 50%;
     transform: translateX(-50%);
     border-width: 12px;
     border-style: solid;
-    /* 上側のボーダーだけに色をつけて、下向きの三角を作る */
     border-color: #1b5e20 transparent transparent transparent;
 }
 
-/* ⚠️ 吹き出しの中の文字だけ、カード全体の「白文字＆黒フチ取り」の設定をリセットして元に戻す */
+/* 吹き出し内文字の共通リセット（白文字・黒フチの強制リセット） */
 .popup-bubble, .popup-bubble * {
-    color: #1b5e20 !important;   /* 文字色を綺麗な濃い緑に戻す */
-    text-shadow: none !important; /* 黒いフチ取りを完全に消去 */
+    color: #1b5e20 !important;   /* テキストカラーを濃い緑に */
+    text-shadow: none !important; /* フチ取りをリセット */
     font-size: 16px;
     font-weight: normal;
 }
 
-/* 吹き出しの中のタイトル（「今日の体調は？」の文字） */
 .bubble-title {
     font-size: 16px;
-    font-weight: bold !important; /* 太字にする */
+    font-weight: bold !important;
     text-align: center;
-    margin-bottom: 15px;     /* 絵文字ボタンとのスキマ */
+    margin-bottom: 15px;
 }
 
-/* 5つの絵文字ボタン（😆🙂😐🙁😢）を横一列に綺麗に並べる枠 */
+/* 5つの絵文字ボタンの横並び枠 */
 .status-buttons {
     display: flex;
     justify-content: space-between;
-    gap: 10px;               /* ボタン同士のスキマ */
+    gap: 10px;
 }
 
-/* 絵文字が入っている丸四角いボタンの土台 */
+/* 絵文字ボタンの土台 */
 .status-label {
-    flex: 1;                 /* 5つのボタンが均等な横幅になるように引き伸ばす */
+    flex: 1;
     height: 55px;
-    font-size: 40px !important; /* 絵文字を大きく表示 */
-    background: #f4fbf4;     /* 非常に薄い緑色の背景 */
+    font-size: 40px !important;
+    background: #f4fbf4;
     border: 2px solid #c8e6c9;
     border-radius: 12px;
     cursor: pointer;
     display: flex;
     align-items: center;
-    justify-content: center; /* 絵文字をボタンのど真ん中に配置 */
+    justify-content: center;
     transition: all 0.15s ease;
 }
 
-/* 絵文字ボタンにマウスを乗せたときの演出（ピョコッと浮き上がらせる） */
 .status-label:hover {
     background-color: #c8e6c9;
     border-color: #a5d6a7;
     transform: translateY(-4px);
 }
 
-/* ==========================================================================
-   8. ラジオボタン・チェックボックス連動演出（開閉・表情変化のコア機能）
-   ========================================================================== */
-/* 💡 隠しチェックボックスにチェックが入ったら、吹き出しをクッキリ表示する設定 */
+/* [仕掛け] チェックボックス連動：吹き出しの開閉挙動 */
 .bubble-toggle-input:checked ~ .card-content .popup-bubble {
-    opacity: 1;              /* 透明度をなくして見えるようにする */
-    pointer-events: auto;    /* 中のボタンを押せるようにする */
-    transform: translateX(-50%) scale(1); /* 本来の大きさ（1倍）にニュッと広げる */
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateX(-50%) scale(1);
 }
 
-/* 吹き出しの中で「今選ばれている体調の絵文字ボタン」を濃い緑色で強調し続ける設定 */
+/* [仕掛け] ラジオボタン連動：現在選択中の絵文字ボタンの強調固定 */
 #cond-5:checked ~ .card-content .popup-bubble .status-label[for="cond-5"],
 #cond-4:checked ~ .card-content .popup-bubble .status-label[for="cond-4"],
 #cond-3:checked ~ .card-content .popup-bubble .status-label[for="cond-3"],
@@ -535,37 +495,39 @@ body {
 #cond-1:checked ~ .card-content .popup-bubble .status-label[for="cond-1"] {
     background-color: #a5d6a7;
     border-color: #1b5e20;
-    transform: scale(1.05);  /* 選択中のボタンを一回り大きく固定 */
+    transform: scale(1.05);
 }
 
-/* --- 5: とても良い 😆 の表情（大型化調整） --- */
+/* --- 各種体調ラジオボタンと連動した表情変化の定義 --- */
+
+/* 5: とても良い 😆 */
 #cond-5:checked ~ .face-trigger .face-icon .eye {
-    height: 7px;        /* 目の細さを調整 */
+    height: 7px;
     border-radius: 14px 14px 0 0;
     background: none;
     border-top: 4px solid #1b5e20;
 }
 #cond-5:checked ~ .face-trigger .face-icon .mouth {
-    height: 35px;       /* 大笑いの口の深さを調整 */
+    height: 35px;
     border-radius: 0 0 35px 35px;
     background-color: #1b5e20;
 }
 
-/* --- 4: 良い 🙂 の表情（大型化調整） --- */
+/* 4: 良い 🙂 */
 #cond-4:checked ~ .face-trigger .face-icon .mouth {
     height: 20px;
     border-radius: 0 0 20px 20px;
 }
 
-/* --- 3: 普通 😐 の表情（大型化調整） --- */
+/* 3: 普通 😐 */
 #cond-3:checked ~ .face-trigger .face-icon .mouth {
     height: 0;
     border-radius: 0;
     border-bottom: 4px solid #1b5e20;
-    bottom: 40px;       /* 真ん中らへんに来るように調整 */
+    bottom: 40px;
 }
 
-/* --- 2: 悪い 🙁 の表情（大型化調整） --- */
+/* 2: 悪い 🙁 */
 #cond-2:checked ~ .face-trigger .face-icon .mouth {
     height: 20px;
     border: none;
@@ -574,7 +536,7 @@ body {
     bottom: 25px;
 }
 
-/* --- 1: とても悪い 😢 の表情（大型化調整） --- */
+/* 1: とても悪い 😢 */
 #cond-1:checked ~ .face-trigger .face-icon .mouth {
     height: 20px;
     border: none;
@@ -585,68 +547,21 @@ body {
 #cond-1:checked ~ .face-trigger .face-icon::after {
     content: "💧";
     position: absolute;
-    top: 50px;          /* 涙の位置を大きな目に合わせて調整 */
-    left: 22px;         /* 涙の位置を大きな目に合わせて調整 */
-    font-size: 22px;    /* 涙のサイズも大きく（14px ➔ 22px） */
+    top: 50px;
+    left: 22px;
+    font-size: 22px;
 }
+
 
 /* ==========================================================================
-   9. 吹き出し展開時の画面全体ロック設定（誤操作を防止する魔法）
+   8. 下部：AIアドバイスエリア
    ========================================================================== */
-/* 吹き出しが開いている時、吹き出し自体と顔アイコンだけはクリックが効くように死守する設定 */
-.bubble-toggle-input:checked ~ .card-content .popup-bubble,
-.bubble-toggle-input:checked ~ .face-trigger {
-    pointer-events: auto; 
-}
-
-/* 💡 本体のロック処理：体調チェックが入っている間、画面の他の要素のクリックをすべて禁止・グレーアウトする */
-
-/* 食事・睡眠・歩数カードのリンクをクリック不可にし、少し薄くする */
-.app:has(.bubble-toggle-input:checked) .right .card-link {
-    pointer-events: none;
-    cursor: default;
-    opacity: 0.6;
-}
-
-/* カレンダーの日付ナビボタン（◀︎ ▶︎）をクリック不可にし、薄いグレーにする */
-.app:has(.bubble-toggle-input:checked) .date-nav .nav-btn {
-    pointer-events: none;
-    cursor: default;
-    opacity: 0.4;
-}
-
-/* メモ入力欄（textarea）を完全にフリーズさせ、グレーアウト背景にして入力できないことを伝える */
-.app:has(.bubble-toggle-input:checked) .memo-input {
-    pointer-events: none;
-    background-color: #f0f0f0;
-    color: #999;
-    border-color: #eee;
-}
-
-/* ==========================================
-   追加：画面下部のAIアドバイスエリアのスタイル
-   ========================================== */
-
-/* 1. アプリ全体を縦並びのレイアウトに設定 */
-.app {
-    display: flex;
-    flex-direction: column;
-    min-height: 100vh; /* 画面の縦いっぱいに広げる */
-}
-
-/* 2. メインエリア（カレンダーとカード）を画面の残りの高さに広げる */
-.main {
-    flex: 1; 
-}
-
-/* 3. 下部エリア全体の幅と余白の設定 */
 .bottom-area {
     width: 100%;
-    box-sizing: border-box;
-    padding: 0 20px 20px 20px; /* 左右と下に余白を作る */
+    padding: 0 20px 20px 20px; /* 左右と下部に心地よい余白を形成 */
 }
 
-/* 4. AIアドバイスを囲むボックスの見た目（枠線や背景） */
+/* AIコンテンツを内包するコンテナ */
 .bottom-area .ai-container {
     padding: 20px;
     border: 1px solid #ddd;
@@ -654,39 +569,36 @@ body {
     background: #fafafa;
 }
 
-/* 5. コメント文の行間と文字色の設定 */
 .bottom-area #ai-comment {
     line-height: 1.6;
     color: #333;
     margin-bottom: 15px;
 }
 
-/* 6. 「分析する」ボタンの見た目 */
+/* AI分析実行ボタン */
 .bottom-area #analyze-btn {
     display: block;
     width: 100%;
-    max-width: 400px;         /* PC画面でも間伸びしない最大幅 */
-    margin: 20px auto;        /* 💡 ボタンを中央寄せにする */
-    padding: 16px 24px;       /* 💡 ボタン内の余白を広げて肉厚に */
-    font-size: 20px;          /* 💡 文字を大きく */
-    font-weight: bold;        /* 💡 太字にする */
-    background: #00e823;      /* 💡 認識性の高いブルーに変更（お好みで #4CAF50 の緑でもOK） */
+    max-width: 400px;
+    margin: 20px auto;        /* 中央寄せ */
+    padding: 16px 24px;       /* 押しやすい肉厚なサイズ設定 */
+    font-size: 20px;
+    font-weight: bold;
+    background: #00e823;      /* 認識性の高い明るいグリーン */
     color: white;
     border: none;
-    border-radius: 8px;       /* 💡 角丸を少し滑らかに */
+    border-radius: 8px;
     cursor: pointer;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* 💡 立体感のある影を追加 */
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     transition: background 0.2s, transform 0.1s, box-shadow 0.2s;
 }
 
-/* 7. ボタンにマウスを乗せたときに少し暗くする演出 */
 .bottom-area #analyze-btn:hover {
-    background: #36b400;      /* 💡 マウスホバー時に少し濃い青に */
-    transform: translateY(-2px); /* 💡 ほんの少し上にピョコッと浮く演出 */
-    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15); /* 💡 浮いた分、影を強く */
+    background: #36b400;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
 }
 
-/* 💡 ボタンがクリックされて分析中のとき（無効化状態）の見た目も追加 */
 .bottom-area #analyze-btn:disabled {
     background: #cccccc;
     color: #666666;
@@ -695,35 +607,92 @@ body {
     box-shadow: none;
 }
 
+/* ロック解除用確認ボタン */
+#unlock-btn {
+    display: block;
+    width: 100%;
+    max-width: 400px;
+    margin: 15px auto 0 auto;
+    padding: 12px 20px;
+    font-size: 18px;
+    font-weight: bold;
+    color: #fff;
+    background-color: #28a745; /* 安心感のあるグリーン */
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    animation: fadeIn 0.3s ease; /* 浮き上がるアニメーション */
+    transition: background-color 0.2s, transform 0.1s;
+}
+
+#unlock-btn:hover {
+    background-color: #218838;
+    transform: translateY(-1px);
+}
+
+
 /* ==========================================================================
-   10. AI分析中の画面全体ロック設定（誤操作・連打防止）
+   9. アプリ状態管理：画面ロック演出（誤操作・連打防止の魔法）
    ========================================================================== */
 
-/* 💡 分析ボタンが無効化（disabled）されている間、アプリ内の他のボタンや入力をすべてフリーズさせる */
+/* -----------------------------------------
+   状態A：体調ポップアップ展開時の操作フリーズ
+   ----------------------------------------- */
+.bubble-toggle-input:checked ~ .card-content .popup-bubble,
+.bubble-toggle-input:checked ~ .face-trigger {
+    pointer-events: auto; /* 吹き出しと顔型トリガーのみ入力を死守 */
+}
+
+/* 他のカードを半透明にしてクリックを禁止 */
+.app:has(.bubble-toggle-input:checked) .right .card-link {
+    pointer-events: none;
+    cursor: default;
+    opacity: 0.6;
+}
+
+/* カレンダーの月切り替えボタンをフリーズ */
+.app:has(.bubble-toggle-input:checked) .date-nav .nav-btn {
+    pointer-events: none;
+    cursor: default;
+    opacity: 0.4;
+}
+
+/* メモ入力欄をグレーアウトして完全に非活性化 */
+.app:has(.bubble-toggle-input:checked) .memo-input {
+    pointer-events: none;
+    background-color: #f0f0f0;
+    color: #999;
+    border-color: #eee;
+}
+
+/* -----------------------------------------
+   状態B：AI分析中の画面全体フリーズ
+   ----------------------------------------- */
 .app:has(#analyze-btn:disabled) {
-    /* 1. カレンダーの日付マスをクリックできなくする */
+    /* カレンダーマスのクリックを全面禁止 */
     & .calendar tbody td {
         pointer-events: none !important;
         cursor: default !important;
     }
 
-    /* 2. 右側の4つのカード（食事・睡眠・歩数・体調）をすべてクリック不可にする */
+    /* 右側ライフログカードをすべてフリーズ（半透明化） */
     & .right .card-link, 
     & .card.condition,
     & .face-trigger {
         pointer-events: none !important;
         cursor: default !important;
-        opacity: 0.6; /* 💡 動かないことを伝えるために少し薄くする */
+        opacity: 0.6;
     }
 
-    /* 3. カレンダーの月切り替えボタン（◀︎ ▶︎）をフリーズ */
+    /* カレンダーのナビゲーションをフリーズ */
     & .date-nav .nav-btn {
         pointer-events: none !important;
         cursor: default !important;
         opacity: 0.4;
     }
 
-    /* 4. メモ入力欄をフリーズさせ、グレーアウトする */
+    /* メモ入力欄を完全にフリーズ（グレーアウト） */
     & .memo-input {
         pointer-events: none !important;
         background-color: #f0f0f0 !important;
@@ -732,37 +701,17 @@ body {
     }
 }
 
-/* 💡 ただし、エラーが起きて分析ボタンが復活した時は、自動的にロックが全解除されます */
 
 /* ==========================================================================
-   11. ロック解除ボタンの見た目
+   10. アニメーション設定
    ========================================================================== */
-#unlock-btn {
-    display: block;
-    width: 100%;
-    max-width: 400px;
-    margin: 15px auto 0 auto;  /* コメント文の下に隙間を作って中央寄せ */
-    padding: 12px 20px;
-    font-size: 18px;
-    font-weight: bold;
-    color: #fff;
-    background-color: #28a745; /* 💡 安心感のあるグリーン */
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    animation: fadeIn 0.3s ease; /* ニュッと現れるアニメーション */
-    transition: background-color 0.2s, transform 0.1s;
-}
-
-/* マウスを乗せたとき */
-#unlock-btn:hover {
-    background-color: #218838;
-    transform: translateY(-1px);
-}
-
-/* ボタンがパッと現れるアニメーション */
 @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
+    from { 
+        opacity: 0; 
+        transform: translateY(10px); 
+    }
+    to { 
+        opacity: 1; 
+        transform: translateY(0); 
+    }
 }

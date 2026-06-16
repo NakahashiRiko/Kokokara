@@ -2,22 +2,23 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ココカラ - ライフログアプリ</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div class="app">
-        <!-- 6. 上部エリア（ヘッダー） -->
+
         <header class="top">
             <h1 class="title">ココカラ</h1>
             <div class="memo-area">
-                <!-- inputからtextarea（複数行入力対応）に変更しました -->
                 <textarea placeholder="メモを入力（右下でメモ欄の幅を変更可）" class="memo-input"></textarea>
             </div>
         </header>
 
+
         <main class="main">
-            <!-- 7. 左側エリア（カレンダー） -->
+
             <aside class="left">
                 <div class="date-nav">
                     <button class="nav-btn">◀︎</button>
@@ -33,12 +34,11 @@
                     </thead>
                     <tbody id="calendar-body"></tbody>
                 </table>
-
             </aside>
 
-            <!-- 8. 右側エリア（ライフログカード） -->
+
             <section class="right">
-                <!-- 食事カード（リンク化） -->
+
                 <a href="../../mealApp.html" id="link-meal" class="card-link">
                     <div class="card meal">
                         <h3 class="card-title">食事</h3>
@@ -50,7 +50,6 @@
                     </div>
                 </a>
 
-                <!-- 睡眠カード（リンク化） -->
                 <a href="../../SleepApp.html" id="link-sleep" class="card-link">
                     <div class="card sleep">
                         <h3 class="card-title">睡眠</h3>
@@ -60,7 +59,6 @@
                     </div>
                 </a>
 
-                <!-- 歩数カード（リンク化） -->
                 <a href="../../walk.html" id="link-walk" class="card-link">
                     <div class="card steps">
                         <h3 class="card-title">歩数</h3>
@@ -70,7 +68,6 @@
                     </div>
                 </a>
 
-                <!-- 体調カード（ポップアップの仕掛けがあるため、そのまま維持） -->
                 <div class="card condition">
                     <input type="checkbox" id="toggle-bubble" class="bubble-toggle-input">
 
@@ -94,16 +91,18 @@
                             <p class="bubble-title">今日の体調は？</p>
                             <div class="status-buttons">
                                 <label for="cond-5" class="status-label" title="とても良い" onclick="document.getElementById('toggle-bubble').checked=false">😆</label>
-                                <label for="cond-4" class="status-label" title="良い" onclick="document.getElementById('toggle-bubble').checked=false">🙂</label>
-                                <label for="cond-3" class="status-label" title="普通" onclick="document.getElementById('toggle-bubble').checked=false">😐</label>
-                                <label for="cond-2" class="status-label" title="悪い" onclick="document.getElementById('toggle-bubble').checked=false">🙁</label>
+                                <label for="cond-4" class="status-label" title="良い"       onclick="document.getElementById('toggle-bubble').checked=false">🙂</label>
+                                <label for="cond-3" class="status-label" title="普通"       onclick="document.getElementById('toggle-bubble').checked=false">😐</label>
+                                <label for="cond-2" class="status-label" title="悪い"       onclick="document.getElementById('toggle-bubble').checked=false">🙁</label>
                                 <label for="cond-1" class="status-label" title="とても悪い" onclick="document.getElementById('toggle-bubble').checked=false">😢</label>
                             </div>
                         </div>
                     </div>
                 </div>
+
             </section>
         </main>
+
 
         <footer class="bottom-area">
             <div class="ai-container">

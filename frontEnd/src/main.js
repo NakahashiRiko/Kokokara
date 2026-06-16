@@ -1,15 +1,60 @@
-// main.js
+/**
+ * ==========================================================================
+ * アプリケーション設定 ＆ グローバル変数
+ * ==========================================================================
+ */
 import { loginAnonymously } from './services/authService.js';
 import { saveDailyData, getDailyData } from './services/healthService.js'; 
 
 // アプリ全体で「今何日を選択しているか」を記憶する変数
 let currentDate = new Date(); 
 
-// 曜日を日本語に変換するための配列
+// 曜日表示用の日本語変換マップ
 const weekDays = ["日", "月", "火", "水", "木", "金", "土"];
 
+
 /**
- * 各カードのリンク（href）に選択された日付パラメータを付与する関数
+ * ==========================================================================
+ * 画面更新・UI操作系関数
+ * ==========================================================================
+ */
+
+/**
+ * 画面の日付表示を更新し、連動するデータ（リンク・UI・カレンダー）を再読み込みする
+ */
+async function updateDateDisplay() {
+    const year = currentDate.getFullYear();
+    const month = String(currentDate.getMonth() + 1).padStart(2, '0');
+    const date = String(currentDate.getDate()).padStart(2, '0');
+    const day = weekDays[currentDate.getDay()];
+
+    // 画面上部の日付ヘッダーを更新
+    const dateDisplay = document.querySelector('.current-date');
+    if (dateDisplay) {
+        dateDisplay.textContent = `${year}/${month}/${date}（${day}）`;
+    }
+
+    // カレンダーの再描画（完了を待つ）
+    await renderCalendar(); 
+
+    const dateStr = `${year}-${month}-${date}`;
+    console.log(`📅 ${dateStr} のデータを取得します...`);
+
+    // 各カードの遷移先リンクに日付パラメータを付与
+    updateNavigationLinks(dateStr);
+
+    try {
+        // Firestoreから該当日のデータを取得してカードを書き換え
+        const firebaseData = await getDailyData(dateStr);
+        updateCardContents(firebaseData);
+    } catch (error) {
+        console.error("データ自動取得エラー:", error);
+    }
+}
+
+/**
+ * 各機能カード（食事、睡眠、歩数）のリンク（href）に選択中の一意な日付パラメータを付与する
+ * @param {string} dateStr - YYYY-MM-DD 形式の日付文字列
  */
 function updateNavigationLinks(dateStr) {
     const mealLink = document.getElementById("link-meal");
@@ -22,23 +67,20 @@ function updateNavigationLinks(dateStr) {
     console.log(`🔗 リンクの日付を更新しました: ${dateStr}`);
 }
 
-
 /**
- * Firestoreから取得したデータを画面の各カードに反映させる関数
+ * Firestoreから取得した健康データを画面の各コンポーネント（カード・入力欄）に反映する
+ * @param {Object} data - Firestoreから取得した1日分のデータオブジェクト
  */
 function updateCardContents(data) {
     // 1. 食事カードの書き換え
     const mealCardContent = document.querySelector('.card.meal .card-content');
     if (mealCardContent) {
-        //
-        if (data && data.meal) {//開始時刻・献立・栄養素の全てが入力されてないと食事を「済」にしない。
-            //それぞれの食事で、開始時刻が入力されてるかどうか判定する関数。全て入力されてたらtrueを返す。
-            function isMealComplete(meal) {
-                if(meal.menu != "" && meal.time != "" && meal.nutrients != ""){
-                    return true;
-                }
-                return false;//どれか1つでも入力されてなかったらfalseを返す。
-            }
+        if (data && data.meal) {
+            // 開始時刻、献立、栄養素のすべてが入力されているか判定する内部関数
+            const isMealComplete = (meal) => {
+                return meal && meal.menu !== "" && meal.time !== "" && meal.nutrients !== "";
+            };
+
             const breakfastStatus = isMealComplete(data.meal.breakfast) ? "済" : "未";
             const lunchStatus = isMealComplete(data.meal.lunch) ? "済" : "未";
             const dinnerStatus = isMealComplete(data.meal.dinner) ? "済" : "未";
@@ -49,7 +91,7 @@ function updateCardContents(data) {
                 <p>晩：${dinnerStatus}</p>
             `;
         } else {
-            mealCardContent.innerHTML = ` <p>朝：未</p><p>昼：未</p><p>晩：未</p> `;
+            mealCardContent.innerHTML = `<p>朝：未</p><p>昼：未</p><p>晩：未</p>`;
         }
     }
 
@@ -75,31 +117,36 @@ function updateCardContents(data) {
         }
     }
 
-    // 4. コンディションカードの書き換え
+    // 4. コンディション（体調）ラジオボタンの書き換え
     if (data && data.condition !== undefined) {
         const savedCondition = data.condition;
         const targetRadio = document.getElementById(`cond-${savedCondition}`);
-        if (targetRadio) {
-            targetRadio.checked = true;
-        }
+        if (targetRadio) targetRadio.checked = true;
     } else {
+        // データがない場合はすべてのラジオボタンのチェックを外す
         for (let i = 1; i <= 5; i++) {
             const radioBtn = document.getElementById(`cond-${i}`);
             if (radioBtn) radioBtn.checked = false;
         }
     }
 
+    // 5. メモ欄の書き換え
     const memoInput = document.querySelector('.memo-input');
     if (memoInput) {
-        if (data && data.memo !== undefined) {
-            memoInput.value = data.memo; 
-        } else {
-            memoInput.value = ""; 
-        }
+        memoInput.value = (data && data.memo !== undefined) ? data.memo : "";
     }
 }
 
-// カレンダー自動生成ロジック
+
+/**
+ * ==========================================================================
+ * カレンダー生成 ＆ ドット表示ロジック
+ * ==========================================================================
+ */
+
+/**
+ * 月ごとのカレンダー（HTMLテーブル）を自動生成し、描画する
+ */
 async function renderCalendar() {
     const calendarBody = document.getElementById('calendar-body');
     if (!calendarBody) return;
@@ -118,12 +165,15 @@ async function renderCalendar() {
     for (let i = 0; i < 6; i++) {
         html += '<tr>';
         for (let j = 0; j < 7; j++) {
+            // 前月の余白埋め
             if (i === 0 && j < firstDayOfThisMonth) {
                 const lastMonthDate = lastDateOfLastMonth - firstDayOfThisMonth + j + 1;
                 html += `<td class="other-month">${lastMonthDate}</td>`;
+            // 翌月の余白埋め
             } else if (dateCount > lastDateOfThisMonth) {
                 html += `<td class="other-month">${nextMonthDateCount}</td>`;
                 nextMonthDateCount++;
+            // 今月の日付枠
             } else {
                 const isSelectedDay = (dateCount === currentDate.getDate());
                 const className = isSelectedDay ? 'today' : '';
@@ -132,7 +182,6 @@ async function renderCalendar() {
                 const ddStr = String(dateCount).padStart(2, '0');
                 const dateStr = `${year}-${mmStr}-${ddStr}`;
 
-                // main.js の renderCalendar 内の該当部分を以下に差し替え
                 html += `
                     <td class="${className}" data-date="${dateStr}">
                         <div class="date-wrapper">
@@ -150,20 +199,22 @@ async function renderCalendar() {
             }
         }
         html += '</tr>';
+        
+        // 全ての日付を埋め終えたらループを抜ける
         if (dateCount > lastDateOfThisMonth && nextMonthDateCount > 1) {
             break;
         }
     }
 
     calendarBody.innerHTML = html;
-    setupCalendarCellsEvent();
+    setupCalendarCellsEvent(); // マスクリックイベントの再割り当て
 
-    // 💡 引数をつけずにシンプルに呼び出し
+    // カレンダー表示完了後、非同期で各日のドット（記録の有無）を打つ
     await addDotsToCalendar();
 }
 
 /**
- * 4項目のデータ有無を個別にチェックし、対応する丸を点灯させる関数
+ * カレンダーの各日付に対して、4項目のデータ有無をチェックし、対応するドットを点灯（active）させる
  */
 async function addDotsToCalendar() {
     const cells = document.querySelectorAll('#calendar-body td:not(.other-month)');
@@ -173,25 +224,25 @@ async function addDotsToCalendar() {
         if (!dateStr) return;
 
         try {
-            // 💡 一旦すべての丸の点灯（active）をリセット
+            // 一旦すべてのドットの点灯をリセット
             cell.querySelectorAll('.dot-marker').forEach(dot => dot.classList.remove('active'));
 
             const data = await getDailyData(dateStr);
             
             if (data) {
-                // 1. 食事のチェック
+                // 1. 食事のチェック（いずれかの食事にメニューが入っていればON）
                 const hasMeal = data.meal && (data.meal.breakfast?.menu || data.meal.lunch?.menu || data.meal.dinner?.menu);
                 if (hasMeal) cell.querySelector('.dot-meal')?.classList.add('active');
 
-                // 2. 睡眠のチェック
+                // 2. 睡眠のチェック（時間または分が0より大きければON）
                 const hasSleep = data.sleep && (Number(data.sleep.hour) > 0 || Number(data.sleep.minute) > 0);
                 if (hasSleep) cell.querySelector('.dot-sleep')?.classList.add('active');
 
-                // 3. 歩数のチェック
+                // 3. 歩数のチェック（0歩より多ければON）
                 const hasWalk = data.walk !== undefined && data.walk !== null && Number(data.walk) > 0;
                 if (hasWalk) cell.querySelector('.dot-walk')?.classList.add('active');
 
-                // 4. 体調のチェック
+                // 4. 体調のチェック（値が存在すればON）
                 const hasCondition = data.condition !== undefined && data.condition !== null && data.condition !== "";
                 if (hasCondition) cell.querySelector('.dot-condition')?.classList.add('active');
             }
@@ -203,7 +254,16 @@ async function addDotsToCalendar() {
     await Promise.all(promises);
 }
 
-// カレンダーのマス目クリックイベント
+
+/**
+ * ==========================================================================
+ * ナビゲーション ＆ イベントリスナー設定
+ * ==========================================================================
+ */
+
+/**
+ * カレンダー内のマス目（日付）がクリックされた時のイベントを設定する
+ */
 function setupCalendarCellsEvent() {
     const calendarCells = document.querySelectorAll('.calendar tbody td');
     calendarCells.forEach(cell => {
@@ -224,185 +284,51 @@ function setupCalendarCellsEvent() {
 }
 
 /**
- * 画面の日付表示を更新し、その日のデータを読み込む関数
- */
-async function updateDateDisplay() {
-    const year = currentDate.getFullYear();
-    const month = String(currentDate.getMonth() + 1).padStart(2, '0');
-    const date = String(currentDate.getDate()).padStart(2, '0');
-    const day = weekDays[currentDate.getDay()];
-
-    const dateDisplay = document.querySelector('.current-date');
-    if (dateDisplay) {
-        dateDisplay.textContent = `${year}/${month}/${date}（${day}）`;
-    }
-
-    await renderCalendar(); // カレンダー描画が終わるのを待つ
-
-    const dateStr = `${year}-${month}-${date}`;
-    console.log(`📅 ${dateStr} のデータを取得します...`);
-
-    updateNavigationLinks(dateStr);
-
-    try {
-        const firebaseData = await getDailyData(dateStr);
-        updateCardContents(firebaseData);
-    } catch (error) {
-        console.error("データ自動取得エラー:", error);
-    }
-}
-
-/**
- * カレンダーの左右矢印ボタンにクリックイベントを設定する関数（月切り替え版・日付維持）
+ * カレンダーの「前月」「次月」切り替えボタンにイベントを設定する（選択日を可能な限り維持）
  */
 function setupCalendarNavigation() {
     const navButtons = document.querySelectorAll('.nav-btn');
-    
-    if (navButtons.length >= 2) {
-        const prevBtn = navButtons[0];
-        const nextBtn = navButtons[1];
+    if (navButtons.length < 2) return;
 
-        // 前の月へ
-        prevBtn.addEventListener('click', () => {
-            const currentDay = currentDate.getDate(); // 現在の日付（例: 14）を記憶
-            
-            // 1. 一旦、移動先（前月）の末尾の日付を確認する
-            const targetMonthLastDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), 0).getDate();
-            
-            // 2. もし元の「日」が、移動先の「最大日数」を超えていたら、移動先の月末に合わせる
-            //（例: 5月31日にいて、4月へ行く時は「4月30日」にする）
-            const safeDay = Math.min(currentDay, targetMonthLastDate);
-            
-            currentDate.setDate(safeDay); 
-            currentDate.setMonth(currentDate.getMonth() - 1);
-            updateDateDisplay();
-        });
+    const prevBtn = navButtons[0];
+    const nextBtn = navButtons[1];
 
-        // 次の月へ
-        nextBtn.addEventListener('click', () => {
-            const currentDay = currentDate.getDate(); // 現在の日付（例: 14）を記憶
-            
-            // 1. 一旦、移動先（翌月）の末尾の日付を確認する
-            const targetMonthLastDate = new Date(currentDate.getFullYear(), currentDate.getMonth() + 2, 0).getDate();
-            
-            // 2. もし元の「日」が、移動先の「最大日数」を超えていたら、移動先の月末に合わせる
-            //（例: 8月31日にいて、9月へ行く時は「9月30日」にする）
-            const safeDay = Math.min(currentDay, targetMonthLastDate);
-            
-            currentDate.setDate(safeDay);
-            currentDate.setMonth(currentDate.getMonth() + 1);
-            updateDateDisplay();
-        });
+    // 前の月へ
+    prevBtn.addEventListener('click', () => {
+        const currentDay = currentDate.getDate();
+        const targetMonthLastDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), 0).getDate();
+        const safeDay = Math.min(currentDay, targetMonthLastDate); // 存在しない日付（例: 5/31から4月へ行く場合の31日）を防止
         
-        console.log("✅ カレンダー矢印ボタンの設定が完了しました（日付維持モード）");
-    }
+        currentDate.setDate(safeDay); 
+        currentDate.setMonth(currentDate.getMonth() - 1);
+        updateDateDisplay();
+    });
+
+    // 次の月へ
+    nextBtn.addEventListener('click', () => {
+        const currentDay = currentDate.getDate();
+        const targetMonthLastDate = new Date(currentDate.getFullYear(), currentDate.getMonth() + 2, 0).getDate();
+        const safeDay = Math.min(currentDay, targetMonthLastDate);
+        
+        currentDate.setDate(safeDay);
+        currentDate.setMonth(currentDate.getMonth() + 1);
+        updateDateDisplay();
+    });
+    
+    console.log("✅ カレンダー矢印ボタンの設定が完了しました（日付維持モード）");
 }
 
-// アプリの初期化（修正版）
-async function initApp() {
-    try {
-        const user = await loginAnonymously();
-        if (user) {
-            console.log("🔥 Firebase接続成功！ UID:", user.uid);
-
-            // 他のアプリから戻ってきたときにパラメータがあれば日付を復元する
-            const urlParams = new URLSearchParams(window.location.search);
-            const paramDate = urlParams.get('date');
-
-            if (paramDate) {
-                const parsedDate = new Date(paramDate);
-                if (!isNaN(parsedDate.getTime())) {
-                    currentDate = parsedDate;
-                    console.log(`[初期化] パラメータから日付を復元しました: ${paramDate}`);
-                }
-            }
-            
-            setupCalendarNavigation(); // ◀︎ ▶︎ ボタンの有効化
-            await updateDateDisplay(); // カレンダー描画、Firestore取得、リンク生成の全初期化
-
-            // 💡 【超重要・追加】
-            // 他のアプリから「戻る」で帰ってきた時、または画面が写った時に
-            // カレンダーの丸マークを強制的に最新状態に更新する
-            await addDotsToCalendar();
-            console.log("🔄 カレンダーの記録ドットを最新の状態に同期しました");
-        }
-    } catch (error) {
-        console.error("❌ 初期化エラーが発生しました:", error);
-    }
-}
-
-// アプリ起動
-initApp();
-
-// ==========================================================================
-// 体調ボタンの自動保存設定
-// ==========================================================================
-document.addEventListener("DOMContentLoaded", () => {
-    for (let i = 1; i <= 5; i++) {
-        const radioBtn = document.getElementById(`cond-${i}`);
-        if (radioBtn) {
-            radioBtn.addEventListener("change", async () => {
-                const yyyy = currentDate.getFullYear();
-                const mm = String(currentDate.getMonth() + 1).padStart(2, '0');
-                const dd = String(currentDate.getDate()).padStart(2, '0');
-                const dateStr = `${yyyy}-${mm}-${dd}`;
-
-                try {
-                    const conditionData = { condition: i };
-                    await saveDailyData(dateStr, conditionData);
-                    console.log(`[Firestore] ${dateStr} の体調を ${i} に保存しました。`);
-                    
-                    await addDotsToCalendar(); // 💡 即座に丸を更新
-
-                } catch (error) {
-                    console.error("❌ 体調の保存に失敗しました:", error);
-                }
-            });
-        }
-    }
-});
-
-// ==========================================================================
-// メモ欄の自動保存設定（💡 重複を一本化して修正）
-// ==========================================================================
-document.addEventListener("DOMContentLoaded", () => {
-    const memoInput = document.querySelector('.memo-input');
-    if (memoInput) {
-        memoInput.addEventListener("change", async () => {
-            const yyyy = currentDate.getFullYear();
-            const mm = String(currentDate.getMonth() + 1).padStart(2, '0');
-            const dd = String(currentDate.getDate()).padStart(2, '0');
-            const dateStr = `${yyyy}-${mm}-${dd}`;
-
-            try {
-                const memoData = { memo: memoInput.value };
-                await saveDailyData(dateStr, memoData);
-                console.log(`[Firestore] ${dateStr} のメモを保存しました。`);
-                
-                await addDotsToCalendar(); // 💡 即座に丸を更新
-
-            } catch (error) {
-                console.error("❌ メモの保存に失敗しました:", error);
-            }
-        });
-    }
-});
-
-// 💡 画面がブラウザのキャッシュから読み込まれた（戻るボタンで戻ってきた）場合も
-// 強制的にカレンダーの丸マークを最新にする魔法のコード
-window.addEventListener('pageshow', async (event) => {
-    if (event.persisted) {
-        console.log("🔄 キャッシュからの復帰を検知。カレンダーを再更新します。");
-        await addDotsToCalendar();
-    }
-});
-// ==========================================================================
-// 💡 追加：AIによる1ヶ月データ分析機能
-// ==========================================================================
 
 /**
- * 指定された年月の1日〜31日までのデータをFirestoreから集めて集計する関数
- * @param {string} yearMonth "2026-05" のような形式
+ * ==========================================================================
+ * AIによるデータ分析機能（Gemini API連携）
+ * ==========================================================================
+ */
+
+/**
+ * 指定された年月の1か月分のデータをFirestoreから集計する
+ * @param {string} yearMonth - "YYYY-MM" 形式の文字列
+ * @returns {Object} 集計された統計データオブジェクト
  */
 async function fetchMonthlySummary(yearMonth) {
     let totalSteps = 0;
@@ -411,9 +337,8 @@ async function fetchMonthlySummary(yearMonth) {
     let sleepCountDays = 0;
     let conditionScores = [];
 
-    // 1. 先に31日分のプロミス（リクエスト）の配列を作成する
+    // 1〜31日分のリクエストを並列で作成
     const days = Array.from({ length: 31 }, (_, i) => i + 1);
-    
     const promises = days.map(async (day) => {
         const ddStr = String(day).padStart(2, '0');
         const dateStr = `${yearMonth}-${ddStr}`;
@@ -425,34 +350,34 @@ async function fetchMonthlySummary(yearMonth) {
         }
     });
 
-    // 2. すべての日のデータを一斉に（並列で）取得する
+    // すべてのデータを一斉に取得
     const allDaysData = await Promise.all(promises);
 
-    // 3. 取得した結果をまとめて集計する
+    // データの集計処理
     allDaysData.forEach((data) => {
-        if (data) {
-            // 歩数の集計
-            if (data.walk !== undefined && data.walk !== null && Number(data.walk) > 0) {
-                totalSteps += Number(data.walk);
-                stepCountDays++;
+        if (!data) return;
+
+        // 歩数の集計
+        if (data.walk !== undefined && data.walk !== null && Number(data.walk) > 0) {
+            totalSteps += Number(data.walk);
+            stepCountDays++;
+        }
+        // 睡眠時間の集計
+        if (data.sleep) {
+            const h = Number(data.sleep.hour) || 0;
+            const m = Number(data.sleep.minute) || 0;
+            if (h > 0 || m > 0) {
+                totalSleepMinutes += (h * 60 + m);
+                sleepCountDays++;
             }
-            // 睡眠時間の集計
-            if (data.sleep) {
-                const h = Number(data.sleep.hour) || 0;
-                const m = Number(data.sleep.minute) || 0;
-                if (h > 0 || m > 0) {
-                    totalSleepMinutes += (h * 60 + m);
-                    sleepCountDays++;
-                }
-            }
-            // 体調の集計
-            if (data.condition) {
-                conditionScores.push(Number(data.condition));
-            }
+        }
+        // 体調の集計
+        if (data.condition) {
+            conditionScores.push(Number(data.condition));
         }
     });
 
-    // 統計データの作成
+    // 平均値の計算
     const avgSteps = stepCountDays > 0 ? Math.round(totalSteps / stepCountDays) : 0;
     const avgSleepMin = sleepCountDays > 0 ? Math.round(totalSleepMinutes / sleepCountDays) : 0;
     const avgSleepStr = `${Math.floor(avgSleepMin / 60)}時間${avgSleepMin % 60}分`;
@@ -467,29 +392,26 @@ async function fetchMonthlySummary(yearMonth) {
     };
 }
 
-
 /**
- * 【手元テスト用】Cloud Functionsを使わず、ブラウザから直接Gemini APIを叩く関数
+ * 集計データを基に、Gemini APIを直接呼び出してAI健康アドバイスを生成する
+ * @returns {string} 生成されたアドバイス文面
  */
 async function getAIAnalysis() {
     const yyyy = currentDate.getFullYear();
     const mm = String(currentDate.getMonth() + 1).padStart(2, '0');
     const yearMonth = `${yyyy}-${mm}`;
 
-    // 1. 今月のデータを集計（既存の関数をそのまま使用）
     const summaryData = await fetchMonthlySummary(yearMonth);
 
     if (summaryData.recordedDays === 0) {
         return `${yyyy}年${mm}月はまだ健康データが記録されていないようです。カレンダーに記録をつけてみましょう！`;
     }
 
-    // 🔑 【あなたのAPIキー】ここにGoogle AI Studioで取得したキーを貼り付けてください
+    // API設定
     const API_KEY = "AQ.Ab8RN6JJxc2QXj3TlGMuR-chfsqEqGhBfI984uOW3OWOl7jRcw"; 
-    
-    // Gemini 2.5 Flash を呼び出すURL
     const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${API_KEY}`;
 
-    // 2. AIに渡すプロンプト（命令文）の作成
+    // 送信用プロンプトの組み立て
     const promptText = `
 以下の健康データは、ユーザーの1ヶ月間のライフログを集計したものです。
 このデータを分析し、親しみやすく、かつ具体的でモチベーションが上がるような健康アドバイス（コメント）を200文字〜300文字程度で生成してください。
@@ -506,16 +428,12 @@ async function getAIAnalysis() {
 - 明日からできる小さなアクションを提案してください。
 `;
 
-    // 3. GoogleのAPIへ直接リクエストを送信
+    // APIリクエストの送信
     const response = await fetch(url, {
         method: "POST",
-        headers: {
-            "Content-Type": "application/json"
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-            contents: [{
-                parts: [{ text: promptText }]
-            }]
+            contents: [{ parts: [{ text: promptText }] }]
         })
     });
 
@@ -525,7 +443,6 @@ async function getAIAnalysis() {
 
     const result = await response.json();
     
-    // 4. 生成されたテキストを抽出して返す
     try {
         return result.candidates[0].content.parts[0].text;
     } catch (e) {
@@ -533,10 +450,98 @@ async function getAIAnalysis() {
     }
 }
 
-// ==========================================================================
-// 💡 画面上のボタンと連動させる設定（コメント出力後、ユーザーの確認でロック解除版）
-// ==========================================================================
+
+/**
+ * ==========================================================================
+ * アプリケーション初期化 ＆ ライフサイクル管理
+ * ==========================================================================
+ */
+
+/**
+ * 認証を通し、URLパラメータからの日付復元、各種イベントを設定してアプリを起動する
+ */
+async function initApp() {
+    try {
+        const user = await loginAnonymously();
+        if (user) {
+            console.log("🔥 Firebase接続成功！ UID:", user.uid);
+
+            // サブアプリから戻ってきた際、URLパラメータに日付があれば復元
+            const urlParams = new URLSearchParams(window.location.search);
+            const paramDate = urlParams.get('date');
+
+            if (paramDate) {
+                const parsedDate = new Date(paramDate);
+                if (!isNaN(parsedDate.getTime())) {
+                    currentDate = parsedDate;
+                    console.log(`[初期化] パラメータから日付を復元しました: ${paramDate}`);
+                }
+            }
+            
+            setupCalendarNavigation(); // ◀︎ ▶︎ ボタンの有効化
+            await updateDateDisplay(); // カレンダー描画、データ取得、UIの全初期化
+
+            // 初回表示時にドットマーカーを最新状態にする
+            await addDotsToCalendar();
+            console.log("🔄 カレンダーの記録ドットを最新の状態に同期しました");
+        }
+    } catch (error) {
+        console.error("❌ 初期化エラーが発生しました:", error);
+    }
+}
+
+// アプリの起動
+initApp();
+
+
+/**
+ * ==========================================================================
+ * DOMContentLoaded（自動保存・UI連動系イベント一元化）
+ * ==========================================================================
+ */
 document.addEventListener("DOMContentLoaded", () => {
+    
+    // --- 1. 体調ボタン（ラジオボタン変更時）の自動保存設定 ---
+    for (let i = 1; i <= 5; i++) {
+        const radioBtn = document.getElementById(`cond-${i}`);
+        if (radioBtn) {
+            radioBtn.addEventListener("change", async () => {
+                const yyyy = currentDate.getFullYear();
+                const mm = String(currentDate.getMonth() + 1).padStart(2, '0');
+                const dd = String(currentDate.getDate()).padStart(2, '0');
+                const dateStr = `${yyyy}-${mm}-${dd}`;
+
+                try {
+                    await saveDailyData(dateStr, { condition: i });
+                    console.log(`[Firestore] ${dateStr} の体調を ${i} に保存しました。`);
+                    await addDotsToCalendar(); // カレンダーのドットを即座に更新
+                } catch (error) {
+                    console.error("❌ 体調の保存に失敗しました:", error);
+                }
+            });
+        }
+    }
+
+    // --- 2. メモ欄（フォーカスアウト・値確定時）の自動保存設定 ---
+    const memoInput = document.querySelector('.memo-input');
+    if (memoInput) {
+        memoInput.addEventListener("change", async () => {
+            const yyyy = currentDate.getFullYear();
+            const mm = String(currentDate.getMonth() + 1).padStart(2, '0');
+            const dd = String(currentDate.getDate()).padStart(2, '0');
+            const dateStr = `${yyyy}-${mm}-${dd}`;
+
+            try {
+                await saveDailyData(dateStr, { memo: memoInput.value });
+                console.log(`[Firestore] ${dateStr} のメモを保存しました。`);
+                await addDotsToCalendar(); // カレンダーのドットを即座に更新
+            } catch (error) {
+                console.error("❌ メモの保存に失敗しました:", error);
+            }
+        });
+    }
+
+    // --- 3. AI分析ボタン ＆ 画面ロック解除のイベント設定 ---
     const analyzeBtn = document.getElementById('analyze-btn');
     const commentEl = document.getElementById('ai-comment');
 
@@ -544,30 +549,26 @@ document.addEventListener("DOMContentLoaded", () => {
         commentEl.style.fontSize = "20px"; 
         commentEl.style.lineHeight = "1.6"; 
 
-        // 💡 解除ボタンを動的に作るためのコンテナを準備
         const container = commentEl.parentElement;
         
-        // 💡 解除ボタンのHTML要素を作成（最初は非表示）
+        // 解除ボタンのHTML要素を動的に生成（最初は非表示）
         const unlockBtn = document.createElement('button');
         unlockBtn.id = 'unlock-btn';
         unlockBtn.textContent = '確認しました（画面のロックを解除） 🔓';
-        unlockBtn.style.display = 'none'; // 最初は隠しておく
+        unlockBtn.style.display = 'none'; 
         container.appendChild(unlockBtn);
 
-        // --- ① 「分析する」ボタンを押したときの処理 ---
+        // 「分析する」ボタンを押したときの処理
         analyzeBtn.addEventListener('click', async () => {
-            analyzeBtn.disabled = true; // 分析ボタンと画面全体をロック
-            unlockBtn.style.display = 'none'; // 解除ボタンは隠す
+            analyzeBtn.disabled = true;       // ボタンおよび付随するCSSで画面全体をロック
+            unlockBtn.style.display = 'none'; // 解除ボタンを隠す
             commentEl.innerHTML = "<span style='color: #666; font-size: 18px;'>AIが今月のデータを集計して分析中... 🏃‍♂️💨</span>";
             
             try {
                 const advice = await getAIAnalysis();
                 commentEl.textContent = advice;
-                
-                // ✨ 成功したら「解除ボタン」をニュッと表示させる
-                unlockBtn.style.display = 'block';
+                unlockBtn.style.display = 'block'; // 成功したら確認（解除）ボタンを表示
                 console.log("✅ AI分析完了。ユーザーの確認ボタンを表示しました。");
-
             } catch (error) {
                 console.error("AI分析エラー詳細:", error);
                 let errorMessage = error.message || "原因不明のエラー";
@@ -580,21 +581,29 @@ document.addEventListener("DOMContentLoaded", () => {
                         </span>
                     </div>
                 `;
-
-                // ⚠️ エラーで失敗した時だけは自動で元の状態（ボタン押せる）に戻す
-                analyzeBtn.disabled = false;
+                analyzeBtn.disabled = false; // エラー時のみ自動でロック解除
             }
         });
 
-        // --- ② 新しく作った「解除ボタン」を押したときの処理 ---
+        // 「確認しました（解除）」ボタンを押したときの処理
         unlockBtn.addEventListener('click', () => {
-            // ✨ 分析ボタンの無効化を解除 ➔ これによりCSSの画面ロックも自動で全解除されます！
-            analyzeBtn.disabled = false; 
-            
-            // 自分自身（解除ボタン）は用が済んだので再び隠す
-            unlockBtn.style.display = 'none'; 
-            
+            analyzeBtn.disabled = false;     // 分析ボタンの無効化を解除（CSSによる画面ロックも解除）
+            unlockBtn.style.display = 'none'; // 自分自身を再び隠す
             console.log("🔓 ユーザーが確認したため、画面のロックを解除しました。");
         });
+    }
+});
+
+
+/**
+ * ==========================================================================
+ * ブラウザバック（キャッシュ復帰）対策
+ * ==========================================================================
+ */
+// 画面がブラウザキャッシュから読み込まれた（戻るボタンなど）際もカレンダーのドットを強制最新化
+window.addEventListener('pageshow', async (event) => {
+    if (event.persisted) {
+        console.log("🔄 キャッシュからの復帰を検知。カレンダーを再更新します。");
+        await addDotsToCalendar();
     }
 });

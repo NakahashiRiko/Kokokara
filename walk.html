@@ -231,9 +231,15 @@
                 </div>
 
                 <div class="value" style="margin-left: -15px;"> <input
-                        type="number"
-                        id="stepInput"
-                        value=""
+                    
+    type="number"
+    id="stepInput"
+    value=""
+    min="0"
+    step="1"
+    inputmode="numeric"
+    oninput="this.value=this.value.replace(/[^0-9]/g,'')"
+
                     >
 
                     歩
@@ -443,85 +449,85 @@ if (sessionData) {
 
         function updateAverage(){
 
-            let todayDay =
-                today.getDay();
+    let selectedDayOfWeek =
+        pageDate.getDay();
 
-            let thisSunday =
-                new Date(today);
+    let thisSunday =
+        new Date(pageDate);
 
-            thisSunday.setDate(
-                today.getDate() - todayDay
-            );
+    thisSunday.setDate(
+        pageDate.getDate() - selectedDayOfWeek
+    );
 
-            let sum = 0;
+    let sum = 0;
 
-            let daysCount =
-                todayDay + 1;
+    let daysCount =
+        selectedDayOfWeek + 1;
 
-            for(let i = 0; i < daysCount; i++){
+    for(let i = 0; i < daysCount; i++){
 
-                let d =
-                    new Date(thisSunday);
+        let d =
+            new Date(thisSunday);
 
-                d.setDate(
-                    thisSunday.getDate() + i
-                );
+        d.setDate(
+            thisSunday.getDate() + i
+        );
 
-                let y =
-                    d.getFullYear();
+        let y =
+            d.getFullYear();
 
-                let m =
-                    String(d.getMonth() + 1)
-                    .padStart(2,"0");
+        let m =
+            String(d.getMonth() + 1)
+            .padStart(2,"0");
 
-                let day =
-                    String(d.getDate())
-                    .padStart(2,"0");
+        let day =
+            String(d.getDate())
+            .padStart(2,"0");
 
-                let key =
-                    y
-                    +
-                    "-"
-                    +
-                    m
-                    +
-                    "-"
-                    +
-                    day;
+        let key =
+            y
+            +
+            "-"
+            +
+            m
+            +
+            "-"
+            +
+            day;
 
-                sum +=
-                    stepData[key] || 0;
-            }
+        sum +=
+            stepData[key] || 0;
+    }
 
-            let avg =
-                Math.floor(sum / daysCount);
+    let avg =
+        Math.floor(sum / daysCount);
 
-            document.getElementById("avgLabel").innerText =
-                String(thisSunday.getMonth() + 1)
-                .padStart(2,"0")
-                +
-                "/"
-                +
-                String(thisSunday.getDate())
-                .padStart(2,"0")
-                +
-                " ~ "
-                +
-                String(pageDate.getMonth() + 1)
-                .padStart(2,"0")
-                +
-                "/"
-                +
-                String(selectedDay)
-                .padStart(2,"0");
+    document.getElementById("avgLabel").innerText =
+        String(thisSunday.getMonth() + 1)
+        .padStart(2,"0")
+        +
+        "/"
+        +
+        String(thisSunday.getDate())
+        .padStart(2,"0")
+        +
+        " ~ "
+        +
+        String(pageDate.getMonth() + 1)
+        .padStart(2,"0")
+        +
+        "/"
+        +
+        String(pageDate.getDate())
+        .padStart(2,"0");
 
-            document.getElementById("avgText").innerText =
-                "の平均歩数："
-                +
-                avg
-                +
-                "歩";
-        }
+    document.getElementById("avgText").innerText =
+        "の平均歩数："
+        +
+        avg
+        +
+        "歩";
+}
 
         let chart;
 
@@ -765,34 +771,41 @@ if (sessionData) {
         }
 
         document
-        .getElementById("saveButton")
-        .addEventListener(
-            "click",
-            () => {
+.getElementById("saveButton")
+.addEventListener(
+    "click",
+    () => {
 
-                updatePage();
+        const inputValue =
+            document.getElementById("stepInput").value;
 
-                const finalTarget =
-                    target;
+        if(inputValue.trim() === ""){
+            alert("歩数を入力してください。");
+            return;
+        }
 
-                const finalCurrentStep =
-                    Number(
-                        document.getElementById("stepInput").value
-                    ) || 0;
+        updatePage();
 
-                if(
-                    typeof window.updateWalkFirestore
-                    ===
-                    'function'
-                ){
+        const finalTarget =
+            target;
 
-                    window.updateWalkFirestore(
-                        finalCurrentStep,
-                        finalTarget
-                    );
-                }
-            }
-        );
+        const finalCurrentStep =
+            Number(inputValue);
+
+        if(
+            typeof window.updateWalkFirestore
+            ===
+            'function'
+        ){
+
+            window.updateWalkFirestore(
+                finalCurrentStep,
+                finalTarget
+            );
+        }
+    }
+);
+
 
         updateAverage();
 

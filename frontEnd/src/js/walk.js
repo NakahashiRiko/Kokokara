@@ -8,6 +8,18 @@ const targetDate = urlParams.get('date') || new Date(Date.now() - new Date().get
 
 // 画面が読み込まれた時の初期化処理
 document.addEventListener('DOMContentLoaded', async () => {
+
+    // 数字以外の入力を禁止
+    const walkInput =
+        document.getElementById("stepInput") ||
+        document.getElementById("walkInput");
+
+    if (walkInput) {
+        walkInput.addEventListener("input", function () {
+            this.value = this.value.replace(/[^0-9]/g, "");
+        });
+    }
+
     const selectedDateEl = document.getElementById("selectedDate");
     if (selectedDateEl) {
         const dateObj = new Date(targetDate);
